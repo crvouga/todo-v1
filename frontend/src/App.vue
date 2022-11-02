@@ -122,7 +122,7 @@
             />
 
             <Spinner
-              childClass="w-5 h-5"
+              childClass="w-4 h-4"
               v-if="
                 statusToggleItem.type === 'Loading' &&
                 statusToggleItem.itemId === item.id
@@ -145,7 +145,7 @@
                 statusDeleteItem.type === 'Loading' &&
                 statusDeleteItem.itemId === item.id,
             }"
-            @click.stop.prevent.self="deleteItem({ itemId: item.id })"
+            @click="deleteItem({ itemId: item.id })"
           >
             Delete
           </button>
