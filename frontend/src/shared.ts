@@ -29,12 +29,16 @@ export const TodoItem = z.object({
 
 export type TodoItem = z.infer<typeof TodoItem>;
 
-export const GetTodoItemsRes = z.object({
+export const TodoItemsGot = z.object({
   items: z.array(TodoItem),
 });
 
-export type GetTodoItemsRes = z.infer<typeof GetTodoItemsRes>;
+export type TodoItemsGot = z.infer<typeof TodoItemsGot>;
 
 export const formatError = <Input>(error: SafeParseError<Input>): string => {
   return error.error.issues.map((i) => i.message).join(",");
 };
+
+export const TodoItemDeleteParams = z.object({
+  itemId: z.string(),
+});

@@ -47,14 +47,24 @@ const post = async ({
   }
 };
 
-const delete_ = async ({ endpoint }: { endpoint: keyof Endpoints }) => {
+const delete_ = async ({
+  endpoint,
+  params,
+}: {
+  endpoint: keyof Endpoints;
+  params: string | URLSearchParams | Record<string, string> | string[][];
+}) => {
   try {
-    const response = await fetch(`${backendUrl}${endpoints[endpoint]}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const searchParams = new URLSearchParams(params);
+    const response = await fetch(
+      `${backendUrl}${endpoints[endpoint]}?${searchParams.toString()}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!response.ok) {
       return { type: "Err", error: "Response was not ok" } as const;

@@ -1,6 +1,11 @@
 import express from "express";
 import cors from "cors";
-import { endpoints, GetTodoItemsRes, TodoItem } from "./shared";
+import {
+  endpoints,
+  TodoItemDeleteQuery,
+  TodoItemsGot,
+  TodoItem,
+} from "./shared";
 
 //
 //
@@ -46,8 +51,25 @@ app.post(endpoints["/todo-item"], async (req, res) => {
   res.status(201).end();
 });
 
+app.delete(endpoints["/todo-item"], async (req, res) => {
+  const result = TodoItemDeleteQuery.safeParse(req.query);
+
+  if (!result.success) {
+    res.status(400).json(result.error).end();
+    return;
+  }
+
+  const itemId = result.data.itemId;
+
+  todoItemMap.delete(itemId);
+
+  await timeout(2000);
+
+  res.status(201).end();
+});
+
 app.get(endpoints["/todo-item"], async (_req, res) => {
-  const json: GetTodoItemsRes = {
+  const json: TodoItemsGot = {
     items: Array.from(todoItemMap.values()),
   };
 

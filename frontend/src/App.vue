@@ -8,7 +8,7 @@
   </div>
 
   <div
-    class="flex flex-col items-center justify-center max-w-xl w-full h-full mx-auto p-4"
+    class="flex flex-col items-center justify-center max-w-xl w-full h-full mx-auto"
   >
     <!-- 
 
@@ -17,30 +17,36 @@
 
 
    -->
-    <div class="flex items-center justify-center gap-2 w-full">
-      <input
-        ref="text"
-        v-model="text"
-        class="input input-md input-bordered flex-1"
-        :class="{
-          'input-error': statusSubmit.type === 'Error',
-        }"
-        placeholder="What todo?"
-        @input="inputText"
-      />
-      <button
-        @click="submit"
-        class="btn btn-primary"
-        :class="{ loading: statusSubmit.type === 'Loading' }"
-      >
-        Submit
-      </button>
+    <div class="w-full bg-inherit sticky top-0 p-4">
+      <div class="flex items-center justify-center gap-2 w-full">
+        <input
+          ref="text"
+          v-model="text"
+          class="input input-md input-bordered flex-1"
+          :class="{
+            'input-error': statusSubmit.type === 'Error',
+          }"
+          placeholder="What todo?"
+          @input="inputText"
+        />
+        <!-- <p class="pt-1 flex">
+          <kbd class="kbd kbd-sm mr-1">⌘</kbd>
+          <kbd class="kbd kbd-sm">K</kbd>
+        </p> -->
+
+        <button
+          @click="submit"
+          class="btn btn-primary"
+          :class="{ loading: statusSubmit.type === 'Loading' }"
+        >
+          Submit
+        </button>
+      </div>
+
+      <p class="pt-2 w-full text-red-500">
+        {{ statusSubmit.type === "Error" ? statusSubmit.error : "" }}
+      </p>
     </div>
-
-    <p class="pt-2 w-full text-red-500">
-      {{ statusSubmit.type === "Error" ? statusSubmit.error : "" }}
-    </p>
-
     <!-- 
 
 
@@ -49,13 +55,15 @@
 
    -->
 
-    <div class="flex flex-col items-center justify-center flex-1 w-full">
+    <div class="flex flex-col items-center justify-center flex-1 w-full pb-16">
       <div
         v-if="statusLoad.type === 'Error'"
         class="alert alert-error shadow-lg"
       >
         {{ statusLoad.type === "Error" ? statusLoad.error : "" }}
       </div>
+
+      <spinner class="p-8" v-if="statusLoad.type === 'Loading'" />
 
       <ol class="flex flex-col items-center justify-center w-full">
         <li
@@ -68,15 +76,17 @@
           </span>
           <button
             class="btn btn-outline btn-error btn-xs"
-            :class="{ loading: statusDeleteItem.type === 'Loading' }"
+            :class="{
+              loading:
+                statusDeleteItem.type === 'Loading' &&
+                statusDeleteItem.itemId === item.id,
+            }"
             @click="deleteItem({ itemId: item.id })"
           >
             Delete
           </button>
         </li>
       </ol>
-
-      <spinner class="p-8" v-if="statusLoad.type === 'Loading'" />
     </div>
 
     <!-- 
@@ -92,14 +102,20 @@
 import { v4 } from "uuid";
 import { defineComponent } from "vue";
 import Api from "./api";
-import { formatError, GetTodoItemsRes, TodoItem } from "./shared";
+import {
+  formatError,
+  TodoItemsGot,
+  TodoItemDeleteParams,
+  TodoItem,
+} from "./shared";
 import Spinner from "./Spinner.vue";
 
 type Data = {
   text: string;
   statusSubmit: RemoteData<string, undefined>;
   statusLoad: RemoteData<string, undefined>;
-  statusDeleteItem: RemoteData<string, undefined>;
+  statusDeleteItem: RemoteData<string, undefined> & { itemId: string };
+
   items: TodoItem[];
 };
 
@@ -114,7 +130,7 @@ export default defineComponent({
       items: [],
       statusSubmit: { type: "NotAsked" },
       statusLoad: { type: "NotAsked" },
-      statusDeleteItem: { type: "NotAsked" },
+      statusDeleteItem: { type: "NotAsked", itemId: "None" },
     };
   },
 
@@ -135,16 +151,32 @@ export default defineComponent({
     },
 
     async deleteItem({ itemId }: { itemId: string }) {
-      this.statusDeleteItem = { type: "Loading" };
+      this.statusDeleteItem = { type: "Loading", itemId };
 
-      const deleted = await Api.delete({ endpoint: "/todo-item" });
+      const parsed = TodoItemDeleteParams.safeParse({
+        itemId,
+      });
 
-      if (deleted.type === "Err") {
-        this.statusDeleteItem = { type: "Error", error: deleted.error };
+      if (!parsed.success) {
+        this.statusDeleteItem = {
+          type: "Error",
+          error: formatError(parsed),
+          itemId,
+        };
         return;
       }
 
-      this.statusDeleteItem = { type: "Success", data: undefined };
+      const deleted = await Api.delete({
+        endpoint: "/todo-item",
+        params: parsed.data,
+      });
+
+      if (deleted.type === "Err") {
+        this.statusDeleteItem = { type: "Error", itemId, error: deleted.error };
+        return;
+      }
+
+      this.statusDeleteItem = { type: "Success", itemId, data: undefined };
       this.items = this.items.filter((item) => item.id !== itemId);
     },
 
@@ -158,7 +190,7 @@ export default defineComponent({
         return;
       }
 
-      const parsed = GetTodoItemsRes.safeParse(got.json);
+      const parsed = TodoItemsGot.safeParse(got.json);
 
       if (!parsed.success) {
         this.statusLoad = {
