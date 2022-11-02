@@ -8,6 +8,10 @@ keeping frontend/src/shared.ts and frontend/src/shared.ts
 
 import { z, type SafeParseError } from "zod";
 
+const DateSchema = z.preprocess((arg) => {
+  if (typeof arg == "string" || arg instanceof Date) return new Date(arg);
+}, z.date());
+
 export const endpoints = {
   "/todo-item": "/api/todo-item",
 } as const;
@@ -25,6 +29,7 @@ export const TodoItem = z.object({
   id: z.string().uuid(),
   text: z.string().min(4).max(100),
   status: TodoItemStatus,
+  createdAt: DateSchema,
 });
 
 export type TodoItem = z.infer<typeof TodoItem>;

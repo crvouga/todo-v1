@@ -1,11 +1,11 @@
 <template>
-  <div class="toast">
+  <!-- <div class="toast">
     <div class="alert alert-error w-full w-max-xs">
       <div>
         <span>New message arrived.</span>
       </div>
     </div>
-  </div>
+  </div> -->
 
   <div
     class="flex flex-col items-center justify-center max-w-md w-full h-full mx-auto"
@@ -43,10 +43,23 @@
         </button>
       </div>
 
-      <p class="pt-2 text-sm text-red-500">
+      <p class="py-2 text-sm text-red-500">
         {{ statusSubmit.type === "Error" ? statusSubmit.error : "" }}
       </p>
+
+      <div class="btn-group">
+        <button
+          v-for="filter in allFilters"
+          v-bind:key="filter"
+          :class="{ 'btn-active': currentFilter === filter }"
+          class="btn btn-sm"
+          @click="inputFilter(filter)"
+        >
+          {{ filter }}
+        </button>
+      </div>
     </div>
+
     <!-- 
 
 
@@ -63,13 +76,11 @@
         {{ statusLoad.type === "Error" ? statusLoad.error : "" }}
       </div>
 
-      <spinner class="p-4" v-if="statusLoad.type === 'Loading'" />
-
       <p
         v-if="statusLoad.type !== 'Loading' && items.length === 0"
         class="opacity-75"
       >
-        No todo items found.
+        No items found.
       </p>
 
       <ol class="flex flex-col items-center justify-center w-full">
@@ -94,6 +105,8 @@
           </button>
         </li>
       </ol>
+
+      <spinner class="p-4" v-if="statusLoad.type === 'Loading'" />
     </div>
 
     <!-- 
@@ -122,9 +135,12 @@ type Data = {
   statusSubmit: RemoteData<string, undefined>;
   statusLoad: RemoteData<string, undefined>;
   statusDeleteItem: RemoteData<string, undefined> & { itemId: string };
-
   items: TodoItem[];
+  currentFilter: Filter;
+  allFilters: Filter[];
 };
+
+type Filter = "All" | "Active" | "Completed";
 
 export default defineComponent({
   components: {
@@ -138,6 +154,8 @@ export default defineComponent({
       statusSubmit: { type: "NotAsked" },
       statusLoad: { type: "NotAsked" },
       statusDeleteItem: { type: "NotAsked", itemId: "None" },
+      currentFilter: "All",
+      allFilters: ["All", "Active", "Completed"],
     };
   },
 
@@ -146,6 +164,10 @@ export default defineComponent({
   },
 
   methods: {
+    inputFilter(filter: Data["currentFilter"]) {
+      this.currentFilter = filter;
+    },
+
     inputText() {
       if (this.statusSubmit.type === "Error") {
         this.statusSubmit = { type: "NotAsked" };
@@ -218,11 +240,14 @@ export default defineComponent({
 
       this.statusSubmit = { type: "Loading" };
 
-      const parsed = TodoItem.safeParse({
+      const dirty: TodoItem = {
         id: v4(),
         text: this.text,
         status: { type: "Active" },
-      });
+        createdAt: new Date(),
+      };
+
+      const parsed = TodoItem.safeParse(dirty);
 
       if (!parsed.success) {
         this.focusTextInput();
@@ -249,7 +274,7 @@ export default defineComponent({
       this.statusSubmit = { type: "Success", data: undefined };
       this.text = "";
       this.items.push(parsed.data);
-      this.getItems();
+      // this.getItems();
     },
   },
 });

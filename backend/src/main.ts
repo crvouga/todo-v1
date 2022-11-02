@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import {
   endpoints,
-  TodoItemDeleteQuery,
+  TodoItemDeleteParams,
   TodoItemsGot,
   TodoItem,
 } from "./shared";
@@ -52,7 +52,7 @@ app.post(endpoints["/todo-item"], async (req, res) => {
 });
 
 app.delete(endpoints["/todo-item"], async (req, res) => {
-  const result = TodoItemDeleteQuery.safeParse(req.query);
+  const result = TodoItemDeleteParams.safeParse(req.query);
 
   if (!result.success) {
     res.status(400).json(result.error).end();
