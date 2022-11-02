@@ -25,6 +25,18 @@ export const TodoItemStatus = z.discriminatedUnion("type", [
 
 export type TodoItemStatus = z.infer<typeof TodoItemStatus>;
 
+export const toggleStatus = (status: TodoItemStatus): TodoItemStatus => {
+  switch (status.type) {
+    case "Active": {
+      return { type: "Completed" };
+    }
+
+    case "Completed": {
+      return { type: "Active" };
+    }
+  }
+};
+
 export const TodoItem = z.object({
   id: z.string().uuid(),
   text: z.string().min(4).max(100),
@@ -47,3 +59,11 @@ export const formatError = <Input>(error: SafeParseError<Input>): string => {
 export const TodoItemDeleteParams = z.object({
   itemId: z.string(),
 });
+
+export const TodoItemPatchParams = z.object({
+  itemId: z.string(),
+});
+export type TodoItemPatchParams = z.infer<typeof TodoItemPatchParams>;
+
+export const TodoItemPatch = TodoItem.partial();
+export type TodoItemPatch = z.infer<typeof TodoItemPatch>;

@@ -5,7 +5,10 @@ import {
   TodoItemDeleteParams,
   TodoItemsGot,
   TodoItem,
+  TodoItemPatchParams,
+  TodoItemPatch,
 } from "./shared";
+import { v4 } from "uuid";
 
 //
 //
@@ -32,7 +35,30 @@ app.get("/", (req, res) => {
 //
 //
 
-const todoItemMap = new Map<string, TodoItem>();
+const initial: TodoItem[] = [
+  {
+    id: v4(),
+    createdAt: new Date(),
+    status: { type: "Active" },
+    text: "Item A",
+  },
+  {
+    id: v4(),
+    createdAt: new Date(),
+    status: { type: "Active" },
+    text: "Item B",
+  },
+  {
+    id: v4(),
+    createdAt: new Date(),
+    status: { type: "Active" },
+    text: "Item C",
+  },
+];
+
+const todoItemMap = new Map<string, TodoItem>(
+  initial.map((item) => [item.id, item])
+);
 
 app.post(endpoints["/todo-item"], async (req, res) => {
   const result = TodoItem.safeParse(req.body);
@@ -66,6 +92,39 @@ app.delete(endpoints["/todo-item"], async (req, res) => {
   await timeout(2000);
 
   res.status(201).end();
+});
+
+app.patch(endpoints["/todo-item"], async (req, res) => {
+  const params = TodoItemPatchParams.safeParse(req.query);
+  if (!params.success) {
+    res.status(400).json(params.error).end();
+    return;
+  }
+
+  const patch = TodoItemPatch.safeParse(req.body);
+
+  if (!patch.success) {
+    res.status(400).json(patch.error).end();
+    return;
+  }
+
+  const item = todoItemMap.get(params.data.itemId);
+
+  if (!item) {
+    res.status(404).end();
+    return;
+  }
+
+  const itemNew: TodoItem = {
+    ...item,
+    ...patch.data,
+  };
+
+  todoItemMap.set(itemNew.id, itemNew);
+
+  await timeout(1000);
+
+  res.status(204).end();
 });
 
 app.get(endpoints["/todo-item"], async (_req, res) => {

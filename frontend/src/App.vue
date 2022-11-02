@@ -13,7 +13,7 @@
     <!-- 
 
 
-    Input
+    Text Input
 
 
    -->
@@ -22,7 +22,7 @@
         <input
           ref="text"
           v-model="text"
-          class="input input-md input-bordered flex-1"
+          class="input input-md input-bordered flex-1 input-primary"
           :class="{
             'input-error': statusSubmit.type === 'Error',
           }"
@@ -47,6 +47,14 @@
         {{ statusSubmit.type === "Error" ? statusSubmit.error : "" }}
       </p>
 
+      <!-- 
+
+
+        Filter Input
+
+
+       -->
+
       <div class="btn-group">
         <button
           v-for="filter in allFilters"
@@ -69,16 +77,18 @@
    -->
 
     <div class="flex flex-col items-center justify-center flex-1 w-full pb-16">
-      <div
-        v-if="statusLoad.type === 'Error'"
-        class="alert alert-error shadow-lg"
-      >
-        {{ statusLoad.type === "Error" ? statusLoad.error : "" }}
+      <div class="px-4 w-full">
+        <div
+          v-if="statusLoad.type === 'Error'"
+          class="alert alert-error shadow-lg"
+        >
+          {{ statusLoad.type === "Error" ? statusLoad.error : "" }}
+        </div>
       </div>
 
       <p
-        v-if="statusLoad.type !== 'Loading' && items.length === 0"
-        class="opacity-75"
+        v-if="statusLoad.type === 'Success' && items.length === 0"
+        class="opacity-75 py-4"
       >
         No items found.
       </p>
@@ -87,11 +97,37 @@
         <li
           v-for="item in items"
           v-bind:key="item.id"
-          class="w-full p-4 px-6 flex items-center text-left"
+          class="w-full flex items-center pr-6"
         >
-          <span class="flex-1 text-lg font-bold">
-            {{ item.text }}
-          </span>
+          <div
+            class="active:bg-gray-200 hover:bg-gray-100 flex-1 flex items-center p-4 pl-6 cursor-pointer"
+            @click="toggleItem({ itemId: item.id })"
+          >
+            <input
+              v-if="
+                !(
+                  statusToggleItem.type === 'Loading' &&
+                  statusToggleItem.itemId === item.id
+                )
+              "
+              type="checkbox"
+              :checked="item.status.type === 'Completed'"
+              class="checkbox checkbox-sm checkbox-primary mr-2"
+              @click.prevent=""
+            />
+
+            <Spinner
+              childClass="w-6 h-6"
+              v-if="
+                statusToggleItem.type === 'Loading' &&
+                statusToggleItem.itemId === item.id
+              "
+            />
+
+            <span class="flex-1 text-xl font-semibold">
+              {{ item.text }}
+            </span>
+          </div>
           <button
             class="btn btn-outline btn-error btn-xs"
             :class="{
@@ -99,14 +135,14 @@
                 statusDeleteItem.type === 'Loading' &&
                 statusDeleteItem.itemId === item.id,
             }"
-            @click="deleteItem({ itemId: item.id })"
+            @click.stop.prevent.self="deleteItem({ itemId: item.id })"
           >
             Delete
           </button>
         </li>
       </ol>
 
-      <spinner class="p-4" v-if="statusLoad.type === 'Loading'" />
+      <Spinner class="p-4" v-if="statusLoad.type === 'Loading'" />
     </div>
 
     <!-- 
@@ -127,6 +163,9 @@ import {
   TodoItemsGot,
   TodoItemDeleteParams,
   TodoItem,
+  toggleStatus,
+  TodoItemPatchParams,
+  TodoItemPatch,
 } from "./shared";
 import Spinner from "./Spinner.vue";
 
@@ -135,6 +174,7 @@ type Data = {
   statusSubmit: RemoteData<string, undefined>;
   statusLoad: RemoteData<string, undefined>;
   statusDeleteItem: RemoteData<string, undefined> & { itemId: string };
+  statusToggleItem: RemoteData<string, undefined> & { itemId: string };
   items: TodoItem[];
   currentFilter: Filter;
   allFilters: Filter[];
@@ -144,7 +184,7 @@ type Filter = "All" | "Active" | "Completed";
 
 export default defineComponent({
   components: {
-    spinner: Spinner,
+    Spinner: Spinner,
   },
 
   data(): Data {
@@ -154,6 +194,7 @@ export default defineComponent({
       statusSubmit: { type: "NotAsked" },
       statusLoad: { type: "NotAsked" },
       statusDeleteItem: { type: "NotAsked", itemId: "None" },
+      statusToggleItem: { type: "NotAsked", itemId: "None" },
       currentFilter: "All",
       allFilters: ["All", "Active", "Completed"],
     };
@@ -177,6 +218,60 @@ export default defineComponent({
     focusTextInput() {
       const textElement = this.$refs.text as HTMLInputElement;
       textElement.focus();
+    },
+
+    async toggleItem({ itemId }: { itemId: string }) {
+      const item = this.items.find((item) => item.id === itemId);
+
+      if (!item) {
+        return;
+      }
+
+      const params: TodoItemPatchParams = {
+        itemId: item.id,
+      };
+
+      const parsedParams = TodoItemPatchParams.safeParse(params);
+
+      if (!parsedParams.success) {
+        return;
+      }
+
+      const statusPatch = toggleStatus(item.status);
+
+      const patch: TodoItemPatch = {
+        status: statusPatch,
+      };
+
+      const parsedPayload = TodoItemPatch.safeParse(patch);
+
+      if (!parsedPayload.success) {
+        return;
+      }
+
+      this.statusToggleItem = { type: "Loading", itemId };
+
+      const patched = await Api.patch({
+        endpoint: "/todo-item",
+        json: parsedPayload.data,
+        params: parsedParams.data,
+      });
+
+      if (patched.type === "Err") {
+        this.statusToggleItem = { type: "Error", error: patched.error, itemId };
+        return;
+      }
+
+      this.statusToggleItem = { type: "Success", data: undefined, itemId };
+      this.items = this.items.map((item) => {
+        if (item.id === itemId) {
+          return {
+            ...item,
+            status: statusPatch,
+          };
+        }
+        return item;
+      });
     },
 
     async deleteItem({ itemId }: { itemId: string }) {
@@ -207,6 +302,7 @@ export default defineComponent({
 
       this.statusDeleteItem = { type: "Success", itemId, data: undefined };
       this.items = this.items.filter((item) => item.id !== itemId);
+      this.getItems();
     },
 
     async getItems() {
@@ -274,7 +370,7 @@ export default defineComponent({
       this.statusSubmit = { type: "Success", data: undefined };
       this.text = "";
       this.items.push(parsed.data);
-      // this.getItems();
+      this.getItems();
     },
   },
 });
