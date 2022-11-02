@@ -31,7 +31,7 @@ export default defineComponent({
   },
   data() {
     return {
-      classes: `${this.$props.childClass} mr-2 w-10 h-10 text-gray-100 animate-spin dark:text-gray-600 fill-primary`,
+      classes: `mr-2 w-10 h-10 text-gray-100 animate-spin dark:text-gray-600 fill-primary ${this.$props.childClass}`,
     };
   },
 });

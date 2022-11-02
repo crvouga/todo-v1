@@ -122,7 +122,7 @@
             />
 
             <Spinner
-              childClass="w-6 h-6"
+              childClass="w-5 h-5"
               v-if="
                 statusToggleItem.type === 'Loading' &&
                 statusToggleItem.itemId === item.id
@@ -141,7 +141,7 @@
           <button
             class="btn btn-outline btn-error btn-xs"
             :class="{
-              loading:
+              'loading cursor-wait':
                 statusDeleteItem.type === 'Loading' &&
                 statusDeleteItem.itemId === item.id,
             }"
