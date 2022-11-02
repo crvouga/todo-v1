@@ -1,36 +1,39 @@
 <template>
-  <div class="flex items-center justify-center gap-2">
-    <input
-      v-model="text"
-      class="input input-md input-bordered flex-1"
-      :class="{
-        'input-error': status.type === 'ValidationError',
-      }"
-      placeholder="What is there todo?"
-      @input="inputText"
-    />
-    <button
-      @click="submit"
-      class="btn btn-primary"
-      :class="{ loading: status.type === 'Loading' }"
-    >
-      Submit
-    </button>
-  </div>
+  <div class="flex flex-col items-center justify-center max-w-xl mx-auto p-4">
+    <div class="flex items-center justify-center gap-2 w-full">
+      <input
+        v-model="text"
+        class="input input-md input-bordered flex-1"
+        :class="{
+          'input-error': status.type === 'ValidationError',
+        }"
+        placeholder="What is there todo?"
+        @input="inputText"
+      />
+      <button
+        @click="submit"
+        class="btn btn-primary"
+        :class="{ loading: status.type === 'Loading' }"
+      >
+        Submit
+      </button>
+    </div>
 
-  <p class="pt-1 text-red-500">
-    {{
-      status.type === "ValidationError" || status.type === "ServerError"
-        ? status.message
-        : ""
-    }}
-  </p>
+    <p class="pt-1 text-red-500">
+      {{
+        status.type === "ValidationError" || status.type === "ServerError"
+          ? status.message
+          : ""
+      }}
+    </p>
+  </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
 import { v4 } from "uuid";
 import { TodoItem, endpoints } from "./shared";
+import { apiFetch } from "./backend-api";
 
 type Data = {
   text: string;
@@ -56,6 +59,7 @@ export default defineComponent({
         this.status = { type: "NotAsked" };
       }
     },
+
     async submit() {
       if (this.status.type === "Loading") {
         return;
@@ -63,13 +67,13 @@ export default defineComponent({
 
       this.status = { type: "Loading" };
 
-      const result = TodoItem.safeParse({
+      const parseResult = TodoItem.safeParse({
         id: v4(),
         text: this.text,
       });
 
-      if (!result.success) {
-        const message = result.error.issues
+      if (!parseResult.success) {
+        const message = parseResult.error.issues
           .map((issue) => issue.message)
           .join(", ");
 
@@ -80,30 +84,23 @@ export default defineComponent({
         return;
       }
 
-      const todoItemNew = result.data;
+      const apiResult = await apiFetch({
+        method: "POST",
+        endpoint: endpoints.postTodoItem,
+        json: parseResult.data,
+      });
 
-      try {
-        const response = await fetch(
-          `http://localhost:5000${endpoints.postTodoItem}`,
-          {
-            method: "POST",
-            body: JSON.stringify(todoItemNew),
-          }
-        );
-
-        if (response.ok) {
-          this.status = { type: "Success" };
-          return;
-        }
+      if (apiResult.type === "Err") {
         this.status = {
           type: "ServerError",
-          message: "The server response was not ok",
+          message: String(apiResult.error),
         };
-        return;
-      } catch (error) {
-        this.status = { type: "ServerError", message: String(error) };
+
         return;
       }
+
+      this.status = { type: "Success" };
+      this.text = "";
     },
   },
 });

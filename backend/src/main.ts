@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { endpoints } from "./shared";
+import { endpoints, TodoItem } from "./shared";
 
 //
 //
@@ -25,12 +25,15 @@ app.get("/", (req, res) => {
   res.json({ message: "Hello from the backend" });
 });
 
-app.get("/api/test", (req, res) => {
-  res.json({ message: "Hello from backend. /api/test" });
-});
-
 app.post(endpoints.postTodoItem, (req, res) => {
-  console.log("POST TODO", req.body.text, req.body.id);
+  const result = TodoItem.safeParse(req.body);
+
+  if (!result.success) {
+    res.status(400).json(result.error).end();
+    return;
+  }
+
+  const todoItemNew = result.data;
 
   setTimeout(() => {
     res.status(201).end();
