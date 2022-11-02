@@ -1,107 +1,222 @@
 <template>
-  <div class="flex flex-col items-center justify-center max-w-xl mx-auto p-4">
+  <div class="toast">
+    <div class="alert alert-error w-full w-max-xs">
+      <div>
+        <span>New message arrived.</span>
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="flex flex-col items-center justify-center max-w-xl w-full h-full mx-auto p-4"
+  >
+    <!-- 
+
+
+    Input
+
+
+   -->
     <div class="flex items-center justify-center gap-2 w-full">
       <input
+        ref="text"
         v-model="text"
         class="input input-md input-bordered flex-1"
         :class="{
-          'input-error': status.type === 'ValidationError',
+          'input-error': statusSubmit.type === 'Error',
         }"
-        placeholder="What is there todo?"
+        placeholder="What todo?"
         @input="inputText"
       />
       <button
         @click="submit"
         class="btn btn-primary"
-        :class="{ loading: status.type === 'Loading' }"
+        :class="{ loading: statusSubmit.type === 'Loading' }"
       >
         Submit
       </button>
     </div>
 
-    <p class="pt-1 text-red-500">
-      {{
-        status.type === "ValidationError" || status.type === "ServerError"
-          ? status.message
-          : ""
-      }}
+    <p class="pt-2 w-full text-red-500">
+      {{ statusSubmit.type === "Error" ? statusSubmit.error : "" }}
     </p>
+
+    <!-- 
+
+
+    List
+
+
+   -->
+
+    <div class="flex flex-col items-center justify-center flex-1 w-full">
+      <div
+        v-if="statusLoad.type === 'Error'"
+        class="alert alert-error shadow-lg"
+      >
+        {{ statusLoad.type === "Error" ? statusLoad.error : "" }}
+      </div>
+
+      <ol class="flex flex-col items-center justify-center w-full">
+        <li
+          v-for="item in items"
+          v-bind:key="item.id"
+          class="w-full p-4 flex items-center text-left"
+        >
+          <span class="flex-1">
+            {{ item.text }}
+          </span>
+          <button
+            class="btn btn-outline btn-error btn-xs"
+            :class="{ loading: statusDeleteItem.type === 'Loading' }"
+            @click="deleteItem({ itemId: item.id })"
+          >
+            Delete
+          </button>
+        </li>
+      </ol>
+
+      <spinner class="p-8" v-if="statusLoad.type === 'Loading'" />
+    </div>
+
+    <!-- 
+
+
+
+
+     -->
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
 import { v4 } from "uuid";
-import { TodoItem, endpoints } from "./shared";
-import { apiFetch } from "./backend-api";
+import { defineComponent } from "vue";
+import Api from "./api";
+import { formatError, GetTodoItemsRes, TodoItem } from "./shared";
+import Spinner from "./Spinner.vue";
 
 type Data = {
   text: string;
-  status:
-    | { type: "NotAsked" }
-    | { type: "Loading" }
-    | { type: "Success" }
-    | { type: "ValidationError"; message: string }
-    | { type: "ServerError"; message: string };
+  statusSubmit: RemoteData<string, undefined>;
+  statusLoad: RemoteData<string, undefined>;
+  statusDeleteItem: RemoteData<string, undefined>;
+  items: TodoItem[];
 };
 
 export default defineComponent({
+  components: {
+    spinner: Spinner,
+  },
+
   data(): Data {
     return {
-      status: { type: "NotAsked" },
       text: "",
+      items: [],
+      statusSubmit: { type: "NotAsked" },
+      statusLoad: { type: "NotAsked" },
+      statusDeleteItem: { type: "NotAsked" },
     };
+  },
+
+  async mounted() {
+    await this.load();
   },
 
   methods: {
     inputText() {
-      if (this.status.type === "ValidationError") {
-        this.status = { type: "NotAsked" };
+      if (this.statusSubmit.type === "Error") {
+        this.statusSubmit = { type: "NotAsked" };
       }
+    },
+
+    focusTextInput() {
+      const textElement = this.$refs.text as HTMLInputElement;
+      textElement.focus();
+    },
+
+    async deleteItem({ itemId }: { itemId: string }) {
+      this.statusDeleteItem = { type: "Loading" };
+
+      const deleted = await Api.delete({ endpoint: "/todo-item" });
+
+      if (deleted.type === "Err") {
+        this.statusDeleteItem = { type: "Error", error: deleted.error };
+        return;
+      }
+
+      this.statusDeleteItem = { type: "Success", data: undefined };
+      this.items = this.items.filter((item) => item.id !== itemId);
+    },
+
+    async load() {
+      this.statusLoad = { type: "Loading" };
+
+      const got = await Api.get({ endpoint: "/todo-item" });
+
+      if (got.type === "Err") {
+        this.statusLoad = { type: "Error", error: got.error };
+        return;
+      }
+
+      const parsed = GetTodoItemsRes.safeParse(got.json);
+
+      if (!parsed.success) {
+        this.statusLoad = {
+          type: "Error",
+          error: formatError(parsed),
+        };
+        return;
+      }
+
+      this.statusLoad = { type: "Success", data: undefined };
+      this.items = parsed.data.items;
     },
 
     async submit() {
-      if (this.status.type === "Loading") {
+      if (this.statusSubmit.type === "Loading") {
         return;
       }
 
-      this.status = { type: "Loading" };
+      this.statusSubmit = { type: "Loading" };
 
-      const parseResult = TodoItem.safeParse({
+      const parsed = TodoItem.safeParse({
         id: v4(),
         text: this.text,
+        status: { type: "Active" },
       });
 
-      if (!parseResult.success) {
-        const message = parseResult.error.issues
-          .map((issue) => issue.message)
-          .join(", ");
+      if (!parsed.success) {
+        this.focusTextInput();
 
-        this.status = {
-          type: "ValidationError",
-          message: message,
-        };
-        return;
-      }
-
-      const apiResult = await apiFetch({
-        method: "POST",
-        endpoint: endpoints.postTodoItem,
-        json: parseResult.data,
-      });
-
-      if (apiResult.type === "Err") {
-        this.status = {
-          type: "ServerError",
-          message: String(apiResult.error),
+        this.statusSubmit = {
+          type: "Error",
+          error: parsed.error.issues.map((i) => i.message).join(","),
         };
 
         return;
       }
 
-      this.status = { type: "Success" };
+      const posted = await Api.post({
+        endpoint: "/todo-item",
+        json: parsed.data,
+      });
+
+      if (posted.type === "Err") {
+        this.statusSubmit = { type: "Error", error: posted.error };
+
+        return;
+      }
+
+      this.statusSubmit = { type: "Success", data: undefined };
       this.text = "";
+      this.load();
     },
   },
 });
+
+type RemoteData<TError, TData> =
+  | { type: "NotAsked" }
+  | { type: "Loading" }
+  | { type: "Success"; data: TData }
+  | { type: "Error"; error: TError };
 </script>

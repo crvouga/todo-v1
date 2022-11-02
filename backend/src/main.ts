@@ -1,10 +1,11 @@
 import express from "express";
 import cors from "cors";
-import { endpoints, TodoItem } from "./shared";
+import { endpoints, GetTodoItemsRes, TodoItem } from "./shared";
 
 //
 //
 //
+// Server
 //
 //
 //
@@ -14,18 +15,21 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-//
-//
-//
-//
-//
-//
-
 app.get("/", (req, res) => {
-  res.json({ message: "Hello from the backend" });
+  res.json({ todoItems: Object.fromEntries(todoItemMap.entries()) });
 });
 
-app.post(endpoints.postTodoItem, (req, res) => {
+//
+//
+//
+// Todo Items
+//
+//
+//
+
+const todoItemMap = new Map<string, TodoItem>();
+
+app.post(endpoints["/todo-item"], async (req, res) => {
   const result = TodoItem.safeParse(req.body);
 
   if (!result.success) {
@@ -35,14 +39,27 @@ app.post(endpoints.postTodoItem, (req, res) => {
 
   const todoItemNew = result.data;
 
-  setTimeout(() => {
-    res.status(201).end();
-  }, 2000);
+  todoItemMap.set(todoItemNew.id, todoItemNew);
+
+  await timeout(2000);
+
+  res.status(201).end();
+});
+
+app.get(endpoints["/todo-item"], async (_req, res) => {
+  const json: GetTodoItemsRes = {
+    items: Array.from(todoItemMap.values()),
+  };
+
+  await timeout(2000);
+
+  res.json(json);
 });
 
 //
 //
 //
+// Run
 //
 //
 //
@@ -50,5 +67,20 @@ app.post(endpoints.postTodoItem, (req, res) => {
 const port = Number(process.env.PORT) || Number(process.env.port) || 5000;
 
 app.listen(port, () => {
-  console.log(`Server listening.\n http://localhost:${port}`);
+  console.clear();
+  console.log(`Server started. http://localhost:${port}`);
 });
+
+//
+//
+//
+// Helpers
+//
+//
+//
+
+const timeout = (ms: number) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+};
