@@ -8,7 +8,7 @@
   </div>
 
   <div
-    class="flex flex-col items-center justify-center max-w-xl w-full h-full mx-auto"
+    class="flex flex-col items-center justify-center max-w-md w-full h-full mx-auto"
   >
     <!-- 
 
@@ -35,15 +35,15 @@
         </p> -->
 
         <button
-          @click="submit"
-          class="btn btn-primary"
+          @click="postItem"
+          class="btn btn-primary w-32"
           :class="{ loading: statusSubmit.type === 'Loading' }"
         >
           Submit
         </button>
       </div>
 
-      <p class="pt-2 w-full text-red-500">
+      <p class="pt-2 text-sm text-red-500">
         {{ statusSubmit.type === "Error" ? statusSubmit.error : "" }}
       </p>
     </div>
@@ -63,15 +63,22 @@
         {{ statusLoad.type === "Error" ? statusLoad.error : "" }}
       </div>
 
-      <spinner class="p-8" v-if="statusLoad.type === 'Loading'" />
+      <spinner class="p-4" v-if="statusLoad.type === 'Loading'" />
+
+      <p
+        v-if="statusLoad.type !== 'Loading' && items.length === 0"
+        class="opacity-75"
+      >
+        No todo items found.
+      </p>
 
       <ol class="flex flex-col items-center justify-center w-full">
         <li
           v-for="item in items"
           v-bind:key="item.id"
-          class="w-full p-4 flex items-center text-left"
+          class="w-full p-4 px-6 flex items-center text-left"
         >
-          <span class="flex-1">
+          <span class="flex-1 text-lg font-bold">
             {{ item.text }}
           </span>
           <button
@@ -135,7 +142,7 @@ export default defineComponent({
   },
 
   async mounted() {
-    await this.load();
+    await this.getItems();
   },
 
   methods: {
@@ -180,7 +187,7 @@ export default defineComponent({
       this.items = this.items.filter((item) => item.id !== itemId);
     },
 
-    async load() {
+    async getItems() {
       this.statusLoad = { type: "Loading" };
 
       const got = await Api.get({ endpoint: "/todo-item" });
@@ -204,7 +211,7 @@ export default defineComponent({
       this.items = parsed.data.items;
     },
 
-    async submit() {
+    async postItem() {
       if (this.statusSubmit.type === "Loading") {
         return;
       }
@@ -241,7 +248,8 @@ export default defineComponent({
 
       this.statusSubmit = { type: "Success", data: undefined };
       this.text = "";
-      this.load();
+      this.items.push(parsed.data);
+      this.getItems();
     },
   },
 });
