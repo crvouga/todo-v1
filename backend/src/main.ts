@@ -122,7 +122,7 @@ app.patch(endpoints["/todo-item"], async (req, res) => {
 
   todoItemMap.set(itemNew.id, itemNew);
 
-  await timeout(1000);
+  await timeout(1000 / 2);
 
   res.status(204).end();
 });

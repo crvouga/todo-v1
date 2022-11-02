@@ -100,7 +100,12 @@
           class="w-full flex items-center pr-6"
         >
           <div
-            class="active:bg-gray-200 hover:bg-gray-100 flex-1 flex items-center p-4 pl-6 cursor-pointer"
+            class="flex-1 flex items-center p-4 pl-6"
+            :class="{
+              'cursor-wait': statusToggleItem.type === 'Loading',
+              'cursor-pointer active:bg-gray-200 hover:bg-gray-100':
+                statusToggleItem.type !== 'Loading',
+            }"
             @click="toggleItem({ itemId: item.id })"
           >
             <input
@@ -124,7 +129,12 @@
               "
             />
 
-            <span class="flex-1 text-xl font-semibold">
+            <span
+              class="flex-1 text-xl font-semibold"
+              :class="{
+                'line-through opacity-50': item.status.type === 'Completed',
+              }"
+            >
               {{ item.text }}
             </span>
           </div>
@@ -221,6 +231,10 @@ export default defineComponent({
     },
 
     async toggleItem({ itemId }: { itemId: string }) {
+      if (this.statusToggleItem.type === "Loading") {
+        return;
+      }
+
       const item = this.items.find((item) => item.id === itemId);
 
       if (!item) {
