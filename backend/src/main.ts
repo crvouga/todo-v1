@@ -39,20 +39,38 @@ const initial: TodoItem[] = [
   {
     id: v4(),
     createdAt: new Date(),
-    status: { type: "Active" },
+    isCompleted: false,
     text: "Item A",
   },
   {
     id: v4(),
     createdAt: new Date(),
-    status: { type: "Active" },
+    isCompleted: false,
     text: "Item B",
   },
   {
     id: v4(),
     createdAt: new Date(),
-    status: { type: "Active" },
+    isCompleted: false,
     text: "Item C",
+  },
+  {
+    id: v4(),
+    createdAt: new Date(),
+    isCompleted: false,
+    text: "Item D",
+  },
+  {
+    id: v4(),
+    createdAt: new Date(),
+    isCompleted: false,
+    text: "Item E",
+  },
+  {
+    id: v4(),
+    createdAt: new Date(),
+    isCompleted: false,
+    text: "Item F",
   },
 ];
 
