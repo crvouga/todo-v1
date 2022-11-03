@@ -3,13 +3,16 @@ import { v4 } from "uuid";
 import { defineComponent } from "vue";
 import Api from "./api";
 import {
+  formatSort,
   formatError,
   TodoItem,
   TodoItemDeleteParams,
   TodoItemFilter,
   TodoItemPatch,
   TodoItemPatchParams,
-  TodoItemsGot,
+  TodoItemGot,
+  TodoItemGetParams,
+  TodoItemSort,
 } from "./shared";
 import Spinner from "./Spinner.vue";
 
@@ -20,8 +23,10 @@ type Data = {
   statusDeleteItem: RemoteData<string, undefined> & { itemId: string };
   statusToggleItem: RemoteData<string, undefined> & { itemId: string };
   items: TodoItem[];
-  currentFilter: TodoItemFilter;
+  filter: TodoItemFilter;
   allFilters: TodoItemFilter[];
+  sort: TodoItemSort;
+  allSorts: TodoItemSort[];
 };
 
 export default defineComponent({
@@ -33,13 +38,57 @@ export default defineComponent({
     return {
       text: "",
       items: [],
+      //
       statusSubmit: { type: "NotAsked" },
       statusLoad: { type: "NotAsked" },
       statusDeleteItem: { type: "NotAsked", itemId: "None" },
       statusToggleItem: { type: "NotAsked", itemId: "None" },
-      currentFilter: "All",
+      //
+      filter: "All",
       allFilters: ["All", "Active", "Completed"],
+      //
+      sort: "NewestFirst",
+      allSorts: ["NewestFirst", "OldestFirst"],
     };
+  },
+
+  watch: {
+    currentFilter() {
+      this.getItems();
+    },
+    text() {
+      if (this.statusSubmit.type === "Error") {
+        this.statusSubmit = { type: "NotAsked" };
+      }
+    },
+
+    statusSubmit(
+      statusNew: Data["statusSubmit"],
+      statusOld: Data["statusSubmit"]
+    ) {
+      if (statusOld.type !== statusNew.type && statusNew.type === "Error") {
+        const textElement = this.$refs.text as HTMLInputElement;
+        textElement.focus();
+      }
+    },
+  },
+
+  computed: {
+    filteredItems() {
+      if (this.filter === "Active") {
+        return this.items.filter((item) => !item.isCompleted);
+      }
+
+      if (this.filter === "Completed") {
+        return this.items.filter((item) => item.isCompleted);
+      }
+
+      return this.items;
+    },
+
+    allSortsFormatted() {
+      return this.allSorts.map((sort) => [sort, formatSort(sort)] as const);
+    },
   },
 
   async mounted() {
@@ -47,22 +96,15 @@ export default defineComponent({
   },
 
   methods: {
-    inputFilter(filter: Data["currentFilter"]) {
-      this.currentFilter = filter;
+    inputFilter(filter: Data["filter"]) {
+      this.filter = filter;
     },
 
-    inputText() {
-      if (this.statusSubmit.type === "Error") {
-        this.statusSubmit = { type: "NotAsked" };
-      }
+    inputSort(sort: Data["sort"]) {
+      this.sort = sort;
     },
 
-    focusTextInput() {
-      const textElement = this.$refs.text as HTMLInputElement;
-      textElement.focus();
-    },
-
-    async toggleItem({ itemId }: { itemId: string }) {
+    async patchItem({ itemId }: { itemId: string }) {
       if (this.statusToggleItem.type === "Loading") {
         return;
       }
@@ -77,30 +119,18 @@ export default defineComponent({
         itemId: item.id,
       };
 
-      const parsedParams = TodoItemPatchParams.safeParse(params);
-
-      if (!parsedParams.success) {
-        return;
-      }
-
       const patchedIsCompleted = !item.isCompleted;
 
       const patch: TodoItemPatch = {
         isCompleted: patchedIsCompleted,
       };
 
-      const parsedPayload = TodoItemPatch.safeParse(patch);
-
-      if (!parsedPayload.success) {
-        return;
-      }
-
       this.statusToggleItem = { type: "Loading", itemId };
 
       const patched = await Api.patch({
         endpoint: "/todo-item",
-        json: parsedPayload.data,
-        params: parsedParams.data,
+        json: patch,
+        params,
       });
 
       if (patched.type === "Err") {
@@ -154,14 +184,19 @@ export default defineComponent({
     async getItems() {
       this.statusLoad = { type: "Loading" };
 
-      const got = await Api.get({ endpoint: "/todo-item" });
+      const params: TodoItemGetParams = {
+        filter: this.filter,
+        sort: this.sort,
+      };
+
+      const got = await Api.get({ endpoint: "/todo-item", params });
 
       if (got.type === "Err") {
         this.statusLoad = { type: "Error", error: got.error };
         return;
       }
 
-      const parsed = TodoItemsGot.safeParse(got.json);
+      const parsed = TodoItemGot.safeParse(got.json);
 
       if (!parsed.success) {
         this.statusLoad = {
@@ -192,8 +227,6 @@ export default defineComponent({
       const parsed = TodoItem.safeParse(dirty);
 
       if (!parsed.success) {
-        this.focusTextInput();
-
         this.statusSubmit = {
           type: "Error",
           error: parsed.error.issues.map((i) => i.message).join(","),
@@ -257,7 +290,6 @@ type RemoteData<TError, TData> =
             'input-error': statusSubmit.type === 'Error',
           }"
           placeholder="What todo?"
-          @input="inputText"
         />
         <!-- <p class="pt-1 flex">
           <kbd class="kbd kbd-sm mr-1">⌘</kbd>
@@ -285,15 +317,35 @@ type RemoteData<TError, TData> =
 
        -->
 
+      <div class="btn-group mb-4">
+        <button
+          v-for="filterItem in allFilters"
+          v-bind:key="filterItem"
+          :class="{ 'btn-active': filterItem === filter }"
+          class="btn btn-sm"
+          @click="inputFilter(filterItem)"
+        >
+          {{ filterItem }}
+        </button>
+      </div>
+
+      <!-- 
+
+
+        Sort Input
+
+
+       -->
+
       <div class="btn-group">
         <button
-          v-for="filter in allFilters"
-          v-bind:key="filter"
-          :class="{ 'btn-active': currentFilter === filter }"
+          v-for="sortItem in allSortsFormatted"
+          v-bind:key="sortItem[0]"
+          :class="{ 'btn-active': sortItem[0] === sort }"
           class="btn btn-sm"
-          @click="inputFilter(filter)"
+          @click="inputSort(sortItem[0])"
         >
-          {{ filter }}
+          {{ sortItem[1] }}
         </button>
       </div>
     </div>
@@ -317,19 +369,27 @@ type RemoteData<TError, TData> =
       </div>
 
       <p
-        v-if="statusLoad.type === 'Success' && items.length === 0"
+        v-if="statusLoad.type === 'Success' && filteredItems.length === 0"
         class="opacity-75 h-64 text-xl font-bold flex items-center justify-center"
       >
-        There is nothing todo.
+        {{
+          items.length === 0
+            ? "There is nothing todo"
+            : filter === "Active"
+            ? "All items are completed"
+            : filter === "Completed"
+            ? "No items are completed"
+            : "There is nothing todo."
+        }}
       </p>
 
+      <!-- name="list" -->
       <TransitionGroup
-        name="list"
         tag="ol"
         class="flex flex-col items-center justify-center w-full relative"
       >
         <li
-          v-for="item in items"
+          v-for="item in filteredItems"
           v-bind:key="item.id"
           class="inner w-full flex items-center pr-6"
         >
@@ -343,7 +403,7 @@ type RemoteData<TError, TData> =
                 statusToggleItem.type === 'Loading' &&
                 statusToggleItem.itemId === item.id,
             }"
-            @click="toggleItem({ itemId: item.id })"
+            @click="patchItem({ itemId: item.id })"
           >
             <input
               type="checkbox"

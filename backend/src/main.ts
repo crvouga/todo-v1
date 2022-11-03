@@ -3,7 +3,7 @@ import cors from "cors";
 import {
   endpoints,
   TodoItemDeleteParams,
-  TodoItemsGot,
+  TodoItemGot,
   TodoItem,
   TodoItemPatchParams,
   TodoItemPatch,
@@ -148,7 +148,7 @@ app.patch(endpoints["/todo-item"], async (req, res) => {
 });
 
 app.get(endpoints["/todo-item"], async (_req, res) => {
-  const json: TodoItemsGot = {
+  const json: TodoItemGot = {
     items: Array.from(todoItemMap.values()),
   };
 

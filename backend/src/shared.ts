@@ -47,18 +47,32 @@ export const TodoItemSort = z.union([
 ]);
 export type TodoItemSort = z.infer<typeof TodoItemSort>;
 
+export const formatSort = (sort: TodoItemSort): string => {
+  switch (sort) {
+    case "NewestFirst": {
+      return "Newest First";
+    }
+
+    case "OldestFirst": {
+      return "Oldest First";
+    }
+  }
+};
+
 //
 //
 //
 
-export const TodoItemsGetParams = z.object({
+export const TodoItemGetParams = z.object({
   sort: TodoItemSort,
+  filter: TodoItemFilter,
 });
-export type TodoItemsGetParams = z.infer<typeof TodoItemsGetParams>;
-export const TodoItemsGot = z.object({
+export type TodoItemGetParams = z.infer<typeof TodoItemGetParams>;
+
+export const TodoItemGot = z.object({
   items: z.array(TodoItem),
 });
-export type TodoItemsGot = z.infer<typeof TodoItemsGot>;
+export type TodoItemGot = z.infer<typeof TodoItemGot>;
 
 //
 //

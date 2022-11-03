@@ -5,9 +5,21 @@ const devBackendUrl = "http://localhost:5000";
 
 const backendUrl = devBackendUrl;
 
-const get = async ({ endpoint }: { endpoint: keyof Endpoints }) => {
+type Params = string | URLSearchParams | Record<string, string> | string[][];
+
+const get = async ({
+  endpoint,
+  params,
+}: {
+  endpoint: keyof Endpoints;
+  params: Params;
+}) => {
   try {
-    const response = await fetch(`${backendUrl}${endpoints[endpoint]}`);
+    const searchParams = new URLSearchParams(params);
+
+    const response = await fetch(
+      `${backendUrl}${endpoints[endpoint]}?${searchParams.toString()}`
+    );
 
     if (!response.ok) {
       return { type: "Err", error: "Response was not ok" } as const;
@@ -53,7 +65,7 @@ const patch = async ({
   json,
 }: {
   endpoint: keyof Endpoints;
-  params: string | URLSearchParams | Record<string, string> | string[][];
+  params: Params;
   json: unknown;
 }) => {
   try {
@@ -84,7 +96,7 @@ const delete_ = async ({
   params,
 }: {
   endpoint: keyof Endpoints;
-  params: string | URLSearchParams | Record<string, string> | string[][];
+  params: Params;
 }) => {
   try {
     const searchParams = new URLSearchParams(params);
