@@ -60,6 +60,8 @@ const todoItemMap = new Map<string, TodoItem>(
   initial.map((item) => [item.id, item])
 );
 
+const duration = 500;
+
 app.post(endpoints["/todo-item"], async (req, res) => {
   const result = TodoItem.safeParse(req.body);
 
@@ -72,7 +74,7 @@ app.post(endpoints["/todo-item"], async (req, res) => {
 
   todoItemMap.set(todoItemNew.id, todoItemNew);
 
-  await timeout(2000);
+  await timeout(duration);
 
   res.status(201).end();
 });
@@ -89,7 +91,7 @@ app.delete(endpoints["/todo-item"], async (req, res) => {
 
   todoItemMap.delete(itemId);
 
-  await timeout(2000);
+  await timeout(duration);
 
   res.status(201).end();
 });
@@ -122,7 +124,7 @@ app.patch(endpoints["/todo-item"], async (req, res) => {
 
   todoItemMap.set(itemNew.id, itemNew);
 
-  await timeout(1000 / 2);
+  await timeout(1000 / 3);
 
   res.status(204).end();
 });
@@ -132,7 +134,7 @@ app.get(endpoints["/todo-item"], async (_req, res) => {
     items: Array.from(todoItemMap.values()),
   };
 
-  await timeout(2000);
+  await timeout(duration);
 
   res.json(json);
 });

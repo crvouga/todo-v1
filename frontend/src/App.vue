@@ -88,45 +88,44 @@
 
       <p
         v-if="statusLoad.type === 'Success' && items.length === 0"
-        class="opacity-75 py-4"
+        class="opacity-75 h-64 text-xl font-bold flex items-center justify-center"
       >
-        No items found.
+        There is nothing todo.
       </p>
 
       <ol class="flex flex-col items-center justify-center w-full">
         <li
           v-for="item in items"
           v-bind:key="item.id"
-          class="w-full flex items-center pr-6"
+          class="w-full flex items-center pr-6 relative"
         >
+          <div
+            v-if="
+              statusToggleItem.type === 'Loading' &&
+              statusToggleItem.itemId === item.id
+            "
+            class="absolute top-0 left-0 w-full h-full bg-gradient-to-t flex items-center justify-center"
+          >
+            <Spinner />
+          </div>
+
           <div
             class="flex-1 flex items-center p-4 pl-6"
             :class="{
               'cursor-wait': statusToggleItem.type === 'Loading',
               'cursor-pointer active:bg-gray-200 hover:bg-gray-100':
                 statusToggleItem.type !== 'Loading',
+              'opacity-50':
+                statusToggleItem.type === 'Loading' &&
+                statusToggleItem.itemId === item.id,
             }"
             @click="toggleItem({ itemId: item.id })"
           >
             <input
-              v-if="
-                !(
-                  statusToggleItem.type === 'Loading' &&
-                  statusToggleItem.itemId === item.id
-                )
-              "
               type="checkbox"
               :checked="item.status.type === 'Completed'"
               class="checkbox checkbox-sm checkbox-primary mr-2"
               @click.prevent=""
-            />
-
-            <Spinner
-              childClass="w-4 h-4"
-              v-if="
-                statusToggleItem.type === 'Loading' &&
-                statusToggleItem.itemId === item.id
-              "
             />
 
             <span
