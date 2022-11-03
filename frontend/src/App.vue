@@ -15,6 +15,7 @@ import {
   TodoItemSort,
 } from "./shared";
 import Spinner from "./Spinner.vue";
+import { formatFromNow } from "./format-from-now";
 
 type Data = {
   text: string;
@@ -27,6 +28,17 @@ type Data = {
   allFilters: TodoItemFilter[];
   sort: TodoItemSort;
   allSorts: TodoItemSort[];
+};
+
+type TodoItemFormatted = TodoItem & {
+  createdAtFormatted: string;
+};
+
+const formatTodoItem = (item: TodoItem): TodoItemFormatted => {
+  return {
+    ...item,
+    createdAtFormatted: formatFromNow(item.createdAt),
+  };
 };
 
 export default defineComponent({
@@ -74,16 +86,20 @@ export default defineComponent({
   },
 
   computed: {
-    filteredItems() {
+    filteredItems(): TodoItemFormatted[] {
       if (this.filter === "Active") {
-        return this.items.filter((item) => !item.isCompleted);
+        return this.items
+          .filter((item) => !item.isCompleted)
+          .map(formatTodoItem);
       }
 
       if (this.filter === "Completed") {
-        return this.items.filter((item) => item.isCompleted);
+        return this.items
+          .filter((item) => item.isCompleted)
+          .map(formatTodoItem);
       }
 
-      return this.items;
+      return this.items.map(formatTodoItem);
     },
 
     allSortsFormatted() {
@@ -383,11 +399,12 @@ type RemoteData<TError, TData> =
         }}
       </p>
 
-      <!-- name="list" -->
-      <TransitionGroup
+      <!-- <TransitionGroup
+        name="list"
         tag="ol"
         class="flex flex-col items-center justify-center w-full relative"
-      >
+      > -->
+      <ol class="flex flex-col items-center justify-center w-full relative">
         <li
           v-for="item in filteredItems"
           v-bind:key="item.id"
@@ -412,14 +429,24 @@ type RemoteData<TError, TData> =
               @click.prevent=""
             />
 
-            <span
-              class="flex-1 text-xl font-semibold"
-              :class="{
-                'line-through opacity-50': item.isCompleted,
-              }"
-            >
-              {{ item.text }}
-            </span>
+            <div class="flex-1">
+              <p
+                class="text-lg font-semibold"
+                :class="{
+                  'line-through opacity-50': item.isCompleted,
+                }"
+              >
+                {{ item.text }}
+              </p>
+              <p
+                class="text-xs opacity-75"
+                :class="{
+                  'line-through opacity-50': item.isCompleted,
+                }"
+              >
+                {{ item.createdAtFormatted }}
+              </p>
+            </div>
           </div>
           <button
             class="btn btn-outline btn-error btn-xs"
@@ -433,7 +460,8 @@ type RemoteData<TError, TData> =
             Delete
           </button>
         </li>
-      </TransitionGroup>
+      </ol>
+      <!-- </TransitionGroup> -->
 
       <Spinner class="p-4" v-if="statusLoad.type === 'Loading'" />
     </div>
