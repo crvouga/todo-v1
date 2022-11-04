@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { useMutation, useQuery } from "@tanstack/vue-query";
+import { useMutation, useQuery } from "@/utils";
 import TodoListApi from "@/todo/todo-list-api";
 import { ref } from "vue";
 
 const title = ref("");
 
-const postMutation = useMutation({
-  mutationFn: TodoListApi.post,
-});
+const mutationPost = useMutation(TodoListApi.post);
+
+const queryKey = ref("");
 
 const query = useQuery({
+  queryKey,
   queryFn: () => TodoListApi.get(),
 });
 </script>
@@ -25,8 +26,8 @@ const query = useQuery({
 
   <button
     class="btn btn-primary w-full"
-    :class="{ loading: postMutation.isLoading }"
-    @click="postMutation.mutate({ title })"
+    :class="{ loading: mutationPost.isLoading }"
+    @click="mutationPost.mutate({ title })"
   >
     Create New List
   </button>

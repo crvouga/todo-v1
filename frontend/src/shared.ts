@@ -46,6 +46,8 @@ export const TodoItemFilter = z.union([
 ]);
 export type TodoItemFilter = z.infer<typeof TodoItemFilter>;
 
+export const allFilters: TodoItemFilter[] = ["All", "Active", "Completed"];
+
 export const filterer =
   ({ filter }: { filter: TodoItemFilter }) =>
   (item: TodoItem) => {
@@ -85,6 +87,8 @@ export const sorter =
       }
     }
   };
+
+export const allSorts: TodoItemSort[] = ["NewestFirst", "OldestFirst"];
 
 export const formatSort = (sort: TodoItemSort): string => {
   switch (sort) {
@@ -131,6 +135,16 @@ export const TodoItemPatchParams = z.object({
 export type TodoItemPatchParams = z.infer<typeof TodoItemPatchParams>;
 export const TodoItemPatch = TodoItem.partial();
 export type TodoItemPatch = z.infer<typeof TodoItemPatch>;
+
+export const applyPatch = (item: TodoItem, patch: TodoItemPatch): TodoItem => {
+  return {
+    id: item.id,
+    createdAt: patch.createdAt === undefined ? item.createdAt : patch.createdAt,
+    isCompleted:
+      patch.isCompleted === undefined ? item.isCompleted : patch.isCompleted,
+    text: patch.text === undefined ? item.text : patch.text,
+  };
+};
 
 //
 //

@@ -1,31 +1,49 @@
 <script setup lang="ts">
+import Spinner from "@/components/Spinner.vue";
 import {
-  filterer,
-  sorter,
+  allFilters,
+  allSorts,
+  formatSort,
   type TodoItemFilter,
   type TodoItemSort,
 } from "@/shared";
-import { useMutation } from "@/utils/use-mutation";
-import { ref } from "vue";
-import TodoItemApi from "./todo-item-api";
+import { formatFromNow } from "@/utils";
+import { computed, onMounted, ref, watch } from "vue";
+import { useTodoItems } from "./todo-item-composable";
 
 const text = ref("");
 const filter = ref<TodoItemFilter>("All");
 const sort = ref<TodoItemSort>("NewestFirst");
 
-const query = useQuery({ queryFn: TodoItemApi.get });
-const mutationDelete = useMutation(TodoItemApi.delete);
-const mutationPatch = useMutation(TodoItemApi.patch);
-const mutationPost = useMutation(TodoItemApi.post);
+const {
+  items,
+  stateDelete,
+  stateGet,
+  statePatch,
+  statePost,
+  delete_,
+  get,
+  patch,
+  post,
+} = useTodoItems();
 
-const allFilters: TodoItemFilter[] = ["All", "Active", "Completed"];
-const allSorts: TodoItemSort[] = ["NewestFirst", "OldestFirst"];
+const itemsToShow = computed(() => {
+  return items.value.map((item) => item);
+});
 
-const items = query.mapOk([], (items) =>
-  items
-    .filter(filterer({ filter: filter.value }))
-    .sort(sorter({ sort: sort.value }))
-);
+onMounted(() => {
+  get({
+    filter: filter.value,
+    sort: sort.value,
+  });
+});
+
+watch([statePost, stateDelete, statePatch, filter, sort], () => {
+  get({
+    filter: filter.value,
+    sort: sort.value,
+  });
+});
 </script>
 
 <template>
@@ -33,26 +51,25 @@ const items = query.mapOk([], (items) =>
     <div class="w-full bg-inherit top-0 p-4">
       <div class="flex items-center justify-center gap-2 w-full">
         <input
-          ref="text"
           v-model="text"
           class="input input-md input-bordered flex-1 input-primary"
           :class="{
-            'input-error': mutationPost.isErr,
+            'input-error': statePost.type === 'Failure',
           }"
           placeholder="What todo?"
         />
 
         <button
-          @click="mutationPost.mutate({ text: text })"
+          @click="post({ text: text })"
           class="btn btn-primary w-32"
-          :class="{ loading: mutationPost.isLoading }"
+          :class="{ loading: statePost.type === 'Loading' }"
         >
           Submit
         </button>
       </div>
 
       <p class="py-2 text-sm text-red-500">
-        {{ mutationPost.mapErr("", (error) => error) }}
+        {{ statePost.type === "Failure" ? statePost.error : "" }}
       </p>
 
       <div class="btn-group mb-4">
@@ -70,28 +87,32 @@ const items = query.mapOk([], (items) =>
       <div class="btn-group">
         <button
           v-for="sortItem in allSorts"
-          v-bind:key="sortItem[0]"
-          :class="{ 'btn-active': sortItem[0] === sort }"
+          v-bind:key="sortItem"
+          :class="{ 'btn-active': sortItem === sort }"
           class="btn btn-sm"
+          @click="sort = sortItem"
         >
-          {{ sortItem[1] }}
+          {{ formatSort(sortItem) }}
         </button>
       </div>
     </div>
 
     <div class="flex flex-col items-center justify-center flex-1 w-full pb-16">
       <div class="px-4 w-full">
-        <div v-if="query.isError" class="alert alert-error shadow-lg">
-          {{ query.isError ? query.error : "" }}
+        <div
+          v-if="stateGet.type === 'Failure'"
+          class="alert alert-error shadow-lg"
+        >
+          {{ stateGet.type === "Failure" ? stateGet.error : "" }}
         </div>
       </div>
 
       <p
-        v-if="query.isOk"
+        v-if="(itemsToShow.length = 0)"
         class="opacity-75 h-64 text-xl font-bold flex items-center justify-center"
       >
         {{
-          items.length === 0
+          itemsToShow.length === 0
             ? "There is nothing todo"
             : filter === "Active"
             ? "All items are completed"
@@ -110,19 +131,15 @@ const items = query.mapOk([], (items) =>
           <div
             class="flex-1 flex items-center p-4 pl-6"
             :class="{
-              'cursor-wait': mutationPatch.isLoading,
+              'cursor-wait': statePatch.type === 'Loading',
               'cursor-pointer active:bg-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 dark:active:bg-gray-700':
-                !mutationPatch.isLoading,
-              'opacity-50': mutationPatch.mapParams(
-                false,
-                (params) => params.params.itemId === item.id
-              ),
+                statePatch.type !== 'Loading',
+              'opacity-50':
+                statePatch.type === 'Loading' &&
+                statePatch.params.itemId === item.id,
             }"
             @click="
-              mutationPatch.mutate({
-                params: { itemId: item.id },
-                body: { isCompleted: !item.isCompleted },
-              })
+              patch({ itemId: item.id }, { isCompleted: !item.isCompleted })
             "
           >
             <input
@@ -147,7 +164,7 @@ const items = query.mapOk([], (items) =>
                   'line-through opacity-50': item.isCompleted,
                 }"
               >
-                {{ item.createdAtFormatted }}
+                {{ formatFromNow(item.createdAt) }}
               </p>
             </div>
           </div>
@@ -155,20 +172,17 @@ const items = query.mapOk([], (items) =>
             class="btn btn-outline btn-error btn-xs"
             :class="{
               'loading cursor-wait':
-                mutationDelete.isErr &&
-                mutationDelete.mapParams(
-                  false,
-                  (params) => params.id === item.id
-                ),
+                stateDelete.type === 'Loading' &&
+                stateDelete.params.id === item.id,
             }"
-            @click="mutationDelete.mutate({ id: item.id })"
+            @click="delete_({ id: item.id })"
           >
             Delete
           </button>
         </li>
       </ol>
 
-      <Spinner class="p-4" v-if="query.isLoading" />
+      <Spinner class="p-4" v-if="stateGet.type === 'Loading'" />
     </div>
   </div>
 </template>

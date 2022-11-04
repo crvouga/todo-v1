@@ -7,7 +7,7 @@ import { RouterLink, RouterView } from "vue-router";
     class="flex flex-col items-center justify-center max-w-md w-full h-full mx-auto"
   >
     <RouterLink to="/"> Home </RouterLink>
-    <RouterLink to="/todo-list">Todo List </RouterLink>
+    <RouterLink to="/todo-item">Todo Items </RouterLink>
     <RouterView />
   </div>
 </template>

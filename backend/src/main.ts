@@ -10,6 +10,7 @@ import {
   TodoItemGetParams,
   sorter,
   filterer,
+  applyPatch,
 } from "./shared";
 import { v4 } from "uuid";
 
@@ -42,6 +43,7 @@ const initial: TodoItem[] = [];
 
 const titles = [
   "Learn Vue.js",
+  "Learn Vue.js composition API",
   "Go to the gym",
   "Hook up dynamodb",
   "Go to the store",
@@ -119,12 +121,9 @@ app.patch(endpoints["/todo-item"], async (req, res) => {
     return;
   }
 
-  const itemNew: TodoItem = {
-    ...item,
-    ...patch.data,
-  };
+  const patched = applyPatch(item, patch.data);
 
-  todoItemMap.set(itemNew.id, itemNew);
+  todoItemMap.set(patched.id, patched);
 
   await timeout(1000 / 3);
 

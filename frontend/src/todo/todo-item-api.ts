@@ -2,6 +2,7 @@ import {
   formatError,
   TodoItem,
   TodoItemDeleteParams,
+  TodoItemGetParams,
   TodoItemGot,
   type TodoItemPatch,
   type TodoItemPatchParams,
@@ -55,8 +56,19 @@ export const delete_ = async ({
   return Ok(null);
 };
 
-export const get = async (): Promise<Result<string, TodoItemGot>> => {
-  const got = await Api.get({ endpoint: "/todo-item", params: {} });
+export const get = async (
+  dirty: TodoItemGetParams
+): Promise<Result<string, TodoItemGot>> => {
+  const parsedParams = TodoItemGetParams.safeParse(dirty);
+
+  if (!parsedParams.success) {
+    return Err(formatError(parsedParams));
+  }
+
+  const got = await Api.get({
+    endpoint: "/todo-item",
+    params: parsedParams.data,
+  });
 
   if (got.type === "Err") {
     return Err(got.error);
@@ -75,7 +87,7 @@ export const post = async ({
   text,
 }: {
   text: string;
-}): Promise<Result<string, null>> => {
+}): Promise<Result<string, TodoItem>> => {
   const dirty: TodoItem = {
     createdAt: new Date(),
     id: v4(),
@@ -95,7 +107,7 @@ export const post = async ({
     return Err(posted.error);
   }
 
-  return Ok(null);
+  return Ok(parsed.data);
 };
 
 export default {
