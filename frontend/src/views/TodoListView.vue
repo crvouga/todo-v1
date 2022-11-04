@@ -400,7 +400,7 @@ export default defineComponent({
             class="flex-1 flex items-center p-4 pl-6"
             :class="{
               'cursor-wait': statusToggleItem.type === 'Loading',
-              'cursor-pointer active:bg-gray-200 hover:bg-gray-100':
+              'cursor-pointer active:bg-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 dark:active:bg-gray-700':
                 statusToggleItem.type !== 'Loading',
               'opacity-50':
                 statusToggleItem.type === 'Loading' &&

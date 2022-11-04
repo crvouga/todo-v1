@@ -40,15 +40,23 @@ app.get("/", (req, res) => {
 
 const initial: TodoItem[] = [];
 
-for (let i = 1; i <= 10; i++) {
+const titles = [
+  "Learn Vue.js",
+  "Go to the gym",
+  "Hook up dynamodb",
+  "Go to the store",
+  "Add user auth",
+];
+
+titles.forEach((title, i) => {
   const offset = i * 1000 * 60;
   initial.push({
     createdAt: new Date(Date.now() - offset),
     id: v4(),
-    isCompleted: Math.random() < 0.2,
-    text: `Item ${i}`,
+    isCompleted: false,
+    text: title,
   });
-}
+});
 
 const todoItemMap = new Map<string, TodoItem>(
   initial.map((item) => [item.id, item])
