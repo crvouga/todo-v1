@@ -7,6 +7,9 @@ import {
   TodoItem,
   TodoItemPatchParams,
   TodoItemPatch,
+  TodoItemGetParams,
+  sorter,
+  filterer,
 } from "./shared";
 import { v4 } from "uuid";
 
@@ -35,44 +38,17 @@ app.get("/", (req, res) => {
 //
 //
 
-const initial: TodoItem[] = [
-  {
+const initial: TodoItem[] = [];
+
+for (let i = 1; i <= 10; i++) {
+  const offset = i * 1000 * 60;
+  initial.push({
+    createdAt: new Date(Date.now() - offset),
     id: v4(),
-    createdAt: new Date(),
-    isCompleted: false,
-    text: "Item A",
-  },
-  {
-    id: v4(),
-    createdAt: new Date(),
-    isCompleted: false,
-    text: "Item B",
-  },
-  {
-    id: v4(),
-    createdAt: new Date(),
-    isCompleted: false,
-    text: "Item C",
-  },
-  {
-    id: v4(),
-    createdAt: new Date(),
-    isCompleted: false,
-    text: "Item D",
-  },
-  {
-    id: v4(),
-    createdAt: new Date(),
-    isCompleted: false,
-    text: "Item E",
-  },
-  {
-    id: v4(),
-    createdAt: new Date(),
-    isCompleted: false,
-    text: "Item F",
-  },
-];
+    isCompleted: Math.random() < 0.2,
+    text: `Item ${i}`,
+  });
+}
 
 const todoItemMap = new Map<string, TodoItem>(
   initial.map((item) => [item.id, item])
@@ -147,9 +123,22 @@ app.patch(endpoints["/todo-item"], async (req, res) => {
   res.status(204).end();
 });
 
-app.get(endpoints["/todo-item"], async (_req, res) => {
+app.get(endpoints["/todo-item"], async (req, res) => {
+  const parsed = TodoItemGetParams.safeParse(req.query);
+
+  if (!parsed.success) {
+    res.status(400).json(parsed.error).end();
+    return;
+  }
+
+  const params = parsed.data;
+
+  const items = Array.from(todoItemMap.values())
+    .filter(filterer({ filter: params.filter }))
+    .sort(sorter({ sort: params.sort }));
+
   const json: TodoItemGot = {
-    items: Array.from(todoItemMap.values()),
+    items,
   };
 
   await timeout(duration);

@@ -5,6 +5,8 @@ import Api from "./api";
 import {
   formatSort,
   formatError,
+  filterer,
+  sorter,
   TodoItem,
   TodoItemDeleteParams,
   TodoItemFilter,
@@ -23,7 +25,7 @@ type Data = {
   statusLoad: RemoteData<string, undefined>;
   statusDeleteItem: RemoteData<string, undefined> & { itemId: string };
   statusToggleItem: RemoteData<string, undefined> & { itemId: string };
-  items: TodoItem[];
+  allItems: TodoItem[];
   filter: TodoItemFilter;
   allFilters: TodoItemFilter[];
   sort: TodoItemSort;
@@ -49,7 +51,7 @@ export default defineComponent({
   data(): Data {
     return {
       text: "",
-      items: [],
+      allItems: [],
       //
       statusSubmit: { type: "NotAsked" },
       statusLoad: { type: "NotAsked" },
@@ -86,20 +88,11 @@ export default defineComponent({
   },
 
   computed: {
-    filteredItems(): TodoItemFormatted[] {
-      if (this.filter === "Active") {
-        return this.items
-          .filter((item) => !item.isCompleted)
-          .map(formatTodoItem);
-      }
-
-      if (this.filter === "Completed") {
-        return this.items
-          .filter((item) => item.isCompleted)
-          .map(formatTodoItem);
-      }
-
-      return this.items.map(formatTodoItem);
+    items(): TodoItemFormatted[] {
+      return this.allItems
+        .filter(filterer({ filter: this.filter }))
+        .sort(sorter({ sort: this.sort }))
+        .map(formatTodoItem);
     },
 
     allSortsFormatted() {
@@ -125,7 +118,7 @@ export default defineComponent({
         return;
       }
 
-      const item = this.items.find((item) => item.id === itemId);
+      const item = this.allItems.find((item) => item.id === itemId);
 
       if (!item) {
         return;
@@ -155,7 +148,7 @@ export default defineComponent({
       }
 
       this.statusToggleItem = { type: "Success", data: undefined, itemId };
-      this.items = this.items.map((item) => {
+      this.allItems = this.allItems.map((item) => {
         if (item.id === itemId) {
           return {
             ...item,
@@ -193,7 +186,7 @@ export default defineComponent({
       }
 
       this.statusDeleteItem = { type: "Success", itemId, data: undefined };
-      this.items = this.items.filter((item) => item.id !== itemId);
+      this.allItems = this.allItems.filter((item) => item.id !== itemId);
       this.getItems();
     },
 
@@ -223,7 +216,7 @@ export default defineComponent({
       }
 
       this.statusLoad = { type: "Success", data: undefined };
-      this.items = parsed.data.items;
+      this.allItems = parsed.data.items;
     },
 
     async postItem() {
@@ -264,7 +257,7 @@ export default defineComponent({
 
       this.statusSubmit = { type: "Success", data: undefined };
       this.text = "";
-      this.items.push(parsed.data);
+      this.allItems.push(parsed.data);
       this.getItems();
     },
   },
@@ -385,11 +378,11 @@ type RemoteData<TError, TData> =
       </div>
 
       <p
-        v-if="statusLoad.type === 'Success' && filteredItems.length === 0"
+        v-if="statusLoad.type === 'Success' && items.length === 0"
         class="opacity-75 h-64 text-xl font-bold flex items-center justify-center"
       >
         {{
-          items.length === 0
+          allItems.length === 0
             ? "There is nothing todo"
             : filter === "Active"
             ? "All items are completed"
@@ -406,7 +399,7 @@ type RemoteData<TError, TData> =
       > -->
       <ol class="flex flex-col items-center justify-center w-full relative">
         <li
-          v-for="item in filteredItems"
+          v-for="item in items"
           v-bind:key="item.id"
           class="inner w-full flex items-center pr-6"
         >

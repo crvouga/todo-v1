@@ -34,6 +34,10 @@ export const TodoItem = z.object({
 });
 export type TodoItem = z.infer<typeof TodoItem>;
 
+//
+//
+//
+
 export const TodoItemFilter = z.union([
   z.literal("All"),
   z.literal("Active"),
@@ -41,11 +45,45 @@ export const TodoItemFilter = z.union([
 ]);
 export type TodoItemFilter = z.infer<typeof TodoItemFilter>;
 
+export const filterer =
+  ({ filter }: { filter: TodoItemFilter }) =>
+  (item: TodoItem) => {
+    switch (filter) {
+      case "All": {
+        return true;
+      }
+      case "Completed": {
+        return item.isCompleted;
+      }
+      case "Active": {
+        return !item.isCompleted;
+      }
+    }
+  };
+
+//
+//
+//
+
 export const TodoItemSort = z.union([
   z.literal("OldestFirst"),
   z.literal("NewestFirst"),
 ]);
 export type TodoItemSort = z.infer<typeof TodoItemSort>;
+
+export const sorter =
+  ({ sort }: { sort: TodoItemSort }) =>
+  (a: TodoItem, b: TodoItem) => {
+    switch (sort) {
+      case "NewestFirst": {
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      }
+
+      case "OldestFirst": {
+        return a.createdAt.getTime() - b.createdAt.getTime();
+      }
+    }
+  };
 
 export const formatSort = (sort: TodoItemSort): string => {
   switch (sort) {
