@@ -22,7 +22,7 @@ import { defineComponent } from "vue";
 
 type Data = {
   text: string;
-  statusSubmit: RemoteData<string, undefined>;
+  statusPostItem: RemoteData<string, undefined>;
   statusLoad: RemoteData<string, undefined>;
   statusDeleteItem: RemoteData<string, undefined> & { itemId: string };
   statusToggleItem: RemoteData<string, undefined> & { itemId: string };
@@ -54,7 +54,7 @@ export default defineComponent({
       text: "",
       allItems: [],
       //
-      statusSubmit: { type: "NotAsked" },
+      statusPostItem: { type: "NotAsked" },
       statusLoad: { type: "NotAsked" },
       statusDeleteItem: { type: "NotAsked", itemId: "None" },
       statusToggleItem: { type: "NotAsked", itemId: "None" },
@@ -72,14 +72,14 @@ export default defineComponent({
       this.getItems();
     },
     text() {
-      if (this.statusSubmit.type === "Error") {
-        this.statusSubmit = { type: "NotAsked" };
+      if (this.statusPostItem.type === "Error") {
+        this.statusPostItem = { type: "NotAsked" };
       }
     },
 
     statusSubmit(
-      statusNew: Data["statusSubmit"],
-      statusOld: Data["statusSubmit"]
+      statusNew: Data["statusPostItem"],
+      statusOld: Data["statusPostItem"]
     ) {
       if (statusOld.type !== statusNew.type && statusNew.type === "Error") {
         const textElement = this.$refs.text as HTMLInputElement;
@@ -221,11 +221,11 @@ export default defineComponent({
     },
 
     async postItem() {
-      if (this.statusSubmit.type === "Loading") {
+      if (this.statusPostItem.type === "Loading") {
         return;
       }
 
-      this.statusSubmit = { type: "Loading" };
+      this.statusPostItem = { type: "Loading" };
 
       const dirty: TodoItem = {
         id: v4(),
@@ -237,7 +237,7 @@ export default defineComponent({
       const parsed = TodoItem.safeParse(dirty);
 
       if (!parsed.success) {
-        this.statusSubmit = {
+        this.statusPostItem = {
           type: "Error",
           error: parsed.error.issues.map((i) => i.message).join(","),
         };
@@ -251,12 +251,12 @@ export default defineComponent({
       });
 
       if (posted.type === "Err") {
-        this.statusSubmit = { type: "Error", error: posted.error };
+        this.statusPostItem = { type: "Error", error: posted.error };
 
         return;
       }
 
-      this.statusSubmit = { type: "Success", data: undefined };
+      this.statusPostItem = { type: "Success", data: undefined };
       this.text = "";
       this.allItems.push(parsed.data);
       this.getItems();
@@ -289,7 +289,7 @@ export default defineComponent({
           v-model="text"
           class="input input-md input-bordered flex-1 input-primary"
           :class="{
-            'input-error': statusSubmit.type === 'Error',
+            'input-error': statusPostItem.type === 'Error',
           }"
           placeholder="What todo?"
         />
@@ -301,14 +301,14 @@ export default defineComponent({
         <button
           @click="postItem"
           class="btn btn-primary w-32"
-          :class="{ loading: statusSubmit.type === 'Loading' }"
+          :class="{ loading: statusPostItem.type === 'Loading' }"
         >
           Submit
         </button>
       </div>
 
       <p class="py-2 text-sm text-red-500">
-        {{ statusSubmit.type === "Error" ? statusSubmit.error : "" }}
+        {{ statusPostItem.type === "Error" ? statusPostItem.error : "" }}
       </p>
 
       <!-- 
@@ -375,7 +375,7 @@ export default defineComponent({
         class="opacity-75 h-64 text-xl font-bold flex items-center justify-center"
       >
         {{
-          allItems.length === 0
+          items.length === 0
             ? "There is nothing todo"
             : filter === "Active"
             ? "All items are completed"
