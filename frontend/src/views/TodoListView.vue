@@ -16,6 +16,7 @@ import {
   TodoItemSort,
 } from "@/shared";
 import { formatFromNow } from "@/utils";
+import type { RemoteData } from "@/utils";
 import { v4 } from "uuid";
 import { defineComponent } from "vue";
 
@@ -262,12 +263,6 @@ export default defineComponent({
     },
   },
 });
-
-type RemoteData<TError, TData> =
-  | { type: "NotAsked" }
-  | { type: "Loading" }
-  | { type: "Success"; data: TData }
-  | { type: "Error"; error: TError };
 </script>
 
 <template>

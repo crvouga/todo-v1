@@ -14,6 +14,7 @@ import { z, type SafeParseError } from "zod";
 
 export const endpoints = {
   "/todo-item": "/api/todo-item",
+  "/todo-list": "/api/todo-list",
 } as const;
 
 export type Endpoints = typeof endpoints;
@@ -130,6 +131,21 @@ export const TodoItemPatchParams = z.object({
 export type TodoItemPatchParams = z.infer<typeof TodoItemPatchParams>;
 export const TodoItemPatch = TodoItem.partial();
 export type TodoItemPatch = z.infer<typeof TodoItemPatch>;
+
+//
+//
+//
+
+export const TodoList = z.object({
+  id: z.string().uuid(),
+  title: z.string().min(3).max(100),
+  createdAt: DateSchema,
+});
+export type TodoList = z.infer<typeof TodoList>;
+
+//
+//
+//
 
 //
 //
