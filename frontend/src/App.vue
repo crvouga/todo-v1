@@ -289,7 +289,7 @@ type RemoteData<TError, TData> =
 
 
    -->
-    <div class="w-full bg-inherit sticky top-0 p-4">
+    <div class="w-full bg-inherit top-0 p-4">
       <div class="flex items-center justify-center gap-2 w-full">
         <input
           ref="text"
