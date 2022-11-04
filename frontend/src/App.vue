@@ -3,9 +3,17 @@ import { RouterLink, RouterView } from "vue-router";
 </script>
 
 <template>
-  <RouterLink to="/"> Home </RouterLink>
-  <RouterLink to="/todo-list">Todo List </RouterLink>
-  <div class="flex items-center justify-center max-w-md w-full h-full mx-auto">
+  <div
+    class="flex flex-col items-center justify-center max-w-md w-full h-full mx-auto"
+  >
+    <RouterLink to="/"> Home </RouterLink>
+    <RouterLink to="/todo-list">Todo List </RouterLink>
     <RouterView />
   </div>
 </template>
+
+<style>
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+</style>

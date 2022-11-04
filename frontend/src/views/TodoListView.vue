@@ -1,23 +1,23 @@
 <script lang="ts">
-import { v4 } from "uuid";
-import { defineComponent } from "vue";
-import Api from "../api";
+import Api from "@/api";
+import Spinner from "@/components/Spinner.vue";
 import {
-  formatSort,
-  formatError,
   filterer,
+  formatError,
+  formatSort,
   sorter,
   TodoItem,
   TodoItemDeleteParams,
   TodoItemFilter,
+  TodoItemGetParams,
+  TodoItemGot,
   TodoItemPatch,
   TodoItemPatchParams,
-  TodoItemGot,
-  TodoItemGetParams,
   TodoItemSort,
-} from "../shared";
-import Spinner from "../Spinner.vue";
-import { formatFromNow } from "../format-from-now";
+} from "@/shared";
+import { formatFromNow } from "@/utils";
+import { v4 } from "uuid";
+import { defineComponent } from "vue";
 
 type Data = {
   text: string;
