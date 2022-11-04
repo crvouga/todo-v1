@@ -1,5 +1,6 @@
 <script lang="ts">
 import Api from "@/api";
+import Spinner from "@/components/Spinner.vue";
 import { formatError, TodoList } from "@/shared";
 import type { RemoteData } from "@/utils";
 import { v4 } from "uuid";
@@ -13,6 +14,9 @@ type Data = {
 };
 
 export default defineComponent({
+  components: {
+    Spinner: Spinner,
+  },
   data(): Data {
     return {
       listTitle: "",
@@ -21,9 +25,26 @@ export default defineComponent({
       statusGetLists: { type: "NotAsked" },
     };
   },
+
+  mounted() {
+    this.getLists();
+  },
+
   methods: {
     async getLists() {
       this.statusGetLists = { type: "Loading" };
+
+      const result = await Api.get({
+        endpoint: "/todo-list",
+        params: {},
+      });
+
+      if (result.type === "Err") {
+        this.statusGetLists = { type: "Error", error: result.error };
+        return;
+      }
+
+      this.statusGetLists = { type: "Success", data: undefined };
     },
 
     async postList() {
@@ -63,6 +84,14 @@ export default defineComponent({
 </script>
 
 <template>
+  <!-- 
+
+
+
+
+
+ -->
+
   <div class="w-full mb-2">
     <input
       v-model="listTitle"
@@ -74,4 +103,15 @@ export default defineComponent({
   <button class="btn btn-primary w-full" @click="postList">
     Create New List
   </button>
+
+  <!-- 
+
+
+
+
+ -->
+
+  <div v-if="statusGetLists.type === 'Loading'" class="py-8">
+    <Spinner />
+  </div>
 </template>
