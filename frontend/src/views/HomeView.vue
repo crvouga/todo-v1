@@ -1,117 +1,37 @@
-<script lang="ts">
-import Api from "@/api";
-import Spinner from "@/components/Spinner.vue";
-import { formatError, TodoList } from "@/shared";
-import type { RemoteData } from "@/utils";
-import { v4 } from "uuid";
-import { defineComponent } from "vue";
+<script setup lang="ts">
+import { useMutation, useQuery } from "@tanstack/vue-query";
+import TodoListApi from "@/todo/todo-list-api";
+import { ref } from "vue";
 
-type Data = {
-  listTitle: string;
-  lists: TodoList[];
-  statusPostList: RemoteData<string, undefined>;
-  statusGetLists: RemoteData<string, undefined>;
-};
+const title = ref("");
 
-export default defineComponent({
-  components: {
-    Spinner: Spinner,
-  },
-  data(): Data {
-    return {
-      listTitle: "",
-      lists: [],
-      statusPostList: { type: "NotAsked" },
-      statusGetLists: { type: "NotAsked" },
-    };
-  },
+const postMutation = useMutation({
+  mutationFn: TodoListApi.post,
+});
 
-  mounted() {
-    this.getLists();
-  },
-
-  methods: {
-    async getLists() {
-      this.statusGetLists = { type: "Loading" };
-
-      const result = await Api.get({
-        endpoint: "/todo-list",
-        params: {},
-      });
-
-      if (result.type === "Err") {
-        this.statusGetLists = { type: "Error", error: result.error };
-        return;
-      }
-
-      this.statusGetLists = { type: "Success", data: undefined };
-    },
-
-    async postList() {
-      this.statusPostList = { type: "Loading" };
-
-      const dirty: TodoList = {
-        createdAt: new Date(),
-        id: v4(),
-        title: this.listTitle,
-      };
-
-      const parsed = TodoList.safeParse(dirty);
-
-      if (!parsed.success) {
-        this.statusPostList = {
-          type: "Error",
-          error: formatError(parsed),
-        };
-        return;
-      }
-
-      const result = await Api.post({
-        endpoint: "/todo-list",
-        json: parsed.data,
-      });
-
-      if (result.type === "Err") {
-        this.statusPostList = { type: "Error", error: result.error };
-        return;
-      }
-
-      this.statusPostList = { type: "Success", data: undefined };
-      this.getLists();
-    },
-  },
+const query = useQuery({
+  queryFn: () => TodoListApi.get(),
 });
 </script>
 
 <template>
-  <!-- 
-
-
-
-
-
- -->
-
   <div class="w-full mb-2">
     <input
-      v-model="listTitle"
+      v-model="title"
       class="block input input-md input-bordered input-primary w-full"
       placeholder="Name of list"
     />
   </div>
 
-  <button class="btn btn-primary w-full" @click="postList">
+  <button
+    class="btn btn-primary w-full"
+    :class="{ loading: postMutation.isLoading }"
+    @click="postMutation.mutate({ title })"
+  >
     Create New List
   </button>
 
-  <!-- 
-
-
-
-
- -->
-
-  <div v-if="statusGetLists.type === 'Loading'" class="py-8">
+  <div v-if="query.isLoading" class="py-8">
     <Spinner />
   </div>
 </template>

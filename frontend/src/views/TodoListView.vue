@@ -11,12 +11,10 @@ import {
   TodoItemFilter,
   TodoItemGetParams,
   TodoItemGot,
-  TodoItemPatch,
-  TodoItemPatchParams,
   TodoItemSort,
 } from "@/shared";
-import { formatFromNow } from "@/utils";
 import type { RemoteData } from "@/utils";
+import { formatFromNow } from "@/utils";
 import { v4 } from "uuid";
 import { defineComponent } from "vue";
 
@@ -114,51 +112,7 @@ export default defineComponent({
       this.sort = sort;
     },
 
-    async patchItem({ itemId }: { itemId: string }) {
-      if (this.statusToggleItem.type === "Loading") {
-        return;
-      }
-
-      const item = this.allItems.find((item) => item.id === itemId);
-
-      if (!item) {
-        return;
-      }
-
-      const params: TodoItemPatchParams = {
-        itemId: item.id,
-      };
-
-      const patchedIsCompleted = !item.isCompleted;
-
-      const patch: TodoItemPatch = {
-        isCompleted: patchedIsCompleted,
-      };
-
-      this.statusToggleItem = { type: "Loading", itemId };
-
-      const patched = await Api.patch({
-        endpoint: "/todo-item",
-        json: patch,
-        params,
-      });
-
-      if (patched.type === "Err") {
-        this.statusToggleItem = { type: "Error", error: patched.error, itemId };
-        return;
-      }
-
-      this.statusToggleItem = { type: "Success", data: undefined, itemId };
-      this.allItems = this.allItems.map((item) => {
-        if (item.id === itemId) {
-          return {
-            ...item,
-            isCompleted: patchedIsCompleted,
-          };
-        }
-        return item;
-      });
-    },
+    async patchItem({ itemId }: { itemId: string }) {},
 
     async deleteItem({ itemId }: { itemId: string }) {
       this.statusDeleteItem = { type: "Loading", itemId };

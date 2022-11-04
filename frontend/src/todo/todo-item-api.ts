@@ -1,0 +1,106 @@
+import {
+  formatError,
+  TodoItem,
+  TodoItemDeleteParams,
+  TodoItemGot,
+  type TodoItemPatch,
+  type TodoItemPatchParams,
+} from "@/shared";
+import Api from "@/api";
+import { Err, Ok, type Result } from "@/utils";
+import { v4 } from "uuid";
+
+export const patch = async ({
+  params,
+  body,
+}: {
+  params: TodoItemPatchParams;
+  body: TodoItemPatch;
+}): Promise<Result<string, null>> => {
+  const patched = await Api.patch({
+    endpoint: "/todo-item",
+    params,
+    body: body,
+  });
+
+  if (patched.type === "Err") {
+    return Err(patched.error);
+  }
+
+  return Ok(null);
+};
+
+export const delete_ = async ({
+  id,
+}: {
+  id: string;
+}): Promise<Result<string, null>> => {
+  const parsed = TodoItemDeleteParams.safeParse({
+    itemId: id,
+  });
+
+  if (!parsed.success) {
+    return Err(formatError(parsed));
+  }
+
+  const deleted = await Api.delete({
+    endpoint: "/todo-item",
+    params: parsed.data,
+  });
+
+  if (deleted.type === "Err") {
+    return Err(deleted.error);
+  }
+
+  return Ok(null);
+};
+
+export const get = async (): Promise<Result<string, TodoItemGot>> => {
+  const got = await Api.get({ endpoint: "/todo-item", params: {} });
+
+  if (got.type === "Err") {
+    return Err(got.error);
+  }
+
+  const parsed = TodoItemGot.safeParse(got.json);
+
+  if (!parsed.success) {
+    return Err(formatError(parsed));
+  }
+
+  return Ok(parsed.data);
+};
+
+export const post = async ({
+  text,
+}: {
+  text: string;
+}): Promise<Result<string, null>> => {
+  const dirty: TodoItem = {
+    createdAt: new Date(),
+    id: v4(),
+    isCompleted: false,
+    text,
+  };
+
+  const parsed = TodoItem.safeParse(dirty);
+
+  if (!parsed.success) {
+    return Err(formatError(parsed));
+  }
+
+  const posted = await Api.post({ endpoint: "/todo-item", json: parsed.data });
+
+  if (posted.type === "Err") {
+    return Err(posted.error);
+  }
+
+  return Ok(null);
+};
+
+export default {
+  patch,
+  delete: delete_,
+  post,
+  get,
+};

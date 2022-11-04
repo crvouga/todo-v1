@@ -33,12 +33,12 @@ const get = async ({
   }
 };
 
-const post = async ({
+const post = async <T>({
   endpoint,
   json,
 }: {
   endpoint: keyof Endpoints;
-  json: unknown;
+  json: T;
 }) => {
   try {
     const response = await fetch(`${backendUrl}${endpoints[endpoint]}`, {
@@ -62,11 +62,11 @@ const post = async ({
 const patch = async ({
   endpoint,
   params,
-  json,
+  body,
 }: {
   endpoint: keyof Endpoints;
   params: Params;
-  json: unknown;
+  body: unknown;
 }) => {
   try {
     const searchParams = new URLSearchParams(params);
@@ -74,7 +74,7 @@ const patch = async ({
       `${backendUrl}${endpoints[endpoint]}?${searchParams.toString()}`,
       {
         method: "PATCH",
-        body: JSON.stringify(json),
+        body: JSON.stringify(body),
         headers: {
           "Content-Type": "application/json",
         },
@@ -123,6 +123,6 @@ const delete_ = async ({
 export default {
   get,
   post,
-  ["delete"]: delete_,
+  delete: delete_,
   patch,
 };
