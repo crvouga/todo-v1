@@ -124,6 +124,7 @@ export type TodoItemGot = z.infer<typeof TodoItemGot>;
 export const TodoItemDeleteParams = z.object({
   itemId: z.string(),
 });
+export type TodoItemDeleteParams = z.infer<typeof TodoItemDeleteParams>;
 
 //
 //

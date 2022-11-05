@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import Spinner from "@/components/Spinner.vue";
 import {
+  filterer,
+  sorter,
   allFilters,
   allSorts,
   formatSort,
@@ -11,25 +13,30 @@ import { formatFromNow } from "@/utils";
 import { computed, onMounted, ref, watch } from "vue";
 import { useTodoItems } from "./todo-item-composable";
 
-const text = ref("");
-const filter = ref<TodoItemFilter>("All");
-const sort = ref<TodoItemSort>("NewestFirst");
-
 const {
-  items,
-  stateDelete,
-  stateGet,
-  statePatch,
-  statePost,
+  todoItems,
+  statusDelete,
+  statusGet,
+  statusPatch,
+  statusPost,
   delete_,
   get,
   patch,
   post,
 } = useTodoItems();
 
-const itemsToShow = computed(() => {
-  return items.value.map((item) => item);
+const text = ref("");
+const filter = ref<TodoItemFilter>("All");
+const sort = ref<TodoItemSort>("NewestFirst");
+
+//
+const visibleItems = computed(() => {
+  return todoItems.value
+    .filter(filterer({ filter: filter.value }))
+    .sort(sorter({ sort: sort.value }));
 });
+
+watch(visibleItems, () => {});
 
 onMounted(() => {
   get({
@@ -38,7 +45,7 @@ onMounted(() => {
   });
 });
 
-watch([statePost, stateDelete, statePatch, filter, sort], () => {
+watch([statusPost, statusDelete, statusPatch, filter, sort], () => {
   get({
     filter: filter.value,
     sort: sort.value,
@@ -54,7 +61,7 @@ watch([statePost, stateDelete, statePatch, filter, sort], () => {
           v-model="text"
           class="input input-md input-bordered flex-1 input-primary"
           :class="{
-            'input-error': statePost.type === 'Failure',
+            'input-error': statusPost.type === 'Failure',
           }"
           placeholder="What todo?"
         />
@@ -62,14 +69,14 @@ watch([statePost, stateDelete, statePatch, filter, sort], () => {
         <button
           @click="post({ text: text })"
           class="btn btn-primary w-32"
-          :class="{ loading: statePost.type === 'Loading' }"
+          :class="{ loading: statusPost.type === 'Loading' }"
         >
           Submit
         </button>
       </div>
 
       <p class="py-2 text-sm text-red-500">
-        {{ statePost.type === "Failure" ? statePost.error : "" }}
+        {{ statusPost.type === "Failure" ? statusPost.error : "" }}
       </p>
 
       <div class="btn-group mb-4">
@@ -100,19 +107,19 @@ watch([statePost, stateDelete, statePatch, filter, sort], () => {
     <div class="flex flex-col items-center justify-center flex-1 w-full pb-16">
       <div class="px-4 w-full">
         <div
-          v-if="stateGet.type === 'Failure'"
+          v-if="statusGet.type === 'Failure'"
           class="alert alert-error shadow-lg"
         >
-          {{ stateGet.type === "Failure" ? stateGet.error : "" }}
+          {{ statusGet.type === "Failure" ? statusGet.error : "" }}
         </div>
       </div>
 
       <p
-        v-if="(itemsToShow.length = 0)"
+        v-if="(visibleItems.length = 0)"
         class="opacity-75 h-64 text-xl font-bold flex items-center justify-center"
       >
         {{
-          itemsToShow.length === 0
+          visibleItems.length === 0
             ? "There is nothing todo"
             : filter === "Active"
             ? "All items are completed"
@@ -124,19 +131,19 @@ watch([statePost, stateDelete, statePatch, filter, sort], () => {
 
       <ol class="flex flex-col items-center justify-center w-full relative">
         <li
-          v-for="item in items"
+          v-for="item in visibleItems"
           v-bind:key="item.id"
           class="inner w-full flex items-center pr-6"
         >
           <div
             class="flex-1 flex items-center p-4 pl-6"
             :class="{
-              'cursor-wait': statePatch.type === 'Loading',
+              'cursor-wait': statusPatch.type === 'Loading',
               'cursor-pointer active:bg-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 dark:active:bg-gray-700':
-                statePatch.type !== 'Loading',
+                statusPatch.type !== 'Loading',
               'opacity-50':
-                statePatch.type === 'Loading' &&
-                statePatch.params.itemId === item.id,
+                statusPatch.type === 'Loading' &&
+                statusPatch.params.itemId === item.id,
             }"
             @click="
               patch({ itemId: item.id }, { isCompleted: !item.isCompleted })
@@ -172,17 +179,17 @@ watch([statePost, stateDelete, statePatch, filter, sort], () => {
             class="btn btn-outline btn-error btn-xs"
             :class="{
               'loading cursor-wait':
-                stateDelete.type === 'Loading' &&
-                stateDelete.params.id === item.id,
+                statusDelete.type === 'Loading' &&
+                statusDelete.params.itemId === item.id,
             }"
-            @click="delete_({ id: item.id })"
+            @click="delete_({ itemId: item.id })"
           >
             Delete
           </button>
         </li>
       </ol>
 
-      <Spinner class="p-4" v-if="stateGet.type === 'Loading'" />
+      <Spinner class="p-4" v-if="statusGet.type === 'Loading'" />
     </div>
   </div>
 </template>

@@ -1,6 +1,7 @@
 import {
   applyPatch,
   TodoItem,
+  TodoItemDeleteParams,
   TodoItemPatch,
   TodoItemPatchParams,
   type TodoItemGetParams,
@@ -8,7 +9,7 @@ import {
 import { ref } from "vue";
 import TodoItemApi from "./todo-item-api";
 
-type State<TParams, TError, TData> =
+type Status<TParams, TError, TData> =
   | { type: "NotAsked" }
   | { type: "Loading"; params: TParams }
   | { type: "Success"; params: TParams; data: TData }
@@ -18,70 +19,71 @@ const notAsked: { type: "NotAsked" } = { type: "NotAsked" };
 
 export const useTodoItems = () => {
   // this should be a key value collection here
-  const items = ref<TodoItem[]>([]);
-
-  //
-  //
-  //
-
-  const stateGet = ref<State<TodoItemGetParams, string, TodoItem[]>>(notAsked);
+  const todoItems = ref<TodoItem[]>([]);
+  const statusGet =
+    ref<Status<TodoItemGetParams, string, TodoItem[]>>(notAsked);
+  const statusDelete =
+    ref<Status<TodoItemDeleteParams, string, null>>(notAsked);
+  const statusPatch = ref<Status<TodoItemPatchParams, string, null>>(notAsked);
+  const statusPost = ref<Status<{}, string, null>>(notAsked);
 
   const get = async (params: TodoItemGetParams) => {
-    stateGet.value = { type: "Loading", params };
+    if (statusGet.value.type === "Loading") {
+      return;
+    }
+    statusGet.value = { type: "Loading", params };
 
     const result = await TodoItemApi.get(params);
 
     if (result.type === "Err") {
-      stateGet.value = { type: "Failure", params, error: result.error };
+      statusGet.value = { type: "Failure", params, error: result.error };
 
       return;
     }
 
-    items.value = items.value
+    todoItems.value = todoItems.value
       .filter((item) =>
         result.data.items.every((newItem) => newItem.id !== item.id)
       )
       .concat(result.data.items);
-    stateGet.value = { type: "Success", params, data: result.data.items };
+    statusGet.value = { type: "Success", params, data: result.data.items };
   };
 
-  //
-  //
-  //
-
-  const stateDelete = ref<State<{ id: string }, string, null>>(notAsked);
-
-  const delete_ = async (params: { id: string }) => {
-    stateDelete.value = { type: "Loading", params };
-
-    const result = await TodoItemApi.delete(params);
-
-    if (result.type === "Err") {
-      stateDelete.value = { type: "Failure", params, error: result.error };
+  const delete_ = async (params: TodoItemDeleteParams) => {
+    if (statusDelete.value.type === "Loading") {
       return;
     }
 
-    items.value = items.value.filter((item) => item.id !== params.id);
-    stateDelete.value = { type: "NotAsked" };
+    statusDelete.value = { type: "Loading", params };
+
+    const result = await TodoItemApi.delete_(params);
+
+    if (result.type === "Err") {
+      statusDelete.value = { type: "Failure", params, error: result.error };
+      return;
+    }
+
+    todoItems.value = todoItems.value.filter(
+      (item) => item.id !== params.itemId
+    );
+    statusDelete.value = { type: "NotAsked" };
   };
 
-  //
-  //
-  //
-
-  const statePatch = ref<State<TodoItemPatchParams, string, null>>(notAsked);
-
   const patch = async (params: TodoItemPatchParams, body: TodoItemPatch) => {
-    statePatch.value = { type: "Loading", params };
+    if (statusPatch.value.type === "Loading") {
+      return;
+    }
+
+    statusPatch.value = { type: "Loading", params };
 
     const result = await TodoItemApi.patch({ params, body });
 
     if (result.type === "Err") {
-      statePatch.value = { type: "Failure", params, error: result.error };
+      statusPatch.value = { type: "Failure", params, error: result.error };
       return;
     }
 
-    items.value = items.value.map((item) => {
+    todoItems.value = todoItems.value.map((item) => {
       if (item.id === params.itemId) {
         const cleaned = TodoItemPatch.safeParse(body);
         const patched = cleaned.success ? applyPatch(item, cleaned.data) : item;
@@ -90,36 +92,33 @@ export const useTodoItems = () => {
       return item;
     });
 
-    statePatch.value = { type: "Success", data: null, params };
+    statusPatch.value = { type: "Success", data: null, params };
   };
 
-  //
-  //
-  //
-
-  const statePost = ref<State<{}, string, null>>(notAsked);
-
   const post = async ({ text }: { text: string }) => {
-    statePost.value = { type: "Loading", params: {} };
+    if (statusPost.value.type === "Loading") {
+      return;
+    }
+    statusPost.value = { type: "Loading", params: {} };
     const result = await TodoItemApi.post({ text });
     if (result.type === "Err") {
-      statePost.value = { type: "Failure", params: {}, error: result.error };
+      statusPost.value = { type: "Failure", params: {}, error: result.error };
       return;
     }
 
-    items.value = [...items.value, result.data];
-    statePost.value = { type: "Success", params: {}, data: null };
+    todoItems.value = [...todoItems.value, result.data];
+    statusPost.value = { type: "Success", params: {}, data: null };
   };
 
   return {
-    items,
+    todoItems,
+    statusGet,
+    statusDelete,
+    statusPatch,
+    statusPost,
     get,
-    stateGet,
-    delete_,
-    stateDelete,
-    patch,
-    statePatch,
     post,
-    statePost,
+    patch,
+    delete_,
   };
 };

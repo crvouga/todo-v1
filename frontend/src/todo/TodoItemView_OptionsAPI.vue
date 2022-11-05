@@ -1,7 +1,7 @@
 <script lang="ts">
-import Api from "@/api";
 import Spinner from "@/components/Spinner.vue";
 import {
+  applyPatch,
   filterer,
   formatError,
   formatSort,
@@ -10,24 +10,36 @@ import {
   TodoItemDeleteParams,
   TodoItemFilter,
   TodoItemGetParams,
-  TodoItemGot,
+  TodoItemPatch,
+  TodoItemPatchParams,
   TodoItemSort,
 } from "@/shared";
-import type { RemoteData } from "@/utils";
-import { formatFromNow } from "@/utils";
-import { v4 } from "uuid";
+import Api from "./todo-item-api";
+
+import { formatFromNow, toValues } from "@/utils";
 import { defineComponent } from "vue";
+
+export type Status<TParams, TError, TData> =
+  | { type: "NotAsked" }
+  | { type: "Loading"; params: TParams }
+  | { type: "Success"; params: TParams; data: TData }
+  | { type: "Failure"; params: TParams; error: TError };
+
+export const notAsked: { type: "NotAsked" } = { type: "NotAsked" };
 
 type Data = {
   text: string;
-  statusPostItem: RemoteData<string, undefined>;
-  statusLoad: RemoteData<string, undefined>;
-  statusDeleteItem: RemoteData<string, undefined> & { itemId: string };
-  statusToggleItem: RemoteData<string, undefined> & { itemId: string };
-  allItems: TodoItem[];
   filter: TodoItemFilter;
-  allFilters: TodoItemFilter[];
   sort: TodoItemSort;
+  //
+  itemById: { [id: string]: TodoItem };
+  //
+  statusPost: Status<{}, string, undefined>;
+  statusGet: Status<TodoItemGetParams, string, undefined>;
+  statusDelete: Status<{ itemId: string }, string, undefined>;
+  statusPatch: Status<{ itemId: string }, string, undefined>;
+  //
+  allFilters: TodoItemFilter[];
   allSorts: TodoItemSort[];
 };
 
@@ -50,12 +62,12 @@ export default defineComponent({
   data(): Data {
     return {
       text: "",
-      allItems: [],
+      itemById: {},
       //
-      statusPostItem: { type: "NotAsked" },
-      statusLoad: { type: "NotAsked" },
-      statusDeleteItem: { type: "NotAsked", itemId: "None" },
-      statusToggleItem: { type: "NotAsked", itemId: "None" },
+      statusPost: { type: "NotAsked" },
+      statusGet: { type: "NotAsked" },
+      statusDelete: { type: "NotAsked" },
+      statusPatch: { type: "NotAsked" },
       //
       filter: "All",
       allFilters: ["All", "Active", "Completed"],
@@ -66,20 +78,20 @@ export default defineComponent({
   },
 
   watch: {
-    currentFilter() {
-      this.getItems();
+    filter() {
+      this.get({
+        filter: this.filter,
+        sort: this.sort,
+      });
     },
     text() {
-      if (this.statusPostItem.type === "Error") {
-        this.statusPostItem = { type: "NotAsked" };
+      if (this.statusPost.type === "Failure") {
+        this.statusPost = { type: "NotAsked" };
       }
     },
 
-    statusSubmit(
-      statusNew: Data["statusPostItem"],
-      statusOld: Data["statusPostItem"]
-    ) {
-      if (statusOld.type !== statusNew.type && statusNew.type === "Error") {
+    statusSubmit(statusNew: Data["statusPost"], statusOld: Data["statusPost"]) {
+      if (statusOld.type !== statusNew.type && statusNew.type === "Failure") {
         const textElement = this.$refs.text as HTMLInputElement;
         textElement.focus();
       }
@@ -88,7 +100,7 @@ export default defineComponent({
 
   computed: {
     items(): TodoItemFormatted[] {
-      return this.allItems
+      return toValues(this.itemById)
         .filter(filterer({ filter: this.filter }))
         .sort(sorter({ sort: this.sort }))
         .map(formatTodoItem);
@@ -100,7 +112,10 @@ export default defineComponent({
   },
 
   async mounted() {
-    await this.getItems();
+    await this.get({
+      filter: this.filter,
+      sort: this.sort,
+    });
   },
 
   methods: {
@@ -112,108 +127,118 @@ export default defineComponent({
       this.sort = sort;
     },
 
-    async patchItem({ itemId }: { itemId: string }) {},
+    async patchItem(params: TodoItemPatchParams, body: TodoItemPatch) {
+      if (this.statusPatch.type === "Loading") {
+        return;
+      }
+      this.statusPatch = { type: "Loading", params };
 
-    async deleteItem({ itemId }: { itemId: string }) {
-      this.statusDeleteItem = { type: "Loading", itemId };
+      const patched = await Api.patch({ params, body });
 
-      const parsed = TodoItemDeleteParams.safeParse({
-        itemId,
-      });
+      if (patched.type === "Err") {
+        this.statusPatch = { type: "Failure", params, error: patched.error };
+        return;
+      }
+      this.statusPatch = { type: "Success", params, data: undefined };
+
+      const itemOld = this.itemById[params.itemId];
+      const parsed = TodoItemPatch.safeParse(body);
+      const itemNew =
+        itemOld && parsed.success ? applyPatch(itemOld, parsed.data) : itemOld;
+
+      if (itemNew) {
+        this.itemById = {
+          ...this.itemById,
+          [itemNew.id]: itemNew,
+        };
+      }
+    },
+
+    async deleteItem(params: TodoItemDeleteParams) {
+      if (this.statusDelete.type === "Loading") {
+        return;
+      }
+
+      this.statusDelete = { type: "Loading", params };
+
+      const parsed = TodoItemDeleteParams.safeParse(params);
 
       if (!parsed.success) {
-        this.statusDeleteItem = {
-          type: "Error",
+        this.statusDelete = {
+          type: "Failure",
           error: formatError(parsed),
-          itemId,
+          params,
         };
         return;
       }
 
-      const deleted = await Api.delete({
-        endpoint: "/todo-item",
-        params: parsed.data,
-      });
+      const deleted = await Api.delete_(params);
 
       if (deleted.type === "Err") {
-        this.statusDeleteItem = { type: "Error", itemId, error: deleted.error };
+        this.statusDelete = { type: "Failure", params, error: deleted.error };
         return;
       }
 
-      this.statusDeleteItem = { type: "Success", itemId, data: undefined };
-      this.allItems = this.allItems.filter((item) => item.id !== itemId);
-      this.getItems();
-    },
+      this.statusDelete = { type: "Success", params, data: undefined };
 
-    async getItems() {
-      this.statusLoad = { type: "Loading" };
+      const { [params.itemId]: _, ...removed } = this.itemById;
+      this.itemById = removed;
 
-      const params: TodoItemGetParams = {
+      //
+      this.get({
         filter: this.filter,
         sort: this.sort,
-      };
-
-      const got = await Api.get({ endpoint: "/todo-item", params });
-
-      if (got.type === "Err") {
-        this.statusLoad = { type: "Error", error: got.error };
-        return;
-      }
-
-      const parsed = TodoItemGot.safeParse(got.json);
-
-      if (!parsed.success) {
-        this.statusLoad = {
-          type: "Error",
-          error: formatError(parsed),
-        };
-        return;
-      }
-
-      this.statusLoad = { type: "Success", data: undefined };
-      this.allItems = parsed.data.items;
+      });
     },
 
-    async postItem() {
-      if (this.statusPostItem.type === "Loading") {
+    async get(params: TodoItemGetParams) {
+      if (this.statusGet.type === "Loading") {
         return;
       }
 
-      this.statusPostItem = { type: "Loading" };
+      this.statusGet = { type: "Loading", params };
 
-      const dirty: TodoItem = {
-        id: v4(),
-        text: this.text,
-        isCompleted: false,
-        createdAt: new Date(),
-      };
+      const got = await Api.get(params);
 
-      const parsed = TodoItem.safeParse(dirty);
-
-      if (!parsed.success) {
-        this.statusPostItem = {
-          type: "Error",
-          error: parsed.error.issues.map((i) => i.message).join(","),
-        };
-
+      if (got.type === "Err") {
+        this.statusGet = { type: "Failure", params, error: got.error };
         return;
       }
 
-      const posted = await Api.post({
-        endpoint: "/todo-item",
-        json: parsed.data,
-      });
+      this.statusGet = { type: "Success", data: undefined, params };
+
+      const byId = got.data.items.reduce<Data["itemById"]>(
+        (byId, item) => ({ ...byId, [item.id]: item }),
+        {}
+      );
+      this.itemById = { ...this.itemById, ...byId };
+    },
+
+    async postItem({ text }: { text: string }) {
+      if (this.statusPost.type === "Loading") {
+        return;
+      }
+
+      this.statusPost = { type: "Loading", params: {} };
+
+      const posted = await Api.post({ text });
 
       if (posted.type === "Err") {
-        this.statusPostItem = { type: "Error", error: posted.error };
+        this.statusPost = { type: "Failure", params: {}, error: posted.error };
 
         return;
       }
 
-      this.statusPostItem = { type: "Success", data: undefined };
+      this.statusPost = { type: "Success", params: {}, data: undefined };
       this.text = "";
-      this.allItems.push(parsed.data);
-      this.getItems();
+      this.itemById = {
+        ...this.itemById,
+        [posted.data.id]: posted.data,
+      };
+      this.get({
+        filter: this.filter,
+        sort: this.sort,
+      });
     },
   },
 });
@@ -243,7 +268,7 @@ export default defineComponent({
           v-model="text"
           class="input input-md input-bordered flex-1 input-primary"
           :class="{
-            'input-error': statusPostItem.type === 'Error',
+            'input-error': statusPost.type === 'Failure',
           }"
           placeholder="What todo?"
         />
@@ -253,16 +278,16 @@ export default defineComponent({
         </p> -->
 
         <button
-          @click="postItem"
+          @click="postItem({ text })"
           class="btn btn-primary w-32"
-          :class="{ loading: statusPostItem.type === 'Loading' }"
+          :class="{ loading: statusPost.type === 'Loading' }"
         >
           Submit
         </button>
       </div>
 
       <p class="py-2 text-sm text-red-500">
-        {{ statusPostItem.type === "Error" ? statusPostItem.error : "" }}
+        {{ statusPost.type === "Failure" ? statusPost.error : "" }}
       </p>
 
       <!-- 
@@ -317,15 +342,15 @@ export default defineComponent({
     <div class="flex flex-col items-center justify-center flex-1 w-full pb-16">
       <div class="px-4 w-full">
         <div
-          v-if="statusLoad.type === 'Error'"
+          v-if="statusGet.type === 'Failure'"
           class="alert alert-error shadow-lg"
         >
-          {{ statusLoad.type === "Error" ? statusLoad.error : "" }}
+          {{ statusGet.type === "Failure" ? statusGet.error : "" }}
         </div>
       </div>
 
       <p
-        v-if="statusLoad.type === 'Success' && items.length === 0"
+        v-if="statusGet.type === 'Success' && items.length === 0"
         class="opacity-75 h-64 text-xl font-bold flex items-center justify-center"
       >
         {{
@@ -353,14 +378,16 @@ export default defineComponent({
           <div
             class="flex-1 flex items-center p-4 pl-6"
             :class="{
-              'cursor-wait': statusToggleItem.type === 'Loading',
+              'cursor-wait': statusPatch.type === 'Loading',
               'cursor-pointer active:bg-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 dark:active:bg-gray-700':
-                statusToggleItem.type !== 'Loading',
+                statusPatch.type !== 'Loading',
               'opacity-50':
-                statusToggleItem.type === 'Loading' &&
-                statusToggleItem.itemId === item.id,
+                statusPatch.type === 'Loading' &&
+                statusPatch.params.itemId === item.id,
             }"
-            @click="patchItem({ itemId: item.id })"
+            @click="
+              patchItem({ itemId: item.id }, { isCompleted: !item.isCompleted })
+            "
           >
             <input
               type="checkbox"
@@ -392,8 +419,8 @@ export default defineComponent({
             class="btn btn-outline btn-error btn-xs"
             :class="{
               'loading cursor-wait':
-                statusDeleteItem.type === 'Loading' &&
-                statusDeleteItem.itemId === item.id,
+                statusDelete.type === 'Loading' &&
+                statusDelete.params.itemId === item.id,
             }"
             @click="deleteItem({ itemId: item.id })"
           >
@@ -403,7 +430,7 @@ export default defineComponent({
       </ol>
       <!-- </TransitionGroup> -->
 
-      <Spinner class="p-4" v-if="statusLoad.type === 'Loading'" />
+      <Spinner class="p-4" v-if="statusGet.type === 'Loading'" />
     </div>
 
     <!-- 

@@ -31,14 +31,10 @@ export const patch = async ({
   return Ok(null);
 };
 
-export const delete_ = async ({
-  id,
-}: {
-  id: string;
-}): Promise<Result<string, null>> => {
-  const parsed = TodoItemDeleteParams.safeParse({
-    itemId: id,
-  });
+export const delete_ = async (
+  params: TodoItemDeleteParams
+): Promise<Result<string, null>> => {
+  const parsed = TodoItemDeleteParams.safeParse(params);
 
   if (!parsed.success) {
     return Err(formatError(parsed));
@@ -112,7 +108,7 @@ export const post = async ({
 
 export default {
   patch,
-  delete: delete_,
+  delete_,
   post,
   get,
 };

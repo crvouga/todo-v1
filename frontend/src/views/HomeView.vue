@@ -5,7 +5,9 @@ import { ref } from "vue";
 
 const title = ref("");
 
-const mutationPost = useMutation(TodoListApi.post);
+const mutationPost = useMutation({
+  mutationFn: TodoListApi.post,
+});
 
 const queryKey = ref("");
 
