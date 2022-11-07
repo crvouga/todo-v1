@@ -172,8 +172,17 @@ export type TodoList = z.infer<typeof TodoList>;
 //
 //
 
+export const TodoListGotItem = z.intersection(
+  TodoList,
+  z.object({
+    activeCount: z.number(),
+    completedCount: z.number(),
+  })
+);
+export type TodoListGotItem = z.infer<typeof TodoListGotItem>;
+
 export const TodoListGot = z.object({
-  items: z.array(TodoList),
+  items: z.array(TodoListGotItem),
 });
 export type TodoListGot = z.infer<typeof TodoListGot>;
 

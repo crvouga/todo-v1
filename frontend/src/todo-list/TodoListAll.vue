@@ -1,10 +1,9 @@
 <script lang="ts">
 import Spinner from "@/components/Spinner.vue";
-import type { TodoList } from "@/shared";
-import TodoListApi from "./todo-list-api";
+import type { TodoListGotItem } from "@/shared";
 import { formatFromNow, toValues } from "@/utils";
 import { defineComponent } from "vue";
-import { routes } from "@/router";
+import TodoListApi from "./todo-list-api";
 
 export type Status<TParams, TError, TData> =
   | { type: "NotAsked" }
@@ -16,7 +15,7 @@ export const notAsked: { type: "NotAsked" } = { type: "NotAsked" };
 
 type Data = {
   title: string;
-  lists: { [listId: string]: TodoList };
+  lists: { [listId: string]: TodoListGotItem };
   statusGet: Status<{}, string, {}>;
   statusPost: Status<{}, string, {}>;
 };
@@ -28,7 +27,6 @@ export default defineComponent({
   setup() {
     return {
       formatFromNow,
-      routes,
     };
   },
   data(): Data {
@@ -75,7 +73,11 @@ export default defineComponent({
       this.statusPost = { type: "Success", params: {}, data: {} };
       this.lists = {
         ...this.lists,
-        [result.data.id]: result.data,
+        [result.data.id]: {
+          ...result.data,
+          activeCount: 0,
+          completedCount: 0,
+        },
       };
       this.get();
     },
@@ -110,9 +112,22 @@ export default defineComponent({
         <p class="w-full font-black text-4xl">
           {{ list.title }}
         </p>
-        <p>
-          {{ formatFromNow(list.createdAt) }}
-        </p>
+        <div class="flex items-center gap-2">
+          <span
+            class="badge"
+            :class="{
+              'badge-primary': list.activeCount > 0,
+              'badge-ghost': list.activeCount === 0,
+            }"
+            >{{ `${list.activeCount} Active` }}</span
+          >
+          <span class="badge badge-ghost">{{
+            `${list.completedCount} Completed`
+          }}</span>
+          <p>
+            {{ formatFromNow(list.createdAt) }}
+          </p>
+        </div>
       </div>
       <!-- chevron right -->
       <svg

@@ -209,9 +209,20 @@ app.get(endpoints["/todo-item"], async (req, res) => {
 //
 
 app.get(endpoints["/todo-list"], async (req, res) => {
-  const items = Array.from(todoListMap.values());
+  const lists = Array.from(todoListMap.values());
   const json: TodoListGot = {
-    items: items,
+    items: lists.map((list) => {
+      const items = Array.from(todoItemMap.values()).filter(
+        (item) => item.listId === list.id
+      );
+      const activeCount = items.filter((item) => !item.isCompleted).length;
+      const completedCount = items.filter((item) => item.isCompleted).length;
+      return {
+        ...list,
+        activeCount,
+        completedCount,
+      };
+    }),
   };
   await timeout(duration);
   res.json(json);

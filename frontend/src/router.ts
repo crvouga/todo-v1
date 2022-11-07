@@ -18,9 +18,4 @@ const router = createRouter({
   ],
 });
 
-export const routes = {
-  home: () => ``,
-  todoList: ({ listId }: { listId: string }) => `/todo-list/${listId}`,
-};
-
 export default router;
