@@ -29,7 +29,7 @@ export const store = reactive<Store>({
   toast: { type: "None" },
 });
 
-const defaultDuration = 4000;
+const defaultDuration = 3_000;
 
 export const showToast = (toast: Omit<Toast, "id">) => {
   const toastNew: Toast = { ...toast, id: v4() };
