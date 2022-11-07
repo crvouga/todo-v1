@@ -1,9 +1,9 @@
 <script lang="ts">
+import BackButton from "@/components/BackButton.vue";
 import Spinner from "@/components/Spinner.vue";
 import {
   applyPatch,
   filterer,
-  formatError,
   formatSort,
   sorter,
   TodoItem,
@@ -15,12 +15,10 @@ import {
   TodoItemSort,
   TodoList,
 } from "@/todo-list/todo-list-shared";
-import Api from "./todo-list-item-api";
-
-import { formatFromNow, toValues, type Status } from "@/utils";
+import { formatError, formatFromNow, toValues, type Status } from "@/utils";
 import { defineComponent } from "vue";
 import TodoListApi from "./todo-list-api";
-import BackButton from "@/components/BackButton.vue";
+import Api from "./todo-list-item-api";
 
 type Data = {
   listId: string;

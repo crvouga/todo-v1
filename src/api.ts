@@ -1,5 +1,4 @@
-import type { Endpoints } from "./todo-list/todo-list-shared";
-import { endpoints } from "./todo-list/todo-list-shared";
+import { StatusCode } from "./utils";
 
 const devBackendUrl = "http://localhost:5000";
 
@@ -11,18 +10,18 @@ const get = async ({
   endpoint,
   params,
 }: {
-  endpoint: keyof Endpoints;
+  endpoint: string;
   params: Params;
 }) => {
   try {
     const searchParams = new URLSearchParams(params);
 
     const response = await fetch(
-      `${backendUrl}${endpoints[endpoint]}?${searchParams.toString()}`
+      `${backendUrl}${endpoint}?${searchParams.toString()}`
     );
 
     if (!response.ok) {
-      if (response.status === 404) {
+      if (response.status === StatusCode.NotFound) {
         return { type: "Err", error: "Resource not found" } as const;
       }
 
@@ -37,15 +36,9 @@ const get = async ({
   }
 };
 
-const post = async <T>({
-  endpoint,
-  json,
-}: {
-  endpoint: keyof Endpoints;
-  json: T;
-}) => {
+const post = async <T>({ endpoint, json }: { endpoint: string; json: T }) => {
   try {
-    const response = await fetch(`${backendUrl}${endpoints[endpoint]}`, {
+    const response = await fetch(`${backendUrl}${endpoint}`, {
       method: "POST",
       body: JSON.stringify(json),
       headers: {
@@ -54,12 +47,25 @@ const post = async <T>({
     });
 
     if (!response.ok) {
-      return { type: "Err", error: "Response was not ok" } as const;
+      try {
+        const responseJson: unknown = await response.json();
+        return {
+          type: "Err",
+          body: responseJson,
+          error: "Response was not ok",
+        } as const;
+      } catch (error) {
+        return {
+          type: "Err",
+          body: {} as unknown,
+          error: "Response was not ok",
+        } as const;
+      }
     }
 
     return { type: "Ok", response } as const;
   } catch (error) {
-    return { type: "Err", error: String(error) } as const;
+    return { type: "Err", body: {} as unknown, error: String(error) } as const;
   }
 };
 
@@ -68,14 +74,14 @@ const patch = async ({
   params,
   body,
 }: {
-  endpoint: keyof Endpoints;
+  endpoint: string;
   params: Params;
   body: unknown;
 }) => {
   try {
     const searchParams = new URLSearchParams(params);
     const response = await fetch(
-      `${backendUrl}${endpoints[endpoint]}?${searchParams.toString()}`,
+      `${backendUrl}${endpoint}?${searchParams.toString()}`,
       {
         method: "PATCH",
         body: JSON.stringify(body),
@@ -99,13 +105,13 @@ const delete_ = async ({
   endpoint,
   params,
 }: {
-  endpoint: keyof Endpoints;
+  endpoint: string;
   params: Params;
 }) => {
   try {
     const searchParams = new URLSearchParams(params);
     const response = await fetch(
-      `${backendUrl}${endpoints[endpoint]}?${searchParams.toString()}`,
+      `${backendUrl}${endpoint}?${searchParams.toString()}`,
       {
         method: "DELETE",
         headers: {

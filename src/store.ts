@@ -9,17 +9,11 @@ export type Store = {
   toast: Toast | { type: "None" };
 };
 
-export type Toast =
-  | {
-      id: string;
-      type: "Error";
-      title: string;
-    }
-  | {
-      id: string;
-      type: "Info";
-      title: string;
-    };
+export type Toast = {
+  id: string;
+  type: "Error" | "Info" | "Success";
+  title: string;
+};
 
 //
 //

@@ -1,4 +1,4 @@
-import { z, type SafeParseError } from "zod";
+import { z } from "zod";
 
 //
 //
@@ -198,16 +198,4 @@ export const applyPatchTodoList = (
     createdAt: patch.createdAt === undefined ? list.createdAt : patch.createdAt,
     title: patch.title === undefined ? list.title : patch.title,
   };
-};
-
-//
-//
-//
-// Helpers
-//
-//
-//
-
-export const formatError = <Input>(error: SafeParseError<Input>): string => {
-  return error.error.issues.map((i) => i.message).join(",");
 };

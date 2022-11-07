@@ -11,6 +11,7 @@ import { store } from "@/store";
         :class="{
           'alert-error': store.toast.type === 'Error',
           'alert-info': store.toast.type === 'Info',
+          'alert-success': store.toast.type === 'Success',
         }"
       >
         <div>

@@ -1,3 +1,4 @@
+import { StatusCode } from "../utils";
 import type { Application } from "express";
 import { v4 } from "uuid";
 import {
@@ -64,13 +65,6 @@ titles.forEach((title) => {
     todoItemMap.set(item.id, item);
   });
 });
-
-const StatusCode = {
-  Ok: 200,
-  Created: 201,
-  BadRequest: 400,
-  NotFound: 404,
-};
 
 const duration = 500;
 

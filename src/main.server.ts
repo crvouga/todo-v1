@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import morgan from "morgan";
 import { useTodoListApi } from "./todo-list/todo-list-api.server";
+import { useUserApi } from "./user/user-api.server";
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.get("/", (req, res) => {
 });
 
 useTodoListApi(app);
+useUserApi(app);
 
 const port = Number(process.env.PORT) || Number(process.env.port) || 5000;
 

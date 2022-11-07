@@ -1,13 +1,12 @@
 import Api from "@/api";
 import {
-  formatError,
   TodoList,
   TodoListDeleteParams,
   TodoListGot,
   TodoListPatchBody,
   TodoListPatchParams,
 } from "@/todo-list/todo-list-shared";
-import { Err, Ok, type Result } from "@/utils";
+import { Err, formatError, Ok, type Result } from "@/utils";
 import { v4 } from "uuid";
 
 export const post = async ({
