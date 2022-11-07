@@ -4,7 +4,7 @@ import { RouterView } from "vue-router";
 
 <template>
   <div
-    class="flex flex-col items-center justify-center max-w-md w-full h-full mx-auto py-4"
+    class="flex flex-col items-center justify-center max-w-md w-full h-full mx-auto"
   >
     <RouterView />
   </div>

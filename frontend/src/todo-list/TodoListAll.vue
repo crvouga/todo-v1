@@ -86,7 +86,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="w-full mb-2 flex gap-2">
+  <div class="w-full mb-2 flex gap-2 p-4">
     <input
       v-model="title"
       class="block input input-md input-bordered input-primary flex-1"
