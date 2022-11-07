@@ -22,6 +22,10 @@ const get = async ({
     );
 
     if (!response.ok) {
+      if (response.status === 404) {
+        return { type: "Err", error: "Resource not found" } as const;
+      }
+
       return { type: "Err", error: "Response was not ok" } as const;
     }
 
