@@ -1,7 +1,7 @@
 <script lang="ts">
 import Spinner from "@/components/Spinner.vue";
 import type { TodoList } from "@/shared";
-import TodoListApi from "@/todo-list/todo-list-api";
+import TodoListApi from "./todo-list-api";
 import { formatFromNow, toValues } from "@/utils";
 import { defineComponent } from "vue";
 import { routes } from "@/router";
