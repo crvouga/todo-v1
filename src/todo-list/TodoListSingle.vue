@@ -92,13 +92,13 @@ export default defineComponent({
       });
     },
     text() {
-      if (this.statusPost.type === "Failure") {
+      if (this.statusPost.type === "Err") {
         this.statusPost = { type: "NotAsked" };
       }
     },
 
     statusSubmit(statusNew: Data["statusPost"], statusOld: Data["statusPost"]) {
-      if (statusOld.type !== statusNew.type && statusNew.type === "Failure") {
+      if (statusOld.type !== statusNew.type && statusNew.type === "Err") {
         const textElement = this.$refs.text as HTMLInputElement;
         textElement.focus();
       }
@@ -147,10 +147,10 @@ export default defineComponent({
       const got = await TodoListApi.getOne(params);
 
       if (got.type === "Err") {
-        this.statusGetList = { type: "Failure", params, error: got.error };
+        this.statusGetList = { type: "Err", params, error: got.error };
         return;
       }
-      this.statusGetList = { type: "Success", params, data: got.data };
+      this.statusGetList = { type: "Ok", params, data: got.data };
     },
 
     async patch(params: TodoItemPatchParams, body: TodoItemPatch) {
@@ -162,10 +162,10 @@ export default defineComponent({
       const patched = await Api.patch({ params, body });
 
       if (patched.type === "Err") {
-        this.statusPatch = { type: "Failure", params, error: patched.error };
+        this.statusPatch = { type: "Err", params, error: patched.error };
         return;
       }
-      this.statusPatch = { type: "Success", params, data: undefined };
+      this.statusPatch = { type: "Ok", params, data: undefined };
 
       const itemOld = this.itemById[params.itemId];
       const parsed = TodoItemPatch.safeParse(body);
@@ -191,7 +191,7 @@ export default defineComponent({
 
       if (!parsed.success) {
         this.statusDelete = {
-          type: "Failure",
+          type: "Err",
           error: formatError(parsed),
           params,
         };
@@ -201,11 +201,11 @@ export default defineComponent({
       const deleted = await Api.delete_(params);
 
       if (deleted.type === "Err") {
-        this.statusDelete = { type: "Failure", params, error: deleted.error };
+        this.statusDelete = { type: "Err", params, error: deleted.error };
         return;
       }
 
-      this.statusDelete = { type: "Success", params, data: undefined };
+      this.statusDelete = { type: "Ok", params, data: undefined };
 
       const { [params.itemId]: _, ...removed } = this.itemById;
       this.itemById = removed;
@@ -228,11 +228,11 @@ export default defineComponent({
       const got = await Api.get(params);
 
       if (got.type === "Err") {
-        this.statusGet = { type: "Failure", params, error: got.error };
+        this.statusGet = { type: "Err", params, error: got.error };
         return;
       }
 
-      this.statusGet = { type: "Success", data: undefined, params };
+      this.statusGet = { type: "Ok", data: undefined, params };
 
       const byId = got.data.items.reduce<Data["itemById"]>(
         (byId, item) => ({ ...byId, [item.id]: item }),
@@ -251,12 +251,12 @@ export default defineComponent({
       const posted = await Api.post({ listId, text });
 
       if (posted.type === "Err") {
-        this.statusPost = { type: "Failure", params: {}, error: posted.error };
+        this.statusPost = { type: "Err", params: {}, error: posted.error };
 
         return;
       }
 
-      this.statusPost = { type: "Success", params: {}, data: undefined };
+      this.statusPost = { type: "Ok", params: {}, data: undefined };
       this.text = "";
       this.itemById = {
         ...this.itemById,
@@ -294,16 +294,13 @@ export default defineComponent({
         <Spinner />
       </div>
 
-      <div v-if="statusGetList.type === 'Failure'">
+      <div v-if="statusGetList.type === 'Err'">
         <div class="alert alert-error">
           {{ statusGetList.error }}
         </div>
       </div>
 
-      <div
-        class="w-full flex items-center"
-        v-if="statusGetList.type === 'Success'"
-      >
+      <div class="w-full flex items-center" v-if="statusGetList.type === 'Ok'">
         <p class="text-4xl text-left w-full font-black">
           {{ statusGetList.data.title }}
         </p>
@@ -351,7 +348,7 @@ export default defineComponent({
           v-model="text"
           class="input input-md input-bordered flex-1 input-primary"
           :class="{
-            'input-error': statusPost.type === 'Failure',
+            'input-error': statusPost.type === 'Err',
           }"
           placeholder="What todo?"
         />
@@ -386,7 +383,7 @@ export default defineComponent({
       </div>
 
       <p class="py-2 text-sm text-red-500">
-        {{ statusPost.type === "Failure" ? statusPost.error : "" }}
+        {{ statusPost.type === "Err" ? statusPost.error : "" }}
       </p>
 
       <!-- 
@@ -441,15 +438,15 @@ export default defineComponent({
     <div class="flex flex-col items-center justify-center flex-1 w-full pb-16">
       <div class="px-4 w-full">
         <div
-          v-if="statusGet.type === 'Failure'"
+          v-if="statusGet.type === 'Err'"
           class="alert alert-error shadow-lg"
         >
-          {{ statusGet.type === "Failure" ? statusGet.error : "" }}
+          {{ statusGet.type === "Err" ? statusGet.error : "" }}
         </div>
       </div>
 
       <p
-        v-if="statusGet.type === 'Success' && items.length === 0"
+        v-if="statusGet.type === 'Ok' && items.length === 0"
         class="opacity-75 h-64 text-xl font-bold flex items-center justify-center"
       >
         {{
@@ -505,7 +502,7 @@ export default defineComponent({
                 {{ item.text }}
               </p>
               <p
-                class="text-xs opacity-75"
+                class="opacity-75 text-xs font-bold"
                 :class="{
                   'line-through opacity-50': item.isCompleted,
                 }"

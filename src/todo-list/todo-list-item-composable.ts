@@ -12,8 +12,8 @@ import TodoItemApi from "./todo-list-item-api";
 type Status<TParams, TError, TData> =
   | { type: "NotAsked" }
   | { type: "Loading"; params: TParams }
-  | { type: "Success"; params: TParams; data: TData }
-  | { type: "Failure"; params: TParams; error: TError };
+  | { type: "Ok"; params: TParams; data: TData }
+  | { type: "Err"; params: TParams; error: TError };
 
 const notAsked: { type: "NotAsked" } = { type: "NotAsked" };
 
@@ -36,7 +36,7 @@ export const useTodoItems = () => {
     const result = await TodoItemApi.get(params);
 
     if (result.type === "Err") {
-      statusGet.value = { type: "Failure", params, error: result.error };
+      statusGet.value = { type: "Err", params, error: result.error };
 
       return;
     }
@@ -46,7 +46,7 @@ export const useTodoItems = () => {
         result.data.items.every((newItem) => newItem.id !== item.id)
       )
       .concat(result.data.items);
-    statusGet.value = { type: "Success", params, data: result.data.items };
+    statusGet.value = { type: "Ok", params, data: result.data.items };
   };
 
   const delete_ = async (params: TodoItemDeleteParams) => {
@@ -59,7 +59,7 @@ export const useTodoItems = () => {
     const result = await TodoItemApi.delete_(params);
 
     if (result.type === "Err") {
-      statusDelete.value = { type: "Failure", params, error: result.error };
+      statusDelete.value = { type: "Err", params, error: result.error };
       return;
     }
 
@@ -79,7 +79,7 @@ export const useTodoItems = () => {
     const result = await TodoItemApi.patch({ params, body });
 
     if (result.type === "Err") {
-      statusPatch.value = { type: "Failure", params, error: result.error };
+      statusPatch.value = { type: "Err", params, error: result.error };
       return;
     }
 
@@ -92,7 +92,7 @@ export const useTodoItems = () => {
       return item;
     });
 
-    statusPatch.value = { type: "Success", data: null, params };
+    statusPatch.value = { type: "Ok", data: null, params };
   };
 
   const post = async ({ text, listId }: { text: string; listId: string }) => {
@@ -102,12 +102,12 @@ export const useTodoItems = () => {
     statusPost.value = { type: "Loading", params: {} };
     const result = await TodoItemApi.post({ listId, text });
     if (result.type === "Err") {
-      statusPost.value = { type: "Failure", params: {}, error: result.error };
+      statusPost.value = { type: "Err", params: {}, error: result.error };
       return;
     }
 
     todoItems.value = [...todoItems.value, result.data];
-    statusPost.value = { type: "Success", params: {}, data: null };
+    statusPost.value = { type: "Ok", params: {}, data: null };
   };
 
   return {

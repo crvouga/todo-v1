@@ -1,18 +1,3 @@
-/* 
-
-
-
-
-
-
-keeping frontend/src/shared.ts and backend/src/shared.ts
-
-
-
-
-
-*/
-
 import { z, type SafeParseError } from "zod";
 
 //
@@ -22,7 +7,7 @@ import { z, type SafeParseError } from "zod";
 export const endpoints = {
   "/todo-item": "/api/todo-item",
   "/todo-list": "/api/todo-list",
-  // this should be "/todo-list/:listId" but whatever
+  // todo this should be "/todo-list/:listId" but whatever
   "/todo-list-one": "/api/todo-list-one",
 } as const;
 

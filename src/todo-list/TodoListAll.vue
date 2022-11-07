@@ -8,8 +8,8 @@ import TodoListApi from "./todo-list-api";
 export type Status<TParams, TError, TData> =
   | { type: "NotAsked" }
   | { type: "Loading"; params: TParams }
-  | { type: "Success"; params: TParams; data: TData }
-  | { type: "Failure"; params: TParams; error: TError };
+  | { type: "Ok"; params: TParams; data: TData }
+  | { type: "Err"; params: TParams; error: TError };
 
 export const notAsked: { type: "NotAsked" } = { type: "NotAsked" };
 
@@ -50,10 +50,10 @@ export default defineComponent({
       this.statusGet = { type: "Loading", params: {} };
       const result = await TodoListApi.getAll();
       if (result.type === "Err") {
-        this.statusGet = { type: "Failure", params: {}, error: result.error };
+        this.statusGet = { type: "Err", params: {}, error: result.error };
         return;
       }
-      this.statusGet = { type: "Success", data: {}, params: {} };
+      this.statusGet = { type: "Ok", data: {}, params: {} };
       const byId = result.data.items.reduce<Data["lists"]>(
         (byId, item) => ({
           ...byId,
@@ -67,10 +67,10 @@ export default defineComponent({
       this.statusPost = { type: "Loading", params: {} };
       const result = await TodoListApi.post({ title });
       if (result.type === "Err") {
-        this.statusPost = { type: "Failure", params: {}, error: result.error };
+        this.statusPost = { type: "Err", params: {}, error: result.error };
         return;
       }
-      this.statusPost = { type: "Success", params: {}, data: {} };
+      this.statusPost = { type: "Ok", params: {}, data: {} };
       this.lists = {
         ...this.lists,
         [result.data.id]: {
@@ -86,45 +86,84 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="w-full mb-2 flex gap-2 p-4">
+  <!-- 
+
+
+    Input
+
+
+   -->
+  <div class="w-full flex gap-2 px-4 pt-4">
     <input
       v-model="title"
       class="block input input-md input-bordered input-primary flex-1"
+      :class="{ 'input-error': statusPost.type === 'Err' }"
       placeholder="Name of list"
     />
     <button
-      class="btn btn-primary w-36"
+      class="btn btn-primary w-32"
       :class="{ loading: statusPost.type === 'Loading' }"
       @click="post({ title })"
     >
-      Create New
+      <!-- plus icon -->
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="w-6 h-6 mr-1"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M12 4.5v15m7.5-7.5h-15"
+        />
+      </svg>
+
+      Add
     </button>
   </div>
+
+  <p
+    class="px-4 pb-4 text-red-500 mt-2 text-left w-full"
+    v-if="statusPost.type === 'Err'"
+  >
+    {{ statusPost.error }}
+  </p>
+
+  <!-- 
+
+
+  List
+
+
+ -->
 
   <ol class="w-full">
     <router-link
       :to="{ name: 'todo-list-single', params: { listId: list.id } }"
       v-for="list in lists"
       v-bind:key="list.id"
-      class="w-full flex flex-row items-center p-4 cursor-pointer active:bg-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 dark:active:bg-gray-700"
+      class="w-full flex flex-row items-center px-6 p-4 cursor-pointer active:bg-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 dark:active:bg-gray-700"
     >
       <div class="flex-1">
-        <p class="w-full font-black text-4xl">
+        <p class="w-full font-bold text-3xl mb-1">
           {{ list.title }}
         </p>
         <div class="flex items-center gap-2 flex-wrap">
           <span
-            class="badge"
+            class="badge badge-outline"
             :class="{
               'badge-primary': list.activeCount > 0,
               'badge-ghost': list.activeCount === 0,
             }"
             >{{ `${list.activeCount} Active` }}</span
           >
-          <span class="badge badge-ghost">{{
+          <span class="badge badge-secondary badge-outline">{{
             `${list.completedCount} Completed`
           }}</span>
-          <p>
+          <p class="opacity-75 text-xs font-bold">
             {{ formatFromNow(list.createdAt) }}
           </p>
         </div>
@@ -136,7 +175,7 @@ export default defineComponent({
         viewBox="0 0 24 24"
         stroke-width="1.5"
         stroke="currentColor"
-        class="w-6 h-6"
+        class="ml-2 w-6 h-6"
       >
         <path
           stroke-linecap="round"

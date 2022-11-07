@@ -70,7 +70,7 @@ watch([statusPost, statusDelete, statusPatch, filter, sort], () => {
           v-model="text"
           class="input input-md input-bordered flex-1 input-primary"
           :class="{
-            'input-error': statusPost.type === 'Failure',
+            'input-error': statusPost.type === 'Err',
           }"
           placeholder="What todo?"
         />
@@ -85,7 +85,7 @@ watch([statusPost, statusDelete, statusPatch, filter, sort], () => {
       </div>
 
       <p class="py-2 text-sm text-red-500">
-        {{ statusPost.type === "Failure" ? statusPost.error : "" }}
+        {{ statusPost.type === "Err" ? statusPost.error : "" }}
       </p>
 
       <div class="btn-group mb-4">
@@ -116,10 +116,10 @@ watch([statusPost, statusDelete, statusPatch, filter, sort], () => {
     <div class="flex flex-col items-center justify-center flex-1 w-full pb-16">
       <div class="px-4 w-full">
         <div
-          v-if="statusGet.type === 'Failure'"
+          v-if="statusGet.type === 'Err'"
           class="alert alert-error shadow-lg"
         >
-          {{ statusGet.type === "Failure" ? statusGet.error : "" }}
+          {{ statusGet.type === "Err" ? statusGet.error : "" }}
         </div>
       </div>
 

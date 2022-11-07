@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import TodoListAll from "./todo-list/TodoListAll.vue";
-import TodoListSingle from "./todo-list/TodoListSingle_OptionsAPI.vue";
+import TodoListSingle from "./todo-list/TodoListSingle.vue";
 import TodoListSingleSettings from "./todo-list/TodoListSingleSettings.vue";
 
 const router = createRouter({
