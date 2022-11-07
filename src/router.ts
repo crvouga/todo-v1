@@ -2,10 +2,22 @@ import { createRouter, createWebHistory } from "vue-router";
 import TodoListAll from "./todo-list/TodoListAll.vue";
 import TodoListSingle from "./todo-list/TodoListSingle.vue";
 import TodoListSingleSettings from "./todo-list/TodoListSingleSettings.vue";
+import LoginView from "./user/LoginView.vue";
+import CreateAccount from "./user/CreateAccount.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {
+      path: "/login",
+      name: "login",
+      component: LoginView,
+    },
+    {
+      path: "/create-account",
+      name: "create-account",
+      component: CreateAccount,
+    },
     {
       path: "/",
       name: "todo-list-all",
@@ -22,6 +34,27 @@ const router = createRouter({
       component: TodoListSingleSettings,
     },
   ],
+});
+
+//
+// Authentication Guard
+//
+
+router.beforeEach(async (to) => {
+  const isAuthenticated = false;
+
+  if (isAuthenticated) {
+    return true;
+  }
+
+  if (to.name === "create-account") {
+    return true;
+  }
+
+  if (to.name !== "login") {
+    return { name: "login" };
+  }
+  return true;
 });
 
 export default router;
