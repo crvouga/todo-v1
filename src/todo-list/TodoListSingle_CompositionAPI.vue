@@ -8,11 +8,11 @@ import {
   formatSort,
   type TodoItemFilter,
   type TodoItemSort,
-} from "@/shared";
+} from "@/todo-list/todo-list-shared";
 import { formatFromNow } from "@/utils";
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { useTodoItems } from "./todo-item-composable";
+import { useTodoItems } from "./todo-list-item-composable";
 
 const {
   todoItems,

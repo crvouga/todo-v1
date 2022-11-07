@@ -6,7 +6,7 @@ import {
   TodoItemGot,
   type TodoItemPatch,
   type TodoItemPatchParams,
-} from "@/shared";
+} from "@/todo-list/todo-list-shared";
 import Api from "@/api";
 import { Err, Ok, type Result } from "@/utils";
 import { v4 } from "uuid";

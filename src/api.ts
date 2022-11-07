@@ -1,5 +1,5 @@
-import type { Endpoints } from "./shared";
-import { endpoints } from "./shared";
+import type { Endpoints } from "./todo-list/todo-list-shared";
+import { endpoints } from "./todo-list/todo-list-shared";
 
 const devBackendUrl = "http://localhost:5000";
 

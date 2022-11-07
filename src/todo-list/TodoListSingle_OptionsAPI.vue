@@ -14,8 +14,8 @@ import {
   TodoItemPatchParams,
   TodoItemSort,
   TodoList,
-} from "@/shared";
-import Api from "./todo-item-api";
+} from "@/todo-list/todo-list-shared";
+import Api from "./todo-list-item-api";
 
 import { formatFromNow, toValues, type Status } from "@/utils";
 import { defineComponent } from "vue";

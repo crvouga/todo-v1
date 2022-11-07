@@ -5,9 +5,9 @@ import {
   TodoItemPatch,
   TodoItemPatchParams,
   type TodoItemGetParams,
-} from "@/shared";
+} from "@/todo-list/todo-list-shared";
 import { ref } from "vue";
-import TodoItemApi from "./todo-item-api";
+import TodoItemApi from "./todo-list-item-api";
 
 type Status<TParams, TError, TData> =
   | { type: "NotAsked" }

@@ -6,7 +6,7 @@ import {
   TodoListGot,
   TodoListPatchBody,
   TodoListPatchParams,
-} from "@/shared";
+} from "@/todo-list/todo-list-shared";
 import { Err, Ok, type Result } from "@/utils";
 import { v4 } from "uuid";
 

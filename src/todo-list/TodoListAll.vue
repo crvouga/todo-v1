@@ -1,6 +1,6 @@
 <script lang="ts">
 import Spinner from "@/components/Spinner.vue";
-import type { TodoListGotItem } from "@/shared";
+import type { TodoListGotItem } from "@/todo-list/todo-list-shared";
 import { formatFromNow, toValues } from "@/utils";
 import { defineComponent } from "vue";
 import TodoListApi from "./todo-list-api";
