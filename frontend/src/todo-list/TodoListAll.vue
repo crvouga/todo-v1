@@ -48,7 +48,7 @@ export default defineComponent({
   methods: {
     async get() {
       this.statusGet = { type: "Loading", params: {} };
-      const result = await TodoListApi.get();
+      const result = await TodoListApi.getAll();
       if (result.type === "Err") {
         this.statusGet = { type: "Failure", params: {}, error: result.error };
         return;
@@ -112,7 +112,7 @@ export default defineComponent({
         <p class="w-full font-black text-4xl">
           {{ list.title }}
         </p>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
           <span
             class="badge"
             :class="{

@@ -22,6 +22,8 @@ import { z, type SafeParseError } from "zod";
 export const endpoints = {
   "/todo-item": "/api/todo-item",
   "/todo-list": "/api/todo-list",
+  // this should be "/todo-list/:listId" but whatever
+  "/todo-list-one": "/api/todo-list-one",
 } as const;
 
 export type Endpoints = typeof endpoints;
@@ -171,6 +173,10 @@ export type TodoList = z.infer<typeof TodoList>;
 //
 //
 //
+
+export const TodoListGetOneParams = z.object({
+  listId: z.string().uuid(),
+});
 
 export const TodoListGotItem = z.intersection(
   TodoList,

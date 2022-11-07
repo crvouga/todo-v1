@@ -39,7 +39,7 @@ export const post = async ({
   return Ok(parsed.data);
 };
 
-export const get = async (): Promise<Result<string, TodoListGot>> => {
+export const getAll = async (): Promise<Result<string, TodoListGot>> => {
   const result = await Api.get({
     endpoint: "/todo-list",
     params: {},
@@ -96,4 +96,25 @@ export const patch = async (
   return Ok(undefined);
 };
 
-export default { get, post, delete_, patch };
+export const getOne = async (params: {
+  listId: string;
+}): Promise<Result<string, TodoList>> => {
+  const result = await Api.get({
+    endpoint: "/todo-list-one",
+    params,
+  });
+
+  if (result.type === "Err") {
+    return Err(result.error);
+  }
+
+  const parsed = TodoList.safeParse(result.json);
+
+  if (!parsed.success) {
+    return Err(formatError(parsed));
+  }
+
+  return Ok(parsed.data);
+};
+
+export default { getAll, post, delete_, patch, getOne };

@@ -13,11 +13,13 @@ import {
   TodoItemPatch,
   TodoItemPatchParams,
   TodoItemSort,
+  TodoList,
 } from "@/shared";
 import Api from "./todo-item-api";
 
 import { formatFromNow, toValues } from "@/utils";
 import { defineComponent } from "vue";
+import TodoListApi from "./todo-list-api";
 
 export type Status<TParams, TError, TData> =
   | { type: "NotAsked" }
@@ -29,6 +31,7 @@ export const notAsked: { type: "NotAsked" } = { type: "NotAsked" };
 
 type Data = {
   listId: string;
+  statusGetList: Status<{ listId: string }, string, TodoList>;
   //
   text: string;
   filter: TodoItemFilter;
@@ -45,20 +48,15 @@ type Data = {
   allSorts: TodoItemSort[];
 };
 
-type TodoItemFormatted = TodoItem & {
-  createdAtFormatted: string;
-};
-
-const formatTodoItem = (item: TodoItem): TodoItemFormatted => {
-  return {
-    ...item,
-    createdAtFormatted: formatFromNow(item.createdAt),
-  };
-};
-
 export default defineComponent({
   components: {
     Spinner: Spinner,
+  },
+
+  setup() {
+    return {
+      formatFromNow,
+    };
   },
 
   data(): Data {
@@ -66,6 +64,7 @@ export default defineComponent({
     const listId = String(this.$route.params["listId"]);
     return {
       listId,
+      statusGetList: { type: "NotAsked" },
       //
       text: "",
       itemById: {},
@@ -106,12 +105,11 @@ export default defineComponent({
   },
 
   computed: {
-    items(): TodoItemFormatted[] {
+    items(): TodoItem[] {
       return toValues(this.itemById)
         .filter(filterer({ filter: this.filter }))
         .sort(sorter({ sort: this.sort }))
-        .filter((item) => item.listId === this.listId)
-        .map(formatTodoItem);
+        .filter((item) => item.listId === this.listId);
     },
 
     allSortsFormatted() {
@@ -119,11 +117,15 @@ export default defineComponent({
     },
   },
 
-  async mounted() {
-    await this.get({
+  mounted() {
+    // todo this should be one api call
+    this.get({
       listId: this.listId,
       filter: this.filter,
       sort: this.sort,
+    });
+    this.getList({
+      listId: this.listId,
     });
   },
 
@@ -134,6 +136,20 @@ export default defineComponent({
 
     inputSort(sort: Data["sort"]) {
       this.sort = sort;
+    },
+
+    async getList(params: { listId: string }) {
+      if (this.statusGetList.type === "Loading") {
+        return;
+      }
+      this.statusGetList = { type: "Loading", params };
+      const got = await TodoListApi.getOne(params);
+
+      if (got.type === "Err") {
+        this.statusGetList = { type: "Failure", params, error: got.error };
+        return;
+      }
+      this.statusGetList = { type: "Success", params, data: got.data };
     },
 
     async patch(params: TodoItemPatchParams, body: TodoItemPatch) {
@@ -264,7 +280,23 @@ export default defineComponent({
     </div>
   </div> -->
 
-  <div class="flex flex-col items-center justify-center w-full h-full">
+  <div class="flex flex-col items-center justify-center w-full h-full pt-4">
+    <div class="px-4 pb-4">
+      <div v-if="statusGetList.type === 'Loading'"><Spinner /></div>
+
+      <div v-if="statusGetList.type === 'Failure'">
+        <div class="alert alert-error">
+          {{ statusGetList.error }}
+        </div>
+      </div>
+
+      <div v-if="statusGetList.type === 'Success'">
+        <p class="text-4xl font-black">
+          {{ statusGetList.data.title }}
+        </p>
+      </div>
+    </div>
+
     <!-- 
 
 
@@ -272,7 +304,7 @@ export default defineComponent({
 
 
    -->
-    <div class="w-full bg-inherit top-0 p-4">
+    <div class="w-full bg-inherit top-0 px-4">
       <div class="flex items-center justify-center gap-2 w-full">
         <input
           ref="text"
@@ -422,7 +454,7 @@ export default defineComponent({
                   'line-through opacity-50': item.isCompleted,
                 }"
               >
-                {{ item.createdAtFormatted }}
+                {{ formatFromNow(item.createdAt) }}
               </p>
             </div>
           </div>

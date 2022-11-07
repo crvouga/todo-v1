@@ -17,6 +17,7 @@ import {
   TodoListPatchParams,
   TodoListPatchBody,
   applyPatchTodoList,
+  TodoListGetOneParams,
 } from "./shared";
 import { v4 } from "uuid";
 import morgan from "morgan";
@@ -207,6 +208,29 @@ app.get(endpoints["/todo-item"], async (req, res) => {
 //
 //
 //
+
+app.get(endpoints["/todo-list-one"], async (req, res) => {
+  const params = TodoListGetOneParams.safeParse(req.query);
+
+  if (!params.success) {
+    res.status(StatusCode.BadRequest).json(params.error).end();
+    return;
+  }
+  const lists = Array.from(todoListMap.values()).filter(
+    (list) => list.id === params.data.listId
+  );
+
+  const list = lists[0];
+
+  if (!list) {
+    res.status(StatusCode.NotFound).end();
+    return;
+  }
+
+  await timeout(duration);
+
+  res.json(list);
+});
 
 app.get(endpoints["/todo-list"], async (req, res) => {
   const lists = Array.from(todoListMap.values());
