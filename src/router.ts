@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import TodoListAll from "./todo-list/TodoListAll.vue";
 import TodoListSingle from "./todo-list/TodoListSingle.vue";
 import TodoListSingleSettings from "./todo-list/TodoListSingleSettings.vue";
-import LoginView from "./user/UserLoginView.vue";
+import LoginView from "./user/UserLogin.vue";
 import CreateAccount from "./user/UserCreateAccount.vue";
 
 const router = createRouter({
