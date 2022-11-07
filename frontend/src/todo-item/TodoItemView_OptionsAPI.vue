@@ -86,6 +86,7 @@ export default defineComponent({
   watch: {
     filter() {
       this.get({
+        listId: this.listId,
         filter: this.filter,
         sort: this.sort,
       });
@@ -109,6 +110,7 @@ export default defineComponent({
       return toValues(this.itemById)
         .filter(filterer({ filter: this.filter }))
         .sort(sorter({ sort: this.sort }))
+        .filter((item) => item.listId === this.listId)
         .map(formatTodoItem);
     },
 
@@ -119,6 +121,7 @@ export default defineComponent({
 
   async mounted() {
     await this.get({
+      listId: this.listId,
       filter: this.filter,
       sort: this.sort,
     });
@@ -192,6 +195,7 @@ export default defineComponent({
 
       //
       this.get({
+        listId: this.listId,
         filter: this.filter,
         sort: this.sort,
       });
@@ -242,6 +246,7 @@ export default defineComponent({
         [posted.data.id]: posted.data,
       };
       this.get({
+        listId: this.listId,
         filter: this.filter,
         sort: this.sort,
       });

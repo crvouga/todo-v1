@@ -188,6 +188,7 @@ app.get(endpoints["/todo-item"], async (req, res) => {
 
   const items = Array.from(todoItemMap.values())
     .filter(filterer({ filter: params.filter }))
+    .filter((item) => item.listId === parsed.data.listId)
     .sort(sorter({ sort: params.sort }));
 
   const json: TodoItemGot = {

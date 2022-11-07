@@ -35,10 +35,11 @@ const text = ref("");
 const filter = ref<TodoItemFilter>("All");
 const sort = ref<TodoItemSort>("NewestFirst");
 
-//
+// this doesn't work for some reason :(
 const visibleItems = computed(() => {
   return todoItems.value
     .filter(filterer({ filter: filter.value }))
+    .filter((item) => item.listId === listId)
     .sort(sorter({ sort: sort.value }));
 });
 
@@ -46,6 +47,7 @@ watch(visibleItems, () => {});
 
 onMounted(() => {
   get({
+    listId,
     filter: filter.value,
     sort: sort.value,
   });
@@ -53,6 +55,7 @@ onMounted(() => {
 
 watch([statusPost, statusDelete, statusPatch, filter, sort], () => {
   get({
+    listId,
     filter: filter.value,
     sort: sort.value,
   });

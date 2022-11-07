@@ -115,6 +115,7 @@ export const formatSort = (sort: TodoItemSort): string => {
 //
 
 export const TodoItemGetParams = z.object({
+  listId: z.string().uuid(),
   sort: TodoItemSort,
   filter: TodoItemFilter,
 });
