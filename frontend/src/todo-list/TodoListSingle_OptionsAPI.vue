@@ -17,18 +17,10 @@ import {
 } from "@/shared";
 import Api from "./todo-item-api";
 
-import { formatFromNow, toValues } from "@/utils";
+import { formatFromNow, toValues, type Status } from "@/utils";
 import { defineComponent } from "vue";
 import TodoListApi from "./todo-list-api";
 import BackButton from "@/components/BackButton.vue";
-
-export type Status<TParams, TError, TData> =
-  | { type: "NotAsked" }
-  | { type: "Loading"; params: TParams }
-  | { type: "Success"; params: TParams; data: TData }
-  | { type: "Failure"; params: TParams; error: TError };
-
-export const notAsked: { type: "NotAsked" } = { type: "NotAsked" };
 
 type Data = {
   listId: string;
