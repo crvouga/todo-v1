@@ -2,6 +2,7 @@
 import BackButton from "@/components/BackButton.vue";
 import Spinner from "@/components/Spinner.vue";
 import type { TodoList } from "@/shared";
+import { showToast, store } from "@/store";
 import { defineComponent } from "vue";
 import TodoListApi from "./todo-list-api";
 
@@ -77,6 +78,7 @@ export default defineComponent({
       this.closeDeleteModal();
       this.statusDelete = { type: "Ok" };
       this.$router.push({ name: "todo-list-all" });
+      showToast({ type: "Info", title: "List was deleted forever" });
     },
   },
 });

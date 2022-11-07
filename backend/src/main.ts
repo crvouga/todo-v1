@@ -44,21 +44,19 @@ app.get("/", (req, res) => {
 });
 
 //
-//
-//
 // Data
 //
-//
-//
+
+// todo use a database
 
 const todoItemMap = new Map<string, TodoItem>();
 const todoListMap = new Map<string, TodoList>();
 
 //
-// init
+// initialize data
 //
 
-const titles = ["List A", "List B", "List C"];
+const titles = ["List A", "List B", "List C", "List D", "List E"];
 const texts = [
   "Learn Vue.js",
   "Learn Vue.js composition API",
