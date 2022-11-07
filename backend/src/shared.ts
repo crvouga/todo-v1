@@ -1,7 +1,14 @@
 /* 
 
 
+
+
+
+
 keeping frontend/src/shared.ts and backend/src/shared.ts
+
+
+
 
 
 */
@@ -28,6 +35,7 @@ const DateSchema = z.preprocess((arg) => {
 }, z.date());
 
 export const TodoItem = z.object({
+  listId: z.string().uuid(),
   id: z.string().uuid(),
   text: z.string().min(4).max(100),
   isCompleted: z.boolean(),
@@ -139,6 +147,7 @@ export type TodoItemPatch = z.infer<typeof TodoItemPatch>;
 
 export const applyPatch = (item: TodoItem, patch: TodoItemPatch): TodoItem => {
   return {
+    listId: item.listId,
     id: item.id,
     createdAt: patch.createdAt === undefined ? item.createdAt : patch.createdAt,
     isCompleted:

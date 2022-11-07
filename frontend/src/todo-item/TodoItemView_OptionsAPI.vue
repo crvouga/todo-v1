@@ -28,6 +28,8 @@ export type Status<TParams, TError, TData> =
 export const notAsked: { type: "NotAsked" } = { type: "NotAsked" };
 
 type Data = {
+  listId: string;
+  //
   text: string;
   filter: TodoItemFilter;
   sort: TodoItemSort;
@@ -60,7 +62,11 @@ export default defineComponent({
   },
 
   data(): Data {
+    // todo validate this
+    const listId = String(this.$route.params["listId"]);
     return {
+      listId,
+      //
       text: "",
       itemById: {},
       //
@@ -214,14 +220,14 @@ export default defineComponent({
       this.itemById = { ...this.itemById, ...byId };
     },
 
-    async post({ text }: { text: string }) {
+    async post({ text, listId }: { text: string; listId: string }) {
       if (this.statusPost.type === "Loading") {
         return;
       }
 
       this.statusPost = { type: "Loading", params: {} };
 
-      const posted = await Api.post({ text });
+      const posted = await Api.post({ listId, text });
 
       if (posted.type === "Err") {
         this.statusPost = { type: "Failure", params: {}, error: posted.error };
@@ -278,7 +284,7 @@ export default defineComponent({
         </p> -->
 
         <button
-          @click="post({ text })"
+          @click="post({ text, listId })"
           class="btn btn-primary w-32"
           :class="{ loading: statusPost.type === 'Loading' }"
         >

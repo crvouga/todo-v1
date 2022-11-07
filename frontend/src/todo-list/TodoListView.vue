@@ -4,6 +4,7 @@ import type { TodoList } from "@/shared";
 import TodoListApi from "@/todo-list/todo-list-api";
 import { formatFromNow, toValues } from "@/utils";
 import { defineComponent } from "vue";
+import { routes } from "@/router";
 
 export type Status<TParams, TError, TData> =
   | { type: "NotAsked" }
@@ -27,6 +28,7 @@ export default defineComponent({
   setup() {
     return {
       formatFromNow,
+      routes,
     };
   },
   data(): Data {
@@ -89,21 +91,22 @@ export default defineComponent({
       placeholder="Name of list"
     />
     <button
-      class="btn btn-primary"
+      class="btn btn-primary w-36"
       :class="{ loading: statusPost.type === 'Loading' }"
       @click="post({ title })"
     >
-      Create New List
+      Create New
     </button>
   </div>
 
   <ol class="w-full">
-    <li
+    <router-link
+      :to="{ name: 'todo-list-single', params: { listId: list.id } }"
       v-for="list in lists"
       v-bind:key="list.id"
-      class="w-full flex p-4 cursor-pointer active:bg-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 dark:active:bg-gray-700"
+      class="w-full flex flex-row items-center p-4 cursor-pointer active:bg-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 dark:active:bg-gray-700"
     >
-      <div>
+      <div class="flex-1">
         <p class="w-full font-black text-4xl">
           {{ list.title }}
         </p>
@@ -111,7 +114,22 @@ export default defineComponent({
           {{ formatFromNow(list.createdAt) }}
         </p>
       </div>
-    </li>
+      <!-- chevron right -->
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="w-6 h-6"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M8.25 4.5l7.5 7.5-7.5 7.5"
+        />
+      </svg>
+    </router-link>
   </ol>
 
   <div v-if="statusGet.type === 'Loading'" class="py-8">

@@ -95,12 +95,12 @@ export const useTodoItems = () => {
     statusPatch.value = { type: "Success", data: null, params };
   };
 
-  const post = async ({ text }: { text: string }) => {
+  const post = async ({ text, listId }: { text: string; listId: string }) => {
     if (statusPost.value.type === "Loading") {
       return;
     }
     statusPost.value = { type: "Loading", params: {} };
-    const result = await TodoItemApi.post({ text });
+    const result = await TodoItemApi.post({ listId, text });
     if (result.type === "Err") {
       statusPost.value = { type: "Failure", params: {}, error: result.error };
       return;

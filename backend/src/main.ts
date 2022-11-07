@@ -45,33 +45,49 @@ app.get("/", (req, res) => {
 //
 //
 //
-// Database
+// Data
 //
 //
 //
 
-const initialTodoItems = [
+const todoItemMap = new Map<string, TodoItem>();
+const todoListMap = new Map<string, TodoList>();
+
+//
+// init
+//
+
+const titles = ["List A", "List B", "List C"];
+const texts = [
   "Learn Vue.js",
   "Learn Vue.js composition API",
   "Go to the gym",
   "Hook up dynamodb",
   "Go to the store",
   "Add user auth",
-].map((title, i): TodoItem => {
-  const offset = i * 1000 * 60;
-  return {
-    createdAt: new Date(Date.now() - offset),
+];
+
+titles.forEach((title) => {
+  const list: TodoList = {
+    createdAt: new Date(),
     id: v4(),
-    isCompleted: false,
-    text: title,
+    title,
   };
+
+  todoListMap.set(list.id, list);
+
+  texts.forEach((text, i) => {
+    const offset = i * 1000 * 60;
+    const item: TodoItem = {
+      listId: list.id,
+      createdAt: new Date(Date.now() - offset),
+      id: v4(),
+      isCompleted: false,
+      text: text,
+    };
+    todoItemMap.set(item.id, item);
+  });
 });
-
-const todoItemMap = new Map<string, TodoItem>(
-  initialTodoItems.map((item) => [item.id, item])
-);
-
-const todoListMap = new Map<string, TodoList>();
 
 //
 //

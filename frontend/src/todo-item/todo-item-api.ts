@@ -80,11 +80,14 @@ export const get = async (
 };
 
 export const post = async ({
+  listId,
   text,
 }: {
+  listId: string;
   text: string;
 }): Promise<Result<string, TodoItem>> => {
   const dirty: TodoItem = {
+    listId,
     createdAt: new Date(),
     id: v4(),
     isCompleted: false,

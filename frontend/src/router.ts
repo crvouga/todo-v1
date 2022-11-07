@@ -7,15 +7,20 @@ const router = createRouter({
   routes: [
     {
       path: "/",
-      name: "todo-list",
+      name: "todo-list-all",
       component: TodoListView,
     },
     {
-      path: "/todo-item",
-      name: "todo-item",
+      path: "/todo-list/:listId",
+      name: "todo-list-single",
       component: TodoItemView,
     },
   ],
 });
+
+export const routes = {
+  home: () => ``,
+  todoList: ({ listId }: { listId: string }) => `/todo-list/${listId}`,
+};
 
 export default router;

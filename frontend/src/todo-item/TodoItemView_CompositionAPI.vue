@@ -11,6 +11,7 @@ import {
 } from "@/shared";
 import { formatFromNow } from "@/utils";
 import { computed, onMounted, ref, watch } from "vue";
+import { useRoute } from "vue-router";
 import { useTodoItems } from "./todo-item-composable";
 
 const {
@@ -24,6 +25,11 @@ const {
   patch,
   post,
 } = useTodoItems();
+
+const route = useRoute();
+
+// todo validate this
+const listId = String(route.params["listId"]);
 
 const text = ref("");
 const filter = ref<TodoItemFilter>("All");
@@ -67,7 +73,7 @@ watch([statusPost, statusDelete, statusPatch, filter, sort], () => {
         />
 
         <button
-          @click="post({ text: text })"
+          @click="post({ listId: listId, text: text })"
           class="btn btn-primary w-32"
           :class="{ loading: statusPost.type === 'Loading' }"
         >
