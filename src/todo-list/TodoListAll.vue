@@ -45,6 +45,13 @@ export default defineComponent({
   mounted() {
     this.get();
   },
+  watch: {
+    title() {
+      if (this.statusPost.type === "Err") {
+        this.statusPost = { type: "NotAsked" };
+      }
+    },
+  },
   methods: {
     async get() {
       this.statusGet = { type: "Loading", params: {} };
@@ -63,11 +70,17 @@ export default defineComponent({
       );
       this.lists = { ...this.lists, ...byId };
     },
+    focusTitleInput() {
+      // todo make typescript happy
+      // @ts-ignore
+      this.$refs.titleInput.focus();
+    },
     async post({ title }: { title: string }) {
       this.statusPost = { type: "Loading", params: {} };
       const result = await TodoListApi.post({ title });
       if (result.type === "Err") {
         this.statusPost = { type: "Err", params: {}, error: result.error };
+        this.focusTitleInput();
         return;
       }
       this.statusPost = { type: "Ok", params: {}, data: {} };
@@ -79,7 +92,11 @@ export default defineComponent({
           completedCount: 0,
         },
       };
-      this.get();
+      // this.get();
+      this.$router.push({
+        name: "todo-list-single",
+        params: { listId: result.data.id },
+      });
     },
   },
 });
@@ -95,6 +112,7 @@ export default defineComponent({
    -->
   <div class="w-full flex gap-2 px-4 pt-4">
     <input
+      ref="titleInput"
       v-model="title"
       class="block input input-md input-bordered input-primary flex-1"
       :class="{ 'input-error': statusPost.type === 'Err' }"
