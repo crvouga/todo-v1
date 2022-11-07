@@ -6,8 +6,10 @@ import { RouterLink, RouterView } from "vue-router";
   <div
     class="flex flex-col items-center justify-center max-w-md w-full h-full mx-auto"
   >
-    <RouterLink to="/"> Home </RouterLink>
-    <RouterLink to="/todo-item">Todo Items </RouterLink>
+    <nav>
+      <RouterLink to="/"> Home </RouterLink>
+      <RouterLink to="/todo-item">Todo Items </RouterLink>
+    </nav>
     <RouterView />
   </div>
 </template>

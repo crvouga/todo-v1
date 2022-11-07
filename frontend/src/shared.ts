@@ -162,6 +162,34 @@ export type TodoList = z.infer<typeof TodoList>;
 //
 //
 
+export const TodoListGot = z.object({
+  items: z.array(TodoList),
+});
+export type TodoListGot = z.infer<typeof TodoListGot>;
+
+export const TodoListDeleteParams = z.object({
+  listId: z.string(),
+});
+export type TodoListDeleteParams = z.infer<typeof TodoListDeleteParams>;
+
+export const TodoListPatchParams = z.object({
+  itemId: z.string(),
+});
+export type TodoListPatchParams = z.infer<typeof TodoListPatchParams>;
+export const TodoListPatchBody = TodoList.partial();
+export type TodoListPatchBody = z.infer<typeof TodoListPatchBody>;
+
+export const applyPatchTodoList = (
+  list: TodoList,
+  patch: TodoListPatchBody
+): TodoList => {
+  return {
+    id: list.id,
+    createdAt: patch.createdAt === undefined ? list.createdAt : patch.createdAt,
+    title: patch.title === undefined ? list.title : patch.title,
+  };
+};
+
 //
 //
 //

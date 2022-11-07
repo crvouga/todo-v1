@@ -127,7 +127,7 @@ export default defineComponent({
       this.sort = sort;
     },
 
-    async patchItem(params: TodoItemPatchParams, body: TodoItemPatch) {
+    async patch(params: TodoItemPatchParams, body: TodoItemPatch) {
       if (this.statusPatch.type === "Loading") {
         return;
       }
@@ -154,7 +154,7 @@ export default defineComponent({
       }
     },
 
-    async deleteItem(params: TodoItemDeleteParams) {
+    async delete_(params: TodoItemDeleteParams) {
       if (this.statusDelete.type === "Loading") {
         return;
       }
@@ -214,7 +214,7 @@ export default defineComponent({
       this.itemById = { ...this.itemById, ...byId };
     },
 
-    async postItem({ text }: { text: string }) {
+    async post({ text }: { text: string }) {
       if (this.statusPost.type === "Loading") {
         return;
       }
@@ -278,7 +278,7 @@ export default defineComponent({
         </p> -->
 
         <button
-          @click="postItem({ text })"
+          @click="post({ text })"
           class="btn btn-primary w-32"
           :class="{ loading: statusPost.type === 'Loading' }"
         >
@@ -386,7 +386,7 @@ export default defineComponent({
                 statusPatch.params.itemId === item.id,
             }"
             @click="
-              patchItem({ itemId: item.id }, { isCompleted: !item.isCompleted })
+              patch({ itemId: item.id }, { isCompleted: !item.isCompleted })
             "
           >
             <input
@@ -422,7 +422,7 @@ export default defineComponent({
                 statusDelete.type === 'Loading' &&
                 statusDelete.params.itemId === item.id,
             }"
-            @click="deleteItem({ itemId: item.id })"
+            @click="delete_({ itemId: item.id })"
           >
             Delete
           </button>

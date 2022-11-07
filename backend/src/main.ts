@@ -11,8 +11,15 @@ import {
   sorter,
   filterer,
   applyPatch,
+  TodoList,
+  TodoListGot,
+  TodoListDeleteParams,
+  TodoListPatchParams,
+  TodoListPatchBody,
+  applyPatchTodoList,
 } from "./shared";
 import { v4 } from "uuid";
+import morgan from "morgan";
 
 //
 //
@@ -26,10 +33,58 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(morgan("tiny"));
 
 app.get("/", (req, res) => {
-  res.json({ todoItems: Object.fromEntries(todoItemMap.entries()) });
+  res.json({
+    todoItems: Object.fromEntries(todoItemMap.entries()),
+    todoLists: Object.fromEntries(todoListMap.entries()),
+  });
 });
+
+//
+//
+//
+// Database
+//
+//
+//
+
+const initialTodoItems = [
+  "Learn Vue.js",
+  "Learn Vue.js composition API",
+  "Go to the gym",
+  "Hook up dynamodb",
+  "Go to the store",
+  "Add user auth",
+].map((title, i): TodoItem => {
+  const offset = i * 1000 * 60;
+  return {
+    createdAt: new Date(Date.now() - offset),
+    id: v4(),
+    isCompleted: false,
+    text: title,
+  };
+});
+
+const todoItemMap = new Map<string, TodoItem>(
+  initialTodoItems.map((item) => [item.id, item])
+);
+
+const todoListMap = new Map<string, TodoList>();
+
+//
+//
+//
+//
+//
+
+const StatusCode = {
+  Ok: 200,
+  Created: 201,
+  BadRequest: 400,
+  NotFound: 404,
+};
 
 //
 //
@@ -39,38 +94,13 @@ app.get("/", (req, res) => {
 //
 //
 
-const initial: TodoItem[] = [];
-
-const titles = [
-  "Learn Vue.js",
-  "Learn Vue.js composition API",
-  "Go to the gym",
-  "Hook up dynamodb",
-  "Go to the store",
-  "Add user auth",
-];
-
-titles.forEach((title, i) => {
-  const offset = i * 1000 * 60;
-  initial.push({
-    createdAt: new Date(Date.now() - offset),
-    id: v4(),
-    isCompleted: false,
-    text: title,
-  });
-});
-
-const todoItemMap = new Map<string, TodoItem>(
-  initial.map((item) => [item.id, item])
-);
-
 const duration = 500;
 
 app.post(endpoints["/todo-item"], async (req, res) => {
   const result = TodoItem.safeParse(req.body);
 
   if (!result.success) {
-    res.status(400).json(result.error).end();
+    res.status(StatusCode.BadRequest).json(result.error).end();
     return;
   }
 
@@ -80,14 +110,14 @@ app.post(endpoints["/todo-item"], async (req, res) => {
 
   await timeout(duration);
 
-  res.status(201).end();
+  res.status(StatusCode.Created).end();
 });
 
 app.delete(endpoints["/todo-item"], async (req, res) => {
   const result = TodoItemDeleteParams.safeParse(req.query);
 
   if (!result.success) {
-    res.status(400).json(result.error).end();
+    res.status(StatusCode.BadRequest).json(result.error).end();
     return;
   }
 
@@ -97,27 +127,27 @@ app.delete(endpoints["/todo-item"], async (req, res) => {
 
   await timeout(duration);
 
-  res.status(201).end();
+  res.status(StatusCode.Created).end();
 });
 
 app.patch(endpoints["/todo-item"], async (req, res) => {
   const params = TodoItemPatchParams.safeParse(req.query);
   if (!params.success) {
-    res.status(400).json(params.error).end();
+    res.status(StatusCode.BadRequest).json(params.error).end();
     return;
   }
 
   const patch = TodoItemPatch.safeParse(req.body);
 
   if (!patch.success) {
-    res.status(400).json(patch.error).end();
+    res.status(StatusCode.BadRequest).json(patch.error).end();
     return;
   }
 
   const item = todoItemMap.get(params.data.itemId);
 
   if (!item) {
-    res.status(404).end();
+    res.status(StatusCode.NotFound).end();
     return;
   }
 
@@ -134,7 +164,7 @@ app.get(endpoints["/todo-item"], async (req, res) => {
   const parsed = TodoItemGetParams.safeParse(req.query);
 
   if (!parsed.success) {
-    res.status(400).json(parsed.error).end();
+    res.status(StatusCode.BadRequest).json(parsed.error).end();
     return;
   }
 
@@ -151,6 +181,67 @@ app.get(endpoints["/todo-item"], async (req, res) => {
   await timeout(duration);
 
   res.json(json);
+});
+
+//
+//
+//
+// Todo List
+//
+//
+//
+
+app.get(endpoints["/todo-list"], async (req, res) => {
+  const items = Array.from(todoListMap.values());
+  const json: TodoListGot = {
+    items: items,
+  };
+  await timeout(duration);
+  res.json(json);
+});
+
+app.delete(endpoints["/todo-list"], async (req, res) => {
+  const parsed = TodoListDeleteParams.safeParse(req.query);
+  if (!parsed.success) {
+    res.status(StatusCode.BadRequest).json(parsed.error).end();
+    return;
+  }
+  todoListMap.delete(parsed.data.listId);
+  await timeout(duration);
+  res.status(StatusCode.Ok).end();
+});
+
+app.post(endpoints["/todo-list"], async (req, res) => {
+  const parsed = TodoList.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(StatusCode.BadRequest).json(parsed.error).end();
+    return;
+  }
+  todoListMap.set(parsed.data.id, parsed.data);
+  await timeout(duration);
+  res.status(StatusCode.Created).end();
+});
+
+app.patch(endpoints["/todo-list"], async (req, res) => {
+  const parsedParams = TodoListPatchParams.safeParse(req.query);
+  if (!parsedParams.success) {
+    res.status(StatusCode.BadRequest).json(parsedParams.error).end();
+    return;
+  }
+  const parsedBody = TodoListPatchBody.safeParse(req.body);
+  if (!parsedBody.success) {
+    res.status(StatusCode.BadRequest).json(parsedBody.error).end();
+    return;
+  }
+  const existing = todoListMap.get(parsedParams.data.itemId);
+  if (!existing) {
+    res.status(StatusCode.NotFound).end();
+    return;
+  }
+  const patched = applyPatchTodoList(existing, parsedBody.data);
+  todoListMap.set(patched.id, patched);
+  await timeout(duration);
+  res.status(StatusCode.Ok).end();
 });
 
 //
