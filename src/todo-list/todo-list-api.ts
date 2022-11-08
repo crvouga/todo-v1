@@ -1,5 +1,6 @@
 import Api from "@/api";
 import {
+  endpoints,
   TodoList,
   TodoListDeleteParams,
   TodoListGot,
@@ -27,7 +28,7 @@ export const post = async ({
   }
 
   const result = await Api.post({
-    endpoint: "/todo-list",
+    endpoint: endpoints["/todo-list"],
     json: parsed.data,
   });
 
@@ -40,7 +41,7 @@ export const post = async ({
 
 export const getAll = async (): Promise<Result<string, TodoListGot>> => {
   const result = await Api.get({
-    endpoint: "/todo-list",
+    endpoint: endpoints["/todo-list"],
     params: {},
   });
 
@@ -67,7 +68,7 @@ export const delete_ = async (
   }
 
   const result = await Api.delete({
-    endpoint: "/todo-list",
+    endpoint: endpoints["/todo-list"],
     params: parsed.data,
   });
 
@@ -83,7 +84,7 @@ export const patch = async (
   body: TodoListPatchBody
 ): Promise<Result<string, undefined>> => {
   const result = await Api.patch({
-    endpoint: "/todo-list",
+    endpoint: endpoints["/todo-list"],
     params: params,
     body: body,
   });
@@ -99,7 +100,7 @@ export const getOne = async (params: {
   listId: string;
 }): Promise<Result<string, TodoList>> => {
   const result = await Api.get({
-    endpoint: "/todo-list-one",
+    endpoint: endpoints["/todo-list-one"],
     params,
   });
 

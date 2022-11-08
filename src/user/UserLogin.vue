@@ -1,5 +1,6 @@
 <script lang="ts">
 import api from "@/api";
+import { showToast } from "@/store";
 import { formatError } from "@/utils";
 import { defineComponent } from "vue";
 import {
@@ -64,8 +65,9 @@ export default defineComponent({
         return;
       }
       this.status = { type: "Loading" };
+      const emailAddress = this.emailAddress;
       const dirty: SessionPostBody = {
-        emailAddress: this.emailAddress,
+        emailAddress,
         password: this.password,
       };
       const posted = await api.post({
@@ -105,6 +107,10 @@ export default defineComponent({
       this.status = { type: "Ok", data: parsedBody.data };
       localStorage.setItem(sessionIdKey, parsedBody.data.sessionId);
       this.$router.push({ name: "todo-list-all" });
+      showToast({
+        type: "Info",
+        title: `Logged in with ${emailAddress}`,
+      });
     },
   },
 });

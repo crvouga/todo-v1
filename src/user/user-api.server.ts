@@ -150,9 +150,7 @@ export const useUserApi = ({ app, repo }: { repo: Repo; app: Application }) => {
     res.status(StatusCode.Ok).json(sessionGetBody).end();
   });
 
-  app.delete(endpoints['/session'], (req, res) => {
-    const params = req.
-  })
+  app.delete(endpoints["/session"], (req, res) => {});
 
   //
   //

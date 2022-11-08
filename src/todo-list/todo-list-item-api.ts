@@ -1,4 +1,5 @@
 import {
+  endpoints,
   TodoItem,
   TodoItemDeleteParams,
   TodoItemGetParams,
@@ -18,7 +19,7 @@ export const patch = async ({
   body: TodoItemPatch;
 }): Promise<Result<string, null>> => {
   const patched = await Api.patch({
-    endpoint: "/todo-item",
+    endpoint: endpoints["/todo-item"],
     params,
     body: body,
   });
@@ -40,7 +41,7 @@ export const delete_ = async (
   }
 
   const deleted = await Api.delete({
-    endpoint: "/todo-item",
+    endpoint: endpoints["/todo-item"],
     params: parsed.data,
   });
 
@@ -61,7 +62,7 @@ export const get = async (
   }
 
   const got = await Api.get({
-    endpoint: "/todo-item",
+    endpoint: endpoints["/todo-item"],
     params: parsedParams.data,
   });
 
@@ -99,7 +100,10 @@ export const post = async ({
     return Err(formatError(parsed));
   }
 
-  const posted = await Api.post({ endpoint: "/todo-item", json: parsed.data });
+  const posted = await Api.post({
+    endpoint: endpoints["/todo-item"],
+    json: parsed.data,
+  });
 
   if (posted.type === "Err") {
     return Err(posted.error);
