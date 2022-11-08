@@ -11,11 +11,14 @@ import { Err, formatError, Ok, type Result } from "@/utils";
 import { v4 } from "uuid";
 
 export const post = async ({
+  userId,
   title,
 }: {
+  userId: string;
   title: string;
 }): Promise<Result<string, TodoList>> => {
   const dirty: TodoList = {
+    userId,
     createdAt: new Date(),
     id: v4(),
     title,

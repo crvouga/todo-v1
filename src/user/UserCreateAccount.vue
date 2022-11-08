@@ -1,7 +1,7 @@
 <script lang="ts">
 import api from "@/api";
 import BackButton from "@/components/BackButton.vue";
-import { showToast } from "@/toast";
+import { showToast } from "@/store-toast";
 import { defineComponent } from "vue";
 import { endpoints, UserPostBody, UserPostError } from "./user-shared";
 

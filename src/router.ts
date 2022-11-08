@@ -6,6 +6,7 @@ import LoginView from "./user/UserLogin.vue";
 import CreateAccount from "./user/UserCreateAccount.vue";
 import userSessionApi from "./user/user-session-api";
 import UserSettingsVue from "./user/UserSettings.vue";
+import { getSession } from "./store-session";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -53,15 +54,9 @@ const router = createRouter({
 //
 
 router.beforeEach(async (to) => {
-  const result = await userSessionApi.get();
+  const result = await getSession();
 
   if (result.type === "Ok") {
-    return true;
-  }
-
-  const isAuthenticated = false;
-
-  if (isAuthenticated) {
     return true;
   }
 
@@ -72,6 +67,7 @@ router.beforeEach(async (to) => {
   if (to.name !== "login") {
     return { name: "login" };
   }
+
   return true;
 });
 

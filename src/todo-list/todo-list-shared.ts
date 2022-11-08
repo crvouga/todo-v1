@@ -150,7 +150,8 @@ export const applyPatch = (item: TodoItem, patch: TodoItemPatch): TodoItem => {
 
 export const TodoList = z.object({
   id: z.string().uuid(),
-  title: z.string().min(3).max(100),
+  userId: z.string().uuid(),
+  title: z.string().min(4).max(100),
   createdAt: DateSchema,
 });
 export type TodoList = z.infer<typeof TodoList>;
@@ -194,6 +195,7 @@ export const applyPatchTodoList = (
   patch: TodoListPatchBody
 ): TodoList => {
   return {
+    userId: list.userId,
     id: list.id,
     createdAt: list.createdAt,
     title: patch.title === undefined ? list.title : patch.title,

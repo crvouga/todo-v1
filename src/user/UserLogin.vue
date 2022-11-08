@@ -1,6 +1,6 @@
 <script lang="ts">
 import api from "@/api";
-import { showToast } from "@/toast";
+import { showToast } from "@/store-toast";
 import { formatError } from "@/utils";
 import { defineComponent } from "vue";
 import {

@@ -108,7 +108,6 @@ const repo: Repo = {
 //
 // initialize data
 //
-
 const titles = ["List A", "List B", "List C", "List D", "List E"];
 const texts = [
   "Learn Vue.js",
@@ -119,26 +118,29 @@ const texts = [
   "Add user auth",
 ];
 
-titles.forEach((title) => {
-  const list: TodoList = {
-    createdAt: new Date(),
-    id: v4(),
-    title,
-  };
-
-  listMap.set(list.id, list);
-
-  texts.forEach((text, i) => {
-    const offset = i * 1000 * 60;
-    const item: TodoItem = {
-      listId: list.id,
-      createdAt: new Date(Date.now() - offset),
+export const seed = ({ userId }: { userId: string }) => {
+  titles.forEach((title) => {
+    const list: TodoList = {
+      userId,
+      createdAt: new Date(),
       id: v4(),
-      isCompleted: false,
-      text: text,
+      title,
     };
-    itemMap.set(item.id, item);
+
+    listMap.set(list.id, list);
+
+    texts.forEach((text, i) => {
+      const offset = i * 1000 * 60;
+      const item: TodoItem = {
+        listId: list.id,
+        createdAt: new Date(Date.now() - offset),
+        id: v4(),
+        isCompleted: false,
+        text: text,
+      };
+      itemMap.set(item.id, item);
+    });
   });
-});
+};
 
 export default repo;

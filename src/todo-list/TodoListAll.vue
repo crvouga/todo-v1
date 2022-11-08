@@ -5,6 +5,7 @@ import type { TodoListGotItem } from "@/todo-list/todo-list-shared";
 import { formatFromNow, toValues } from "@/utils";
 import { defineComponent } from "vue";
 import TodoListApi from "./todo-list-api";
+import { getCurrentUserId } from "@/store-session";
 
 export type Status<TParams, TError, TData> =
   | { type: "NotAsked" }
@@ -25,6 +26,9 @@ export default defineComponent({
   components: {
     Spinner: Spinner,
     NavBar,
+  },
+  props: {
+    currentUserId: String,
   },
   setup() {
     return {
@@ -79,7 +83,20 @@ export default defineComponent({
     },
     async post({ title }: { title: string }) {
       this.statusPost = { type: "Loading", params: {} };
-      const result = await TodoListApi.post({ title });
+
+      const currentUserId = getCurrentUserId();
+
+      if (!currentUserId) {
+        this.statusPost = {
+          type: "Err",
+          error: "Must be logged in",
+          params: {},
+        };
+        return;
+      }
+
+      const result = await TodoListApi.post({ userId: currentUserId, title });
+
       if (result.type === "Err") {
         this.statusPost = { type: "Err", params: {}, error: result.error };
         this.focusTitleInput();
