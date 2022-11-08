@@ -92,7 +92,7 @@ export default defineComponent({
     <BackButton :to="{ name: 'home' }" />
   </div>
 
-  <h1 class="font-bold text-3xl px-4 w-full text-left pt-4">Account</h1>
+  <h1 class="font-bold text-4xl px-4 w-full text-left pt-4">Account</h1>
 
   <div
     v-if="statusGet.type === 'Loading'"
