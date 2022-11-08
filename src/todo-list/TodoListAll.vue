@@ -202,7 +202,7 @@ export default defineComponent({
   </div>
 
   <p
-    class="px-4 pb-4 text-red-500 mt-2 text-left w-full"
+    class="px-4 text-red-500 mt-2 text-left w-full"
     v-if="statusPost.type === 'Err'"
   >
     {{ statusPost.error }}
