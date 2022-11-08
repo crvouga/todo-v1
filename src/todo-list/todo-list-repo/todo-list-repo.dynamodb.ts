@@ -1,1 +1,1 @@
-// todo
+export const todo = "todo";
