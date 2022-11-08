@@ -15,14 +15,9 @@ import {
   User,
   UserPostBody,
   UserPostError,
+  UserGetParams,
+  UserGotBody,
 } from "./user-shared";
-
-//
-//
-//
-//
-
-const sessionIdCookieName = "todo-app-session-id";
 
 export const useUserApi = ({ app, repo }: { repo: Repo; app: Application }) => {
   //
@@ -174,6 +169,25 @@ export const useUserApi = ({ app, repo }: { repo: Repo; app: Application }) => {
   //
   //
   //
+
+  app.get(endpoints["/user"], async (req, res) => {
+    const parsed = UserGetParams.safeParse(req.query);
+    if (!parsed.success) {
+      res.status(StatusCode.BadRequest).end();
+      return;
+    }
+    const found = await repo.user.findOneById({ id: parsed.data.userId });
+    if (found.type === "Err") {
+      res.status(StatusCode.ServerError).json(found.error);
+      return;
+    }
+    if (!found.data) {
+      res.status(StatusCode.NotFound).end();
+      return;
+    }
+    const body: UserGotBody = found.data;
+    res.json(body);
+  });
 
   app.post(endpoints["/user"], async (req, res) => {
     const parsed = UserPostBody.safeParse(req.body);

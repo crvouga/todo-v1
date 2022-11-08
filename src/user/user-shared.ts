@@ -26,6 +26,19 @@ export const UserPostError = z.discriminatedUnion("type", [
 ]);
 export type UserPostError = z.infer<typeof UserPostError>;
 
+export const UserGetParams = z.object({
+  userId: z.string().uuid(),
+});
+export type UserGetParams = z.infer<typeof UserGetParams>;
+
+export const UserGotBody = User;
+export type UserGotBody = z.infer<typeof UserGotBody>;
+
+//
+//
+//
+//
+
 export const SessionGetParams = z.object({
   sessionId: z.string(),
 });

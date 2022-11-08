@@ -26,6 +26,16 @@ const repo: Repo = {
 
       return Ok(found);
     },
+
+    findOneById: async (params) => {
+      const found = userMap.get(params.id);
+
+      if (!found) {
+        return Ok(null);
+      }
+
+      return Ok(found);
+    },
   },
   password: {
     insertOne: async (params) => {

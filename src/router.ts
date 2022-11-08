@@ -2,11 +2,10 @@ import { createRouter, createWebHistory } from "vue-router";
 import TodoListAll from "./todo-list/TodoListAll.vue";
 import TodoListSingle from "./todo-list/TodoListSingle.vue";
 import TodoListSingleSettings from "./todo-list/TodoListSingleSettings.vue";
-import LoginView from "./user/UserLogin.vue";
 import CreateAccount from "./user/UserCreateAccount.vue";
-import userSessionApi from "./user/user-session-api";
-import UserSettingsVue from "./user/UserSettings.vue";
+import LoginView from "./user/UserLogin.vue";
 import { getSession } from "./store-session";
+import UserAccount from "./user/UserAccount.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -22,9 +21,9 @@ const router = createRouter({
       component: CreateAccount,
     },
     {
-      path: "/user-settings",
-      name: "user-settings",
-      component: UserSettingsVue,
+      path: "/user-account",
+      name: "user-account",
+      component: UserAccount,
     },
     {
       path: "/",

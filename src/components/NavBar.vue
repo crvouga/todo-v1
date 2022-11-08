@@ -8,7 +8,7 @@
         todo
       </RouterLink>
     </div>
-    <RouterLink class="btn btn-primary btn-xs" :to="{ name: 'user-settings' }">
+    <RouterLink class="btn btn-primary btn-xs" :to="{ name: 'user-account' }">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"

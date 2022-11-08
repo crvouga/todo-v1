@@ -7,6 +7,9 @@ export type Repo = {
     findOneByEmailAddress: (params: {
       emailAddress: string;
     }) => Promise<Result<string, User | null>>;
+    findOneById: (params: {
+      id: string;
+    }) => Promise<Result<string, User | null>>;
   };
   password: {
     insertOne: (params: {
