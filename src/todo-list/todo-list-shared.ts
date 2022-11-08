@@ -9,6 +9,9 @@ export const endpoints = {
   "/todo-list": "/api/todo-list",
   // todo this should be "/todo-list/:listId" but whatever
   "/todo-list-one": "/api/todo-list-one",
+
+  // this isn't very restful :|
+  "/todo-list-seed": "/api/todo-list-seed",
 } as const;
 
 export type Endpoints = typeof endpoints;
@@ -206,3 +209,8 @@ export const applyPatchTodoList = (
     title: patch.title === undefined ? list.title : patch.title,
   };
 };
+
+export const TodoSeedPostBody = z.object({
+  userId: z.string().uuid(),
+});
+export type TodoSeedPostBody = z.infer<typeof TodoSeedPostBody>;

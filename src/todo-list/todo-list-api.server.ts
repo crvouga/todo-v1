@@ -1,5 +1,6 @@
 import type { Application } from "express";
 import { StatusCode } from "../utils";
+import { getSeedData } from "./todo-list-repo/seed";
 import type { Repo } from "./todo-list-repo/todo-list-repo";
 import {
   applyPatch,
@@ -18,6 +19,7 @@ import {
   TodoListGot,
   TodoListPatchBody,
   TodoListPatchParams,
+  TodoSeedPostBody,
 } from "./todo-list-shared";
 
 const duration = 500;
@@ -276,5 +278,32 @@ export const useTodoListApi = ({
     repo.list.updateOne({ updated: patched });
 
     res.status(StatusCode.Ok).end();
+  });
+
+  app.post(endpoints["/todo-list-seed"], async (req, res) => {
+    const parsed = TodoSeedPostBody.safeParse(req.body);
+
+    if (!parsed.success) {
+      res.status(StatusCode.BadRequest).json(parsed.error);
+      return;
+    }
+
+    const seedData = getSeedData({ userId: parsed.data.userId });
+
+    // todo move the following into repo layer
+    for (const list of seedData.lists) {
+      const inserted = await repo.list.insertOne({ list });
+      if (inserted.type === "Err") {
+        console.error(inserted.error);
+      }
+    }
+    for (const item of seedData.items) {
+      const inserted = await repo.item.insertOne({ item });
+      if (inserted.type === "Err") {
+        console.error(inserted.error);
+      }
+    }
+
+    res.status(StatusCode.Created).end();
   });
 };

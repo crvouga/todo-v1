@@ -7,6 +7,7 @@ import {
   TodoListGot,
   TodoListPatchBody,
   TodoListPatchParams,
+  TodoSeedPostBody,
 } from "@/todo-list/todo-list-shared";
 import { Err, formatError, Ok, type Result } from "@/utils";
 import { v4 } from "uuid";
@@ -123,4 +124,19 @@ export const getOne = async (params: {
   return Ok(parsed.data);
 };
 
-export default { getAll, post, delete_, patch, getOne };
+const postSeed = async (
+  body: TodoSeedPostBody
+): Promise<Result<string, null>> => {
+  const posted = await Api.post({
+    endpoint: endpoints["/todo-list-seed"],
+    json: body,
+  });
+
+  if (posted.type === "Err") {
+    return Err(posted.error);
+  }
+
+  return Ok(null);
+};
+
+export default { getAll, post, delete_, patch, getOne, postSeed };

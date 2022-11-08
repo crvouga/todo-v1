@@ -20,6 +20,7 @@ type Data = {
   lists: { [listId: string]: TodoListGotItem };
   statusGet: Status<{}, string, {}>;
   statusPost: Status<{}, string, {}>;
+  statusPostSeed: Status<{}, string, {}>;
 };
 
 export default defineComponent({
@@ -41,6 +42,7 @@ export default defineComponent({
       lists: {},
       statusGet: notAsked,
       statusPost: notAsked,
+      statusPostSeed: notAsked,
     };
   },
   computed: {
@@ -92,6 +94,31 @@ export default defineComponent({
       // @ts-ignore
       this.$refs.titleInput.focus();
     },
+
+    async postSeed() {
+      this.statusPostSeed = { type: "Loading", params: {} };
+      const currentUserId = getCurrentUserId();
+
+      if (!currentUserId) {
+        this.statusPost = {
+          type: "Err",
+          error: "Must be logged in",
+          params: {},
+        };
+        return;
+      }
+
+      const posted = await TodoListApi.postSeed({ userId: currentUserId });
+
+      if (posted.type === "Err") {
+        this.statusPostSeed = { type: "Err", error: posted.error, params: {} };
+        return;
+      }
+
+      this.statusPostSeed = { type: "Ok", data: {}, params: {} };
+      this.get();
+    },
+
     async post({ title }: { title: string }) {
       this.statusPost = { type: "Loading", params: {} };
 
@@ -180,6 +207,34 @@ export default defineComponent({
   >
     {{ statusPost.error }}
   </p>
+
+  <!-- 
+
+
+    Empty State
+
+
+   -->
+
+  <div
+    v-if="Object.keys(lists).length === 0 && statusGet.type !== 'Loading'"
+    class="w-full flex items-center justify-center p-12 flex-col"
+  >
+    <p class="mb-2 opacity-75 text-2xl font-bold">You don't have any list.</p>
+    <button
+      class="btn btn-primary"
+      :class="{ loading: statusPostSeed.type === 'Loading' }"
+      @click="postSeed"
+    >
+      Seed Data
+    </button>
+    <div
+      v-if="statusPostSeed.type === 'Err'"
+      class="alert alert-error w-full mt-2"
+    >
+      {{ statusPostSeed.error }}
+    </div>
+  </div>
 
   <!-- 
 
