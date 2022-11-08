@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterView } from "vue-router";
-import { store } from "@/store";
+import { store } from "@/toast";
 </script>
 
 <template>

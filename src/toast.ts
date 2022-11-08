@@ -1,10 +1,6 @@
 import { v4 } from "uuid";
 import { reactive } from "vue";
 
-//
-//
-//
-
 export type Store = {
   toast: Toast | { type: "None" };
 };
@@ -14,10 +10,6 @@ export type Toast = {
   type: "Error" | "Info" | "Success";
   title: string;
 };
-
-//
-//
-//
 
 export const store = reactive<Store>({
   toast: { type: "None" },
@@ -33,4 +25,8 @@ export const showToast = (toast: Omit<Toast, "id">) => {
       store.toast = { type: "None" };
     }
   }, defaultDuration);
+};
+
+export const getToast = (): Store["toast"] => {
+  return store.toast;
 };

@@ -1,6 +1,6 @@
 <script lang="ts">
 import api from "@/api";
-import { showToast } from "@/store";
+import { showToast } from "@/toast";
 import { formatError } from "@/utils";
 import { defineComponent } from "vue";
 import {
@@ -123,7 +123,7 @@ export default defineComponent({
       todo
     </h1>
 
-    <div class="flex flex-col justify-center items-start w-full">
+    <div class="flex flex-col justify-center items-start w-full px-4">
       <label class="font-bold mb-1 flex items-center" for="emailAddressInput">
         Email Address
         <span class="font-thin ml-2 text-xs">(e.g. example@email.com)</span>

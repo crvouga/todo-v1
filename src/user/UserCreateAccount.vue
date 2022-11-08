@@ -1,6 +1,7 @@
 <script lang="ts">
 import api from "@/api";
-import { showToast } from "@/store";
+import BackButton from "@/components/BackButton.vue";
+import { showToast } from "@/toast";
 import { defineComponent } from "vue";
 import { endpoints, UserPostBody, UserPostError } from "./user-shared";
 
@@ -27,32 +28,26 @@ export default defineComponent({
       status: { type: "NotAsked" },
     };
   },
-
   methods: {
     togglePasswordVisibility() {
       this.passwordVisibility =
         this.passwordVisibility === "Showing" ? "Hidden" : "Showing";
     },
-
     async post() {
       if (this.status.type === "Loading") {
         return;
       }
-
       this.status = { type: "Loading" };
       const dirty: UserPostBody = {
         emailAddress: this.emailAddress,
         password: this.password,
       };
-
       const result = await api.post({
         endpoint: endpoints["/user"],
         json: dirty,
       });
-
       if (result.type === "Err") {
         const parsed = UserPostError.safeParse(result.body);
-
         if (!parsed.success) {
           this.status = {
             type: "Err",
@@ -63,18 +58,23 @@ export default defineComponent({
         this.status = { type: "Err", error: parsed.data };
         return;
       }
-
       this.status = { type: "Ok" };
       showToast({ type: "Success", title: "Created a new account." });
       this.$router.push({ name: "login" });
     },
   },
+  components: { BackButton },
 });
 </script>
 <template>
   <div class="w-full flex flex-col justify-center items-center">
-    <h1 class="mt-12 px-4 font-bold text-2xl mb-6">Create New Account</h1>
-    <div class="flex flex-col justify-center items-start w-full">
+    <nav class="px-4 pt-4 w-full flex items-start">
+      <BackButton :to="{ name: 'login' }" />
+    </nav>
+    <h1 class="px-4 font-bold text-3xl text-left w-full mt-4 mb-6">
+      Create New Account
+    </h1>
+    <div class="flex flex-col justify-center items-start w-full px-4">
       <!-- 
 
         Email Address Input
@@ -161,7 +161,7 @@ export default defineComponent({
        -->
 
       <button
-        class="btn btn-primary w-full mt-4"
+        class="btn btn-primary w-full mt-6"
         :class="{ loading: status.type === 'Loading' }"
         @click="post"
       >
