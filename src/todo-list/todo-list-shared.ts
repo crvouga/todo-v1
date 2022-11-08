@@ -195,7 +195,7 @@ export const applyPatchTodoList = (
 ): TodoList => {
   return {
     id: list.id,
-    createdAt: patch.createdAt === undefined ? list.createdAt : patch.createdAt,
+    createdAt: list.createdAt,
     title: patch.title === undefined ? list.title : patch.title,
   };
 };

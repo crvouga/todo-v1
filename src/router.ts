@@ -5,6 +5,7 @@ import TodoListSingleSettings from "./todo-list/TodoListSingleSettings.vue";
 import LoginView from "./user/UserLogin.vue";
 import CreateAccount from "./user/UserCreateAccount.vue";
 import userSessionApi from "./user/user-session-api";
+import UserSettingsVue from "./user/UserSettings.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,7 +21,17 @@ const router = createRouter({
       component: CreateAccount,
     },
     {
+      path: "/user-settings",
+      name: "user-settings",
+      component: UserSettingsVue,
+    },
+    {
       path: "/",
+      name: "home",
+      component: TodoListAll,
+    },
+    {
+      path: "/todo-list-all",
       name: "todo-list-all",
       component: TodoListAll,
     },

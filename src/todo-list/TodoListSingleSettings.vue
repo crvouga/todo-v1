@@ -1,13 +1,18 @@
 <script lang="ts">
 import BackButton from "@/components/BackButton.vue";
 import Spinner from "@/components/Spinner.vue";
+import { showToast } from "@/store";
 import type { TodoList } from "@/todo-list/todo-list-shared";
-import { showToast, store } from "@/store";
 import { defineComponent } from "vue";
 import TodoListApi from "./todo-list-api";
 
 type Data = {
   listId: string;
+  statusPatch:
+    | { type: "NotAsked" }
+    | { type: "Loading" }
+    | { type: "Err"; error: string }
+    | { type: "Ok" };
   statusDelete:
     | { type: "NotAsked" }
     | { type: "Loading" }
@@ -30,6 +35,7 @@ export default defineComponent({
     return {
       listId,
       statusDelete: { type: "NotAsked" },
+      statusPatch: { type: "NotAsked" },
       status: { type: "Loading" },
     };
   },
@@ -79,6 +85,26 @@ export default defineComponent({
       this.statusDelete = { type: "Ok" };
       this.$router.push({ name: "todo-list-all" });
       showToast({ type: "Info", title: "List was deleted forever" });
+    },
+    async patch() {
+      if (this.statusPatch.type === "Loading") {
+        return;
+      }
+      if (this.status.type !== "Ok") {
+        return;
+      }
+      this.statusPatch = { type: "Loading" };
+      const result = await TodoListApi.patch(
+        { listId: this.listId },
+        { title: this.status.title }
+      );
+      if (result.type === "Err") {
+        this.statusPatch = { type: "Err", error: result.error };
+        return;
+      }
+
+      this.statusPatch = { type: "Ok" };
+      this.get();
     },
   },
 });
@@ -130,7 +156,9 @@ export default defineComponent({
         class="btn btn-primary w-32"
         :class="{
           'btn-disabled': status.list.title === status.title,
+          loading: statusPatch.type === 'Loading',
         }"
+        @click="patch"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

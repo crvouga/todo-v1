@@ -12,7 +12,7 @@ export default defineComponent({
 });
 </script>
 <template>
-  <RouterLink :to="to" class="btn btn-outline btn-sm btn-primary">
+  <RouterLink :to="to" class="btn btn-sm btn-primary">
     <svg
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
