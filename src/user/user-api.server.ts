@@ -1,30 +1,62 @@
-import { StatusCode } from "../utils";
 import type { Application } from "express";
 import { v4 } from "uuid";
-import { z } from "zod";
-import { endpoints, User, UserPostBody, UserPostError } from "./user-shared";
+import { StatusCode } from "../utils";
+import type { PasswordCred, Repo } from "./user-repo/user-repo-interface";
+import {
+  endpoints,
+  SessionGetBody,
+  SessionPostBody,
+  User,
+  UserPostBody,
+  UserPostError,
+} from "./user-shared";
 
 //
 //
 //
 //
 
-const userMap = new Map<string, User>();
+const sessionIdCookieName = "todo-app-session-id";
 
-const PasswordCred = z.object({
-  userId: z.string().uuid(),
-  passwordHash: z.string(),
-});
-type PasswordCred = z.infer<typeof PasswordCred>;
+export const useUserApi = ({ app, repo }: { repo: Repo; app: Application }) => {
+  app.post(endpoints["/session"], async (req, res) => {
+    const parsed = SessionPostBody.safeParse(req.body);
 
-const passwordMap = new Map<string, PasswordCred>();
+    if (!parsed.success) {
+      res.status(StatusCode.BadRequest).json(parsed).end();
+      return;
+    }
 
-//
-//
-//
-//
+    const found = await repo;
+  });
 
-export const useUserApi = (app: Application) => {
+  app.get(endpoints["/session"], async (req, res) => {
+    const sessionId = req.cookies?.[sessionIdCookieName];
+
+    if (!sessionId) {
+      res.status(StatusCode.Unauthorized).end();
+      return;
+    }
+
+    const findResult = await repo.session.findOneById({ id: sessionId });
+
+    if (findResult.type === "Err") {
+      res.status(StatusCode.ServerError).end();
+      return;
+    }
+
+    if (!findResult.data) {
+      res.status(StatusCode.Unauthorized).end();
+      return;
+    }
+
+    const sessionGetBody: SessionGetBody = {
+      userId: findResult.data.userId,
+    };
+
+    res.status(StatusCode.Ok).json(sessionGetBody).end();
+  });
+
   app.post(endpoints["/user"], async (req, res) => {
     const parsed = UserPostBody.safeParse(req.body);
 
@@ -57,9 +89,19 @@ export const useUserApi = (app: Application) => {
       return;
     }
 
-    const found = Array.from(userMap.values()).filter(
-      (user) => user.emailAddress === parsed.data.emailAddress
-    )[0];
+    const findResult = await repo.user.findOneByEmailAddress({
+      emailAddress: parsed.data.emailAddress,
+    });
+
+    if (findResult.type === "Err") {
+      res
+        .status(StatusCode.ServerError)
+        .json({ message: findResult.error })
+        .end();
+      return;
+    }
+
+    const found = findResult.data;
 
     if (found) {
       const errorBody: UserPostError = {
@@ -77,13 +119,13 @@ export const useUserApi = (app: Application) => {
     // todo add hashing
     const passwordHash = parsed.data.password;
 
-    const passwordCred: PasswordCred = {
+    const passwordCredNew: PasswordCred = {
       userId: userNew.id,
       passwordHash,
     };
 
-    passwordMap.set(passwordCred.userId, passwordCred);
-    userMap.set(userNew.id, userNew);
+    await repo.password.insertOne({ passwordCred: passwordCredNew });
+    await repo.user.insertOne({ user: userNew });
 
     res.status(StatusCode.Created).end();
   });

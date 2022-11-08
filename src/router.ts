@@ -4,6 +4,7 @@ import TodoListSingle from "./todo-list/TodoListSingle.vue";
 import TodoListSingleSettings from "./todo-list/TodoListSingleSettings.vue";
 import LoginView from "./user/UserLogin.vue";
 import CreateAccount from "./user/UserCreateAccount.vue";
+import userSessionApi from "./user/user-session-api";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -41,6 +42,12 @@ const router = createRouter({
 //
 
 router.beforeEach(async (to) => {
+  const result = await userSessionApi.get();
+
+  if (result.type === "Ok") {
+    return true;
+  }
+
   const isAuthenticated = false;
 
   if (isAuthenticated) {

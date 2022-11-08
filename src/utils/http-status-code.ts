@@ -4,4 +4,6 @@ export const StatusCode = {
   BadRequest: 400,
   NotFound: 404,
   Conflict: 409,
+  Unauthorized: 401,
+  ServerError: 500,
 };
