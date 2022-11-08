@@ -14,6 +14,7 @@ import {
   TodoList,
   TodoListDeleteParams,
   TodoListGetOneParams,
+  TodoListGetParams,
   TodoListGot,
   TodoListPatchBody,
   TodoListPatchParams,
@@ -183,8 +184,15 @@ export const useTodoListApi = ({
     res.json(found.data);
   });
 
-  app.get(endpoints["/todo-list"], async (_req, res) => {
-    const found = await repo.list.findManyWithStats();
+  app.get(endpoints["/todo-list"], async (req, res) => {
+    const parsed = TodoListGetParams.safeParse(req.query);
+
+    if (!parsed.success) {
+      res.status(StatusCode.BadRequest).json(parsed.error);
+      return;
+    }
+
+    const found = await repo.list.findManyWithStats(parsed.data);
 
     if (found.type === "Err") {
       res.status(StatusCode.ServerError).json({ message: found.error });

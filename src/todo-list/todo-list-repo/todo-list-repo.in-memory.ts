@@ -61,28 +61,30 @@ const repo: Repo = {
       return Ok(found);
     },
 
-    findManyWithStats: async () => {
-      const lists = Array.from(listMap.values()).map((list) => {
-        const stats = Array.from(itemMap.values()).reduce<TodoListStats>(
-          (stats, item) => {
-            if (item.listId !== list.id) {
-              return stats;
+    findManyWithStats: async (params) => {
+      const lists = Array.from(listMap.values())
+        .filter((list) => list.userId === params.userId)
+        .map((list) => {
+          const stats = Array.from(itemMap.values()).reduce<TodoListStats>(
+            (stats, item) => {
+              if (item.listId !== list.id) {
+                return stats;
+              }
+
+              if (item.isCompleted) {
+                return { ...stats, completedCount: stats.completedCount + 1 };
+              }
+
+              return { ...stats, activeCount: stats.activeCount + 1 };
+            },
+            {
+              activeCount: 0,
+              completedCount: 0,
             }
+          );
 
-            if (item.isCompleted) {
-              return { ...stats, completedCount: stats.completedCount + 1 };
-            }
-
-            return { ...stats, activeCount: stats.activeCount + 1 };
-          },
-          {
-            activeCount: 0,
-            completedCount: 0,
-          }
-        );
-
-        return { ...list, ...stats };
-      });
+          return { ...list, ...stats };
+        });
 
       return Ok(lists);
     },

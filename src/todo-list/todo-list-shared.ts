@@ -173,6 +173,11 @@ export type TodoListStats = z.infer<typeof TodoListStats>;
 export const TodoListGotItem = z.intersection(TodoList, TodoListStats);
 export type TodoListGotItem = z.infer<typeof TodoListGotItem>;
 
+export const TodoListGetParams = z.object({
+  userId: z.string().uuid(),
+});
+export type TodoListGetParams = z.infer<typeof TodoListGetParams>;
+
 export const TodoListGot = z.object({
   items: z.array(TodoListGotItem),
 });

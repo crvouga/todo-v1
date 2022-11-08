@@ -3,6 +3,7 @@ import {
   endpoints,
   TodoList,
   TodoListDeleteParams,
+  TodoListGetParams,
   TodoListGot,
   TodoListPatchBody,
   TodoListPatchParams,
@@ -42,10 +43,12 @@ export const post = async ({
   return Ok(parsed.data);
 };
 
-export const getAll = async (): Promise<Result<string, TodoListGot>> => {
+export const getAll = async (
+  dirty: TodoListGetParams
+): Promise<Result<string, TodoListGot>> => {
   const result = await Api.get({
     endpoint: endpoints["/todo-list"],
-    params: {},
+    params: dirty,
   });
 
   if (result.type === "Err") {

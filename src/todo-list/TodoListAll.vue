@@ -61,7 +61,18 @@ export default defineComponent({
   methods: {
     async get() {
       this.statusGet = { type: "Loading", params: {} };
-      const result = await TodoListApi.getAll();
+
+      const currentUserId = getCurrentUserId();
+
+      if (!currentUserId) {
+        this.statusGet = {
+          type: "Err",
+          params: {},
+          error: "Must be logged in",
+        };
+        return;
+      }
+      const result = await TodoListApi.getAll({ userId: currentUserId });
       if (result.type === "Err") {
         this.statusGet = { type: "Err", params: {}, error: result.error };
         return;
