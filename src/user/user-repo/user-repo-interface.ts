@@ -21,5 +21,8 @@ export type Repo = {
       id: string;
     }) => Promise<Result<string, Session | null>>;
     insertOne: (params: { userId: string }) => Promise<Result<string, Session>>;
+    deleteWhere: (params: {
+      sessionId: string;
+    }) => Promise<Result<string, null>>;
   };
 };

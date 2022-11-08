@@ -74,7 +74,7 @@ export default defineComponent({
 <template>
   <div class="w-full flex flex-col justify-center items-center">
     <h1 class="mt-12 px-4 font-bold text-2xl mb-6">Create New Account</h1>
-    <div class="flex flex-col justify-center items-start w-full max-w-xs">
+    <div class="flex flex-col justify-center items-start w-full">
       <!-- 
 
         Email Address Input

@@ -1,10 +1,11 @@
 <template>
   <nav class="w-full flex items-center px-4 py-2">
-    <h1
-      class="font-black text-transparent text-4xl bg-clip-text bg-gradient-to-b from-purple-500 to-purple-800 flex-1"
+    <RouterLink
+      :to="{ name: 'home' }"
+      class="font-black text-transparent text-4xl bg-clip-text bg-gradient-to-b from-purple-500 to-purple-800 flex-1 cursor-pointer hover:opacity-75 active:opacity-50"
     >
       todo
-    </h1>
+    </RouterLink>
     <RouterLink class="btn btn-primary btn-xs" :to="{ name: 'user-settings' }">
       <svg
         xmlns="http://www.w3.org/2000/svg"

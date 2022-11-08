@@ -6,6 +6,7 @@ import type { Repo } from "./user-repo/user-repo-interface";
 import {
   endpoints,
   PasswordCred,
+  SessionDeleteParams,
   SessionGetBody,
   SessionGetParams,
   SessionPostBody,
@@ -150,7 +151,21 @@ export const useUserApi = ({ app, repo }: { repo: Repo; app: Application }) => {
     res.status(StatusCode.Ok).json(sessionGetBody).end();
   });
 
-  app.delete(endpoints["/session"], (req, res) => {});
+  app.delete(endpoints["/session"], async (req, res) => {
+    const parsed = SessionDeleteParams.safeParse(req.query);
+    if (!parsed.success) {
+      res.status(StatusCode.BadRequest).json(parsed.error);
+      return;
+    }
+    const deleted = await repo.session.deleteWhere({
+      sessionId: parsed.data.sessionId,
+    });
+    if (deleted.type === "Err") {
+      res.status(StatusCode.ServerError).json({ message: deleted.error });
+      return;
+    }
+    res.status(StatusCode.Ok).end();
+  });
 
   //
   //

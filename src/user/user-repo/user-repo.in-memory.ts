@@ -63,6 +63,11 @@ const repo: Repo = {
       sessionMap.set(sessionNew.id, sessionNew);
       return Ok(sessionNew);
     },
+
+    deleteWhere: async (params) => {
+      sessionMap.delete(params.sessionId);
+      return Ok(null);
+    },
   },
 };
 

@@ -1,6 +1,8 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import BackButton from "@/components/BackButton.vue";
+import api from "@/api";
+import userSessionApi from "./user-session-api";
 
 type Data = {
   statusLogout:
@@ -18,6 +20,19 @@ export default defineComponent({
     return {
       statusLogout: { type: "NotAsked" },
     };
+  },
+  methods: {
+    async logout() {
+      this.statusLogout = { type: "Loading" };
+      const result = await userSessionApi.delete_();
+      if (result.type === "Err") {
+        this.statusLogout = { type: "Err", error: result.error };
+        return;
+      }
+      this.statusLogout = { type: "Ok" };
+
+      this.$router.push({ name: "login" });
+    },
   },
 });
 </script>

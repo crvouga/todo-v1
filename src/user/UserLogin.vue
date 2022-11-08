@@ -123,7 +123,7 @@ export default defineComponent({
       todo
     </h1>
 
-    <div class="flex flex-col justify-center items-start w-full max-w-xs">
+    <div class="flex flex-col justify-center items-start w-full">
       <label class="font-bold mb-1 flex items-center" for="emailAddressInput">
         Email Address
         <span class="font-thin ml-2 text-xs">(e.g. example@email.com)</span>

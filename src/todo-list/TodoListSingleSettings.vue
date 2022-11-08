@@ -1,6 +1,7 @@
 <script lang="ts">
 import BackButton from "@/components/BackButton.vue";
 import Spinner from "@/components/Spinner.vue";
+import NavBar from "@/components/NavBar.vue";
 import { showToast } from "@/store";
 import type { TodoList } from "@/todo-list/todo-list-shared";
 import { defineComponent } from "vue";
@@ -28,6 +29,7 @@ export default defineComponent({
   components: {
     BackButton,
     Spinner,
+    NavBar,
   },
   data(): Data {
     // todo validate this
@@ -110,6 +112,7 @@ export default defineComponent({
 });
 </script>
 <template>
+  <NavBar />
   <nav class="p-4 w-full flex align-start">
     <BackButton :to="{ name: 'todo-list-single', params: { listId } }" />
   </nav>
