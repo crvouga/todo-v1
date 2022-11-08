@@ -1,12 +1,16 @@
 import type { Application } from "express";
 import { v4 } from "uuid";
 import { StatusCode } from "../utils";
+import Hash from "./hash";
 import type { Repo } from "./user-repo/user-repo-interface";
 import {
   endpoints,
   PasswordCred,
   SessionGetBody,
+  SessionGetParams,
   SessionPostBody,
+  SessionPostedBody,
+  SessionPostError,
   User,
   UserPostBody,
   UserPostError,
@@ -20,27 +24,114 @@ import {
 const sessionIdCookieName = "todo-app-session-id";
 
 export const useUserApi = ({ app, repo }: { repo: Repo; app: Application }) => {
+  //
+  //
+  //
+  // Session
+  //
+  //
+  //
+
   app.post(endpoints["/session"], async (req, res) => {
     const parsed = SessionPostBody.safeParse(req.body);
 
     if (!parsed.success) {
-      res.status(StatusCode.BadRequest).json(parsed).end();
+      const err: SessionPostError = {
+        type: "InvalidEmailAddress",
+        message:
+          parsed.error.formErrors.fieldErrors.emailAddress?.join(", ") ?? "",
+      };
+      res.status(StatusCode.BadRequest).json(err).end();
       return;
     }
 
-    // todo implement
-    res.status(StatusCode.ServerError).end();
+    const found = await repo.user.findOneByEmailAddress(parsed.data);
+
+    if (found.type === "Err") {
+      const err: SessionPostError = {
+        type: "ServerError",
+        message: found.error,
+      };
+      res.status(StatusCode.ServerError).json(err).end();
+      return;
+    }
+
+    if (!found.data) {
+      const err: SessionPostError = { type: "AccountNotFound" };
+      res.status(StatusCode.NotFound).json(err).end();
+      return;
+    }
+
+    const foundPassword = await repo.password.findByUserId({
+      userId: found.data.id,
+    });
+
+    if (foundPassword.type === "Err") {
+      const err: SessionPostError = {
+        type: "ServerError",
+        message: foundPassword.error,
+      };
+      res.status(StatusCode.ServerError).json(err);
+      return;
+    }
+
+    if (!foundPassword.data) {
+      const err: SessionPostError = {
+        type: "ServerError",
+        message:
+          "User account exists but with not password cred. This should be impossible.",
+      };
+      res.status(StatusCode.ServerError).json(err);
+      return;
+    }
+
+    if (
+      !Hash.isEqual({
+        password: parsed.data.password,
+        passwordHash: foundPassword.data.passwordHash,
+      })
+    ) {
+      const err: SessionPostError = {
+        type: "WrongPassword",
+      };
+      res.status(StatusCode.Unauthorized).json(err);
+      return;
+    }
+    const inserted = await repo.session.insertOne({
+      userId: found.data.id,
+    });
+
+    if (inserted.type === "Err") {
+      const err: SessionPostError = {
+        type: "ServerError",
+        message: inserted.error,
+      };
+      res.status(StatusCode.ServerError).json(err).end();
+      return;
+    }
+
+    const posted: SessionPostedBody = {
+      sessionId: inserted.data.id,
+    };
+
+    res.status(StatusCode.Created).json(posted).end();
   });
 
-  app.get(endpoints["/session"], async (req, res) => {
-    const sessionId = req.cookies?.[sessionIdCookieName];
+  //
+  //
+  //
 
-    if (!sessionId) {
-      res.status(StatusCode.Unauthorized).end();
+  app.get(endpoints["/session"], async (req, res) => {
+    const params = SessionGetParams.safeParse(req.query);
+
+    if (!params.success) {
+      res.status(StatusCode.BadRequest).json(params.error).end();
       return;
     }
 
-    const findResult = await repo.session.findOneById({ id: sessionId });
+    const findResult = await repo.session.findOneById({
+      id: params.data.sessionId,
+    });
 
     if (findResult.type === "Err") {
       res.status(StatusCode.ServerError).end();
@@ -58,6 +149,18 @@ export const useUserApi = ({ app, repo }: { repo: Repo; app: Application }) => {
 
     res.status(StatusCode.Ok).json(sessionGetBody).end();
   });
+
+  app.delete(endpoints['/session'], (req, res) => {
+    const params = req.
+  })
+
+  //
+  //
+  //
+  // User
+  //
+  //
+  //
 
   app.post(endpoints["/user"], async (req, res) => {
     const parsed = UserPostBody.safeParse(req.body);
@@ -118,8 +221,9 @@ export const useUserApi = ({ app, repo }: { repo: Repo; app: Application }) => {
       id: v4(),
     };
 
-    // todo add hashing
-    const passwordHash = parsed.data.password;
+    const { passwordHash } = Hash.hash({
+      password: parsed.data.password,
+    });
 
     const passwordCredNew: PasswordCred = {
       userId: userNew.id,
