@@ -5,7 +5,7 @@ import type { TodoListGotItem } from "@/todo-list/todo-list-shared";
 import { formatFromNow, toValues } from "@/utils";
 import { defineComponent } from "vue";
 import TodoListApi from "./todo-list-api";
-import { getCurrentUserId } from "@/store-session";
+import { getCurrentUserId } from "@/user/user-store";
 
 export type Status<TParams, TError, TData> =
   | { type: "NotAsked" }

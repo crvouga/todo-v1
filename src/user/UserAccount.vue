@@ -2,26 +2,27 @@
 import api from "@/api";
 import BackButton from "@/components/BackButton.vue";
 import Spinner from "@/components/Spinner.vue";
-import { getCurrentUserId } from "@/store-session";
 import { showToast } from "@/store-toast";
-import { formatError } from "@/utils";
 import { defineComponent } from "vue";
-import userSessionApi from "./user-session-api";
+import userApi from "./user-api";
+import { toAvatarUrl, getRandomAvatarSeed } from "./avatar";
 import {
-  UserEverythingDeleteParams,
-  UserDeleteParams,
-  UserGotBody,
-  UserGetParams,
   endpoints,
-  type User,
+  UserPatchBody,
+  UserPatchParams,
+  UserDeleteParams,
+  UserEverythingDeleteParams,
 } from "./user-shared";
+import {
+  patchCurrentUser,
+  fetchCurrentUser,
+  getCurrentUserId,
+  userStore,
+  type CurrentUserStatus,
+} from "./user-store";
 
 type Data = {
-  statusGet:
-    | { type: "Loading" }
-    | { type: "Error"; error: string }
-    | { type: "Ok"; data: User };
-
+  avatarSeed: string;
   statusLogout:
     | { type: "NotAsked" }
     | { type: "Loading" }
@@ -39,6 +40,12 @@ type Data = {
     | { type: "Loading" }
     | { type: "Err"; error: string }
     | { type: "Ok" };
+
+  statusPatch:
+    | { type: "NotAsked" }
+    | { type: "Loading" }
+    | { type: "Err"; error: string }
+    | { type: "Ok" };
 };
 
 export default defineComponent({
@@ -46,54 +53,48 @@ export default defineComponent({
     BackButton,
     Spinner,
   },
+  setup() {
+    return {
+      toAvatarUrl,
+    };
+  },
   data(): Data {
     return {
+      avatarSeed: "",
       statusLogout: { type: "NotAsked" },
-      statusGet: { type: "Loading" },
+      statusPatch: { type: "NotAsked" },
       statusDeleteAccount: { type: "NotAsked" },
       statusDeleteEverything: { type: "NotAsked" },
     };
   },
+  computed: {
+    currentUser: (): CurrentUserStatus => {
+      if (userStore.currentUser.type !== "LoggedIn") {
+        return { type: "Loading" };
+      }
+      return userStore.currentUser.status;
+    },
+  },
+  watch: {
+    currentUser(prev: CurrentUserStatus, next: CurrentUserStatus) {
+      if (prev.type !== "Ok" && next.type === "Ok") {
+        this.avatarSeed = next.user.avatarSeed;
+      }
+    },
+  },
   mounted() {
-    this.get();
+    fetchCurrentUser();
   },
   methods: {
-    async get() {
-      this.statusGet = { type: "Loading" };
-
-      const currentUsrId = getCurrentUserId();
-
-      if (!currentUsrId) {
-        this.statusGet = { type: "Error", error: "Must be logged in" };
-        return;
-      }
-
-      const dirty: UserGetParams = {
-        userId: currentUsrId,
-      };
-
-      const got = await api.get({
-        endpoint: endpoints["/user"],
-        params: dirty,
-      });
-
-      if (got.type === "Err") {
-        this.statusGet = { type: "Error", error: got.error };
-        return;
-      }
-
-      const parsed = UserGotBody.safeParse(got.json);
-
-      if (!parsed.success) {
-        this.statusGet = { type: "Error", error: formatError(parsed) };
-        return;
-      }
-
-      this.statusGet = { type: "Ok", data: parsed.data };
+    randomAvatarSeed() {
+      this.avatarSeed = getRandomAvatarSeed();
+    },
+    clearAvatarSeed() {
+      this.avatarSeed = "";
     },
     async logout() {
       this.statusLogout = { type: "Loading" };
-      const result = await userSessionApi.delete_();
+      const result = await userApi.session.delete_();
       if (result.type === "Err") {
         this.statusLogout = { type: "Err", error: result.error };
         return;
@@ -101,6 +102,32 @@ export default defineComponent({
       this.statusLogout = { type: "Ok" };
 
       this.$router.push({ name: "login" });
+    },
+
+    async patch(body: UserPatchBody) {
+      if (this.statusPatch.type === "Loading") {
+        return;
+      }
+      if (this.currentUser.type !== "Ok") {
+        return;
+      }
+
+      const dirty: UserPatchParams = {
+        userId: this.currentUser.user.id,
+      };
+
+      this.statusPatch = { type: "Loading" };
+
+      const result = await userApi.user.patch({ params: dirty, body });
+
+      if (result.type === "Err") {
+        this.statusPatch = { type: "Err", error: result.error };
+        return;
+      }
+
+      this.statusPatch = { type: "Ok" };
+
+      patchCurrentUser(body);
     },
 
     async closeDeleteEverything() {
@@ -184,33 +211,101 @@ export default defineComponent({
   <h1 class="font-bold text-4xl px-4 w-full text-left pt-4">Account</h1>
 
   <div
-    v-if="statusGet.type === 'Loading'"
+    v-if="currentUser.type === 'Loading'"
     class="w-full px-4 flex items-center justify-center mt-4"
   >
     <Spinner />
   </div>
 
   <div
-    v-if="statusGet.type === 'Error'"
+    v-if="currentUser.type === 'Err'"
     class="w-full px-4 flex items-center justify-center mt-4"
   >
     <div class="alert alert-error w-full">
-      {{ statusGet.error }}
+      {{ currentUser.error }}
     </div>
   </div>
 
-  <div v-if="statusGet.type === 'Ok'" class="w-full mt-4 px-4">
+  <div v-if="currentUser.type === 'Ok'" class="w-full mt-4 px-4">
     <p class="text-md font-bold opacity-75">Email Address</p>
     <p class="text-xl font-bold">
-      {{ statusGet.data.emailAddress }}
+      {{ currentUser.user.emailAddress }}
     </p>
     <p class="text-md font-bold opacity-75 mt-4">ID</p>
     <p class="text-sm font-bold">
-      {{ statusGet.data.id }}
+      {{ currentUser.user.id }}
     </p>
   </div>
 
-  <div class="mt-8 w-full px-4">
+  <!-- 
+
+        Avatar Seed Input
+
+       -->
+  <div class="avatar mx-auto mt-8">
+    <div class="w-24 rounded">
+      <img :src="toAvatarUrl({ avatarSeed })" />
+    </div>
+  </div>
+  <label class="font-bold mt-1 w-full text-left px-4" for="avatarSeedInput">
+    Avatar Seed
+  </label>
+  <div class="w-full flex items-center gap-2 px-4">
+    <input
+      v-model="avatarSeed"
+      id="avatarSeedInput"
+      class="input input-primary w-full mt-1"
+    />
+    <button class="btn btn-outline btn-primary" @click="randomAvatarSeed">
+      Random
+    </button>
+    <button class="btn btn-outline btn-primary" @click="clearAvatarSeed">
+      Clear
+    </button>
+  </div>
+
+  <div class="px-4 w-full mt-2">
+    <button
+      class="btn btn-primary w-full btn-md"
+      @click="patch({ avatarSeed })"
+      :class="{
+        'btn-disabled':
+          currentUser.type === 'Ok' &&
+          currentUser.user.avatarSeed === avatarSeed,
+        loading: statusPatch.type === 'Loading',
+      }"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="w-6 h-6 mr-2"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"
+        />
+      </svg>
+
+      Update
+    </button>
+  </div>
+
+  <div v-if="statusPatch.type === 'Err'" class="px-4 mt-2 w-full">
+    <div class="alert alert-error w-full">
+      {{ statusPatch.error }}
+    </div>
+  </div>
+
+  <!-- 
+
+
+   -->
+
+  <div class="mt-12 w-full px-4">
     <button class="btn btn-error btn-outline w-full font-bold" @click="logout">
       <svg
         xmlns="http://www.w3.org/2000/svg"

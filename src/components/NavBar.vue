@@ -1,3 +1,27 @@
+<script lang="ts">
+import { store } from "@/store-toast";
+import { toAvatarUrl } from "@/user/avatar";
+import { userStore } from "@/user/user-store";
+import { defineComponent } from "vue";
+import Spinner from "./Spinner.vue";
+
+export default defineComponent({
+  setup() {
+    return {
+      toAvatarUrl,
+    };
+  },
+  computed: {
+    currentUser() {
+      if (userStore.currentUser.type !== "LoggedIn") {
+        return { type: "Loading" } as const;
+      }
+      return userStore.currentUser.status;
+    },
+  },
+  components: { Spinner },
+});
+</script>
 <template>
   <nav class="w-full flex items-center px-4 py-2">
     <div class="flex-1">
@@ -8,22 +32,21 @@
         todo
       </RouterLink>
     </div>
-    <RouterLink class="btn btn-primary btn-xs" :to="{ name: 'user-account' }">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="1.5"
-        stroke="currentColor"
-        class="w-4 h-4 mr-2"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"
-        />
-      </svg>
-      Account
+
+    <Spinner v-if="currentUser.type === 'Loading'" />
+
+    <p class="font-bold text-red-500" v-if="currentUser.type === 'Err'">
+      Error
+    </p>
+
+    <RouterLink v-if="currentUser.type === 'Ok'" :to="{ name: 'user-account' }">
+      <div class="avatar mr-2">
+        <div class="rounded w-12">
+          <img
+            :src="toAvatarUrl({ avatarSeed: currentUser.user.avatarSeed })"
+          />
+        </div>
+      </div>
     </RouterLink>
   </nav>
 </template>

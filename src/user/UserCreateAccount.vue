@@ -5,10 +5,12 @@ import PasswordVisibilityButton from "../components/PasswordVisibilityButton.vue
 import { showToast } from "@/store-toast";
 import { defineComponent } from "vue";
 import { endpoints, UserPostBody, UserPostError } from "./user-shared";
+import { getRandomAvatarSeed, toAvatarUrl } from "./avatar";
 
 type Data = {
   emailAddress: string;
   password: string;
+  avatarSeed: string;
   passwordVisibility: "Hidden" | "Showing";
   status:
     | { type: "NotAsked" }
@@ -21,10 +23,16 @@ type Data = {
 };
 
 export default defineComponent({
+  setup() {
+    return {
+      toAvatarUrl,
+    };
+  },
   data(): Data {
     return {
       emailAddress: "",
       password: "",
+      avatarSeed: getRandomAvatarSeed(),
       passwordVisibility: "Hidden",
       status: { type: "NotAsked" },
     };
@@ -34,6 +42,12 @@ export default defineComponent({
     PasswordVisibilityButton,
   },
   methods: {
+    randomAvatarSeed() {
+      this.avatarSeed = getRandomAvatarSeed();
+    },
+    clearAvatarSeed() {
+      this.avatarSeed = "";
+    },
     togglePasswordVisibility() {
       this.passwordVisibility =
         this.passwordVisibility === "Showing" ? "Hidden" : "Showing";
@@ -46,6 +60,7 @@ export default defineComponent({
       const dirty: UserPostBody = {
         emailAddress: this.emailAddress,
         password: this.password,
+        avatarSeed: this.avatarSeed,
       };
       const result = await api.post({
         endpoint: endpoints["/user"],
@@ -146,6 +161,37 @@ export default defineComponent({
         @click="togglePasswordVisibility"
         class="mt-2"
       />
+
+      <!-- 
+
+        Avatar Seed Input
+
+       -->
+      <div class="avatar mx-auto mt-4">
+        <div class="w-24 rounded">
+          <img :src="toAvatarUrl({ avatarSeed })" />
+        </div>
+      </div>
+      <label class="font-bold mt-1" for="avatarSeedInput"> Avatar Seed </label>
+      <div class="w-full flex items-center gap-2">
+        <input
+          v-model="avatarSeed"
+          id="avatarSeedInput"
+          class="input input-primary w-full mt-1"
+        />
+        <button class="btn btn-primary" @click="randomAvatarSeed">
+          Random
+        </button>
+        <button class="btn btn-primary" @click="clearAvatarSeed">Clear</button>
+      </div>
+
+      <!-- 
+
+
+      Error Alert
+
+
+       -->
 
       <div
         v-if="status.type === 'Err' && status.error.type === 'UnknownError'"

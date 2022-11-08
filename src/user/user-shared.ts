@@ -10,6 +10,7 @@ export const endpoints = {
 export const User = z.object({
   id: z.string().uuid(),
   emailAddress: z.string().email(),
+  avatarSeed: z.string(),
 });
 export type User = z.infer<typeof User>;
 
@@ -18,6 +19,7 @@ export const Password = z.string().min(2).max(100);
 export const UserPostBody = z.object({
   emailAddress: z.string().email(),
   password: Password,
+  avatarSeed: z.string(),
 });
 export type UserPostBody = z.infer<typeof UserPostBody>;
 
@@ -46,6 +48,17 @@ export type UserEverythingDeleteParams = z.infer<
   typeof UserEverythingDeleteParams
 >;
 
+export const UserPatchBody = User.partial();
+export type UserPatchBody = z.infer<typeof UserPatchBody>;
+export const UserPatchParams = z.object({ userId: z.string() });
+export type UserPatchParams = z.infer<typeof UserPatchParams>;
+export const applyUserPatch = (user: User, patch: UserPatchBody): User => {
+  return {
+    avatarSeed: patch.avatarSeed ? patch.avatarSeed : user.avatarSeed,
+    emailAddress: user.emailAddress,
+    id: user.id,
+  };
+};
 //
 //
 //

@@ -1,5 +1,6 @@
 import { v4 } from "uuid";
-import { Ok } from "../../utils";
+import { Err, Ok } from "../../utils";
+import { getRandomAvatarSeed } from "../avatar";
 import hash from "../hash";
 import type { Session, PasswordCred, User } from "../user-shared";
 import type { Repo } from "./user-repo";
@@ -22,6 +23,14 @@ const repo: Repo = {
   },
 
   user: {
+    updateOne: async (params) => {
+      const found = userById.get(params.updated.id);
+      if (!found) {
+        return Err("record does not exists");
+      }
+      userById.set(params.updated.id, params.updated);
+      return Ok(null);
+    },
     insertOne: async (params) => {
       userById.set(params.user.id, params.user);
       return Ok(null);
@@ -99,7 +108,9 @@ const repo: Repo = {
 const emailAddress = "example@email.com";
 const password = "123";
 const userId = v4();
-repo.user.insertOne({ user: { id: userId, emailAddress } });
+repo.user.insertOne({
+  user: { id: userId, emailAddress, avatarSeed: getRandomAvatarSeed() },
+});
 repo.password.insertOne({
   passwordCred: {
     passwordHash: hash.hash({ password }).passwordHash,

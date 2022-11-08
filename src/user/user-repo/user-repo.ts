@@ -10,6 +10,7 @@ export type Repo = {
     findOneById: (params: {
       id: string;
     }) => Promise<Result<string, User | null>>;
+    updateOne: (params: { updated: User }) => Promise<Result<string, null>>;
   };
   password: {
     insertOne: (params: {

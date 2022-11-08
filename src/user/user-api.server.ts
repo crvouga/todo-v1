@@ -1,10 +1,11 @@
-import type { PubSub } from "../pubsub/pubsub";
 import type { Application } from "express";
 import { v4 } from "uuid";
+import type { PubSub } from "../pubsub/pubsub";
 import { StatusCode } from "../utils";
 import Hash from "./hash";
 import type { Repo } from "./user-repo/user-repo";
 import {
+  applyUserPatch,
   endpoints,
   PasswordCred,
   SessionDeleteParams,
@@ -18,6 +19,8 @@ import {
   UserEverythingDeleteParams,
   UserGetParams,
   UserGotBody,
+  UserPatchBody,
+  UserPatchParams,
   UserPostBody,
   UserPostError,
 } from "./user-shared";
@@ -272,6 +275,7 @@ export const useUserApi = ({
     }
 
     const userNew: User = {
+      avatarSeed: parsed.data.avatarSeed,
       emailAddress: parsed.data.emailAddress,
       id: v4(),
     };
@@ -291,6 +295,35 @@ export const useUserApi = ({
     pubSub.pub({ type: "UserCreated", userId: userNew.id });
 
     res.status(StatusCode.Created).end();
+  });
+
+  app.patch(endpoints["/user"], async (req, res) => {
+    const parsedParams = UserPatchParams.safeParse(req.query);
+    if (!parsedParams.success) {
+      res.status(StatusCode.BadRequest).json(parsedParams.error);
+      return;
+    }
+    const parsedBody = UserPatchBody.safeParse(req.body);
+    if (!parsedBody.success) {
+      res.status(StatusCode.BadRequest).json(parsedBody.error);
+      return;
+    }
+    const found = await repo.user.findOneById({ id: parsedParams.data.userId });
+    if (found.type === "Err") {
+      res.status(StatusCode.ServerError).json({ message: found.error });
+      return;
+    }
+    if (!found.data) {
+      res.status(StatusCode.NotFound).end();
+      return;
+    }
+    const patched = applyUserPatch(found.data, parsedBody.data);
+    const updated = await repo.user.updateOne({ updated: patched });
+    if (updated.type === "Err") {
+      res.status(StatusCode.ServerError).json({ message: updated.error });
+      return;
+    }
+    res.status(StatusCode.Ok).end();
   });
 
   app.delete(endpoints["/user/everything"], (req, res) => {

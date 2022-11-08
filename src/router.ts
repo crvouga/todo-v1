@@ -4,7 +4,7 @@ import TodoListSingle from "./todo-list/TodoListSingle.vue";
 import TodoListSingleSettings from "./todo-list/TodoListSingleSettings.vue";
 import CreateAccount from "./user/UserCreateAccount.vue";
 import LoginView from "./user/UserLogin.vue";
-import { getSession } from "./store-session";
+import { fetchCurrentUser } from "./user/user-store";
 import UserAccount from "./user/UserAccount.vue";
 
 const router = createRouter({
@@ -53,9 +53,9 @@ const router = createRouter({
 //
 
 router.beforeEach(async (to) => {
-  const result = await getSession();
+  const got = await fetchCurrentUser();
 
-  if (result.type === "Ok") {
+  if (got.type === "Ok") {
     return true;
   }
 
