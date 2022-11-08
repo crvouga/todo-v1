@@ -1,4 +1,6 @@
+import { v4 } from "uuid";
 import { Ok } from "../../utils";
+import hash from "../hash";
 import type { Session, PasswordCred, User } from "../user-shared";
 import type { Repo } from "./user-repo-interface";
 
@@ -30,17 +32,53 @@ const repo: Repo = {
       passwordMap.set(params.passwordCred.userId, params.passwordCred);
       return Ok(null);
     },
+    findByUserId: async (params) => {
+      const found = Array.from(passwordMap.values()).filter(
+        (cred) => cred.userId === params.userId
+      )[0];
+      if (!found) {
+        return Ok(null);
+      }
+
+      return Ok(found);
+    },
   },
 
   session: {
     findOneById: async (params) => {
       const found = sessionMap.get(params.id);
+
       if (!found) {
         return Ok(null);
       }
+
       return Ok(found);
+    },
+
+    insertOne: async (params) => {
+      const sessionNew: Session = {
+        id: v4(),
+        userId: params.userId,
+      };
+      sessionMap.set(sessionNew.id, sessionNew);
+      return Ok(sessionNew);
     },
   },
 };
+
+//
+// init
+//
+
+const emailAddress = "example@email.com";
+const password = "123";
+const userId = v4();
+repo.user.insertOne({ user: { id: userId, emailAddress } });
+repo.password.insertOne({
+  passwordCred: {
+    passwordHash: hash.hash({ password }).passwordHash,
+    userId: userId,
+  },
+});
 
 export default repo;

@@ -26,6 +26,16 @@ export const UserPostError = z.discriminatedUnion("type", [
 ]);
 export type UserPostError = z.infer<typeof UserPostError>;
 
+export const SessionGetParams = z.object({
+  sessionId: z.string(),
+});
+export type SessionGetParams = z.infer<typeof SessionGetParams>;
+
+export const SessionDeleteParams = z.object({
+  sessionId: z.string(),
+});
+export type SessionDeleteParams = z.infer<typeof SessionDeleteParams>;
+
 export const SessionGetBody = z.object({
   userId: z.string(),
 });
@@ -36,6 +46,18 @@ export const SessionPostBody = z.object({
   password: z.string(),
 });
 export type SessionPostBody = z.infer<typeof SessionPostBody>;
+export const SessionPostedBody = z.object({
+  sessionId: z.string(),
+});
+export type SessionPostedBody = z.infer<typeof SessionPostedBody>;
+
+export const SessionPostError = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("AccountNotFound") }),
+  z.object({ type: z.literal("ServerError"), message: z.string() }),
+  z.object({ type: z.literal("InvalidEmailAddress"), message: z.string() }),
+  z.object({ type: z.literal("WrongPassword") }),
+]);
+export type SessionPostError = z.infer<typeof SessionPostError>;
 
 //
 //
@@ -50,7 +72,9 @@ export const PasswordCred = z.object({
 export type PasswordCred = z.infer<typeof PasswordCred>;
 
 export const Session = z.object({
-  sessionId: z.string().uuid(),
+  id: z.string().uuid(),
   userId: z.string().uuid(),
 });
 export type Session = z.infer<typeof Session>;
+
+export const sessionIdKey = "todo-app-session-id";

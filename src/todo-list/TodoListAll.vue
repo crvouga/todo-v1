@@ -1,4 +1,5 @@
 <script lang="ts">
+import NavBar from "@/components/NavBar.vue";
 import Spinner from "@/components/Spinner.vue";
 import type { TodoListGotItem } from "@/todo-list/todo-list-shared";
 import { formatFromNow, toValues } from "@/utils";
@@ -23,6 +24,7 @@ type Data = {
 export default defineComponent({
   components: {
     Spinner: Spinner,
+    NavBar,
   },
   setup() {
     return {
@@ -103,6 +105,7 @@ export default defineComponent({
 </script>
 
 <template>
+  <NavBar />
   <!-- 
 
 

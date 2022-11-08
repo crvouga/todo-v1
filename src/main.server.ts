@@ -9,7 +9,14 @@ import todoListRepoInMemory from "./todo-list/todo-list-repo/todo-list-repo.in-m
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+    preflightContinue: true,
+    credentials: true,
+  })
+);
+app.set("trust proxy", 1);
 app.use(express.json());
 app.use(morgan("tiny"));
 app.use(cookieParser());

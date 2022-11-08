@@ -1,5 +1,14 @@
 <script lang="ts">
+import api from "@/api";
+import { formatError } from "@/utils";
 import { defineComponent } from "vue";
+import {
+  SessionPostedBody,
+  endpoints,
+  SessionPostBody,
+  SessionPostError,
+  sessionIdKey,
+} from "./user-shared";
 
 type Data = {
   emailAddress: string;
@@ -8,8 +17,11 @@ type Data = {
   status:
     | { type: "NotAsked" }
     | { type: "Loading" }
-    | { type: "Err"; error: string }
-    | { type: "Ok"; value: string };
+    | {
+        type: "Err";
+        error: SessionPostError | { type: "ParsingFailed"; message: string };
+      }
+    | { type: "Ok"; data: SessionPostedBody };
 };
 
 export default defineComponent({
@@ -21,41 +33,144 @@ export default defineComponent({
       status: { type: "NotAsked" },
     };
   },
-  mounted() {
-    console.log("login vue");
+
+  watch: {
+    emailAddress() {
+      if (
+        this.status.type === "Err" &&
+        this.status.error.type === "InvalidEmailAddress"
+      ) {
+        this.status = { type: "NotAsked" };
+      }
+    },
+
+    password() {
+      if (
+        this.status.type === "Err" &&
+        this.status.error.type === "WrongPassword"
+      ) {
+        this.status = { type: "NotAsked" };
+      }
+    },
   },
+
   methods: {
     togglePasswordVisibility() {
       this.passwordVisibility =
         this.passwordVisibility === "Showing" ? "Hidden" : "Showing";
     },
+    async login() {
+      if (this.status.type === "Loading") {
+        return;
+      }
+      this.status = { type: "Loading" };
+      const dirty: SessionPostBody = {
+        emailAddress: this.emailAddress,
+        password: this.password,
+      };
+      const posted = await api.post({
+        endpoint: endpoints["/session"],
+        json: dirty,
+      });
+
+      if (posted.type === "Err") {
+        const parsed = SessionPostError.safeParse(posted.body);
+
+        if (!parsed.success) {
+          console.error(parsed.error);
+          this.status = {
+            type: "Err",
+            error: { type: "ParsingFailed", message: formatError(parsed) },
+          };
+          return;
+        }
+
+        this.status = { type: "Err", error: parsed.data };
+        return;
+      }
+
+      const parsedBody = SessionPostedBody.safeParse(posted.body);
+
+      if (!parsedBody.success) {
+        console.error({ error: parsedBody.error, body: posted });
+        this.status = {
+          type: "Err",
+          error: {
+            type: "ParsingFailed",
+            message: `Parsing Error!`,
+          },
+        };
+        return;
+      }
+      this.status = { type: "Ok", data: parsedBody.data };
+      localStorage.setItem(sessionIdKey, parsedBody.data.sessionId);
+      this.$router.push({ name: "todo-list-all" });
+    },
   },
 });
 </script>
 <template>
-  <div class="w-full flex flex-col justify-center items-center">
-    <h1 class="text-7xl font-bold mb-8 w-full text-center text-primary mt-12">
+  <div class="w-full flex flex-col justify-center items-center mt-12">
+    <h1
+      class="font-black text-transparent text-8xl bg-clip-text bg-gradient-to-b from-purple-500 to-purple-900 mb-8"
+    >
       todo
     </h1>
 
     <div class="flex flex-col justify-center items-start w-full max-w-xs">
-      <label class="font-bold mb-1" for="emailAddressInput">
+      <label class="font-bold mb-1 flex items-center" for="emailAddressInput">
         Email Address
+        <span class="font-thin ml-2 text-xs">(e.g. example@email.com)</span>
       </label>
       <input
+        v-model="emailAddress"
         type="email"
         id="emailAddressInput"
-        class="input input-primary w-full mb-4"
+        class="input input-primary w-full"
+        :class="{
+          'input-error':
+            status.type === 'Err' &&
+            (status.error.type === 'InvalidEmailAddress' ||
+              status.error.type === 'AccountNotFound'),
+        }"
       />
+      <p
+        v-if="
+          status.type === 'Err' &&
+          (status.error.type === 'InvalidEmailAddress' ||
+            status.error.type === 'AccountNotFound')
+        "
+        class="text-red-500 w-full text-left mt-2"
+      >
+        {{
+          status.error.type === "InvalidEmailAddress"
+            ? status.error.message
+            : "An account with this email does not exists. Try creating a new account"
+        }}
+      </p>
 
-      <label class="font-bold mb-1" for="passwordInput"> Password </label>
+      <label class="font-bold mt-4 mb-1" for="passwordInput">
+        Password
+        <span class="font-thin ml-2 text-xs">(e.g. 123)</span>
+      </label>
       <input
+        v-model="password"
         :type="passwordVisibility === 'Showing' ? 'text' : 'password'"
         id="passwordInput"
-        class="input input-primary w-full mb-2"
+        class="input input-primary w-full"
+        :class="{
+          'input-error':
+            status.type === 'Err' && status.error.type === 'WrongPassword',
+        }"
       />
+      <p
+        v-if="status.type === 'Err' && status.error.type === 'WrongPassword'"
+        class="text-red-500 w-full text-left mt-2"
+      >
+        Wrong password
+      </p>
       <button
-        class="btn btn-primary ml-auto btn-xs btn-outline mb-6"
+        class="btn btn-primary ml-auto btn-xs btn-outline mt-2"
         @click="togglePasswordVisibility"
       >
         {{
@@ -63,7 +178,20 @@ export default defineComponent({
         }}
       </button>
 
-      <button class="btn btn-primary w-full">Login</button>
+      <div
+        v-if="
+          status.type === 'Err' &&
+          (status.error.type === 'ServerError' ||
+            status.error.type === 'ParsingFailed')
+        "
+        class="w-full mt-4"
+      >
+        <div class="alert alert-error w-full">
+          {{ status.error.message }}
+        </div>
+      </div>
+
+      <button class="mt-6 btn btn-primary w-full" @click="login">Login</button>
 
       <div class="text-center w-full mt-12">
         <p class="w-full text-center text-primary text-sm mb-2">

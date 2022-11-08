@@ -63,7 +63,17 @@ const post = async <T>({ endpoint, json }: { endpoint: string; json: T }) => {
       }
     }
 
-    return { type: "Ok", response } as const;
+    try {
+      const responseJson: unknown = await response.json();
+
+      return { type: "Ok", response, body: responseJson } as const;
+    } catch (error) {
+      return {
+        type: "Ok",
+        response,
+        body: {} as unknown,
+      } as const;
+    }
   } catch (error) {
     return { type: "Err", body: {} as unknown, error: String(error) } as const;
   }

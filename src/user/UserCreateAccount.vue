@@ -66,15 +66,14 @@ export default defineComponent({
 
       this.status = { type: "Ok" };
       showToast({ type: "Success", title: "Created a new account." });
+      this.$router.push({ name: "login" });
     },
   },
 });
 </script>
 <template>
   <div class="w-full flex flex-col justify-center items-center">
-    <h1 class="mt-12 text-primary px-4 font-bold text-4xl mb-6">
-      Create New Account
-    </h1>
+    <h1 class="mt-12 px-4 font-bold text-2xl mb-6">Create New Account</h1>
     <div class="flex flex-col justify-center items-start w-full max-w-xs">
       <!-- 
 

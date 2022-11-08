@@ -12,10 +12,14 @@ export type Repo = {
     insertOne: (params: {
       passwordCred: PasswordCred;
     }) => Promise<Result<string, null>>;
+    findByUserId: (params: {
+      userId: string;
+    }) => Promise<Result<string, null | PasswordCred>>;
   };
   session: {
     findOneById: (params: {
       id: string;
     }) => Promise<Result<string, Session | null>>;
+    insertOne: (params: { userId: string }) => Promise<Result<string, Session>>;
   };
 };
