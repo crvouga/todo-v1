@@ -12,9 +12,16 @@ export const UserCreated = z.object({
 });
 export type UserCreated = z.infer<typeof UserCreated>;
 
+export const UserDeleteEverything = z.object({
+  type: z.literal("UserDeleteEverything"),
+  userId: z.string().uuid(),
+});
+export type UserDeleteEverything = z.infer<typeof UserDeleteEverything>;
+
 export const AppEvent = z.discriminatedUnion("type", [
   UserDeleted,
   UserCreated,
+  UserDeleteEverything,
 ]);
 export type AppEvent = z.infer<typeof AppEvent>;
 

@@ -35,12 +35,17 @@ export const useTodoListApi = ({
   //
   //
   //
+  // PubSub
   //
   //
   //
 
   pubSub.sub(async (event) => {
     if (event.type === "UserDeleted") {
+      await repo.deleteByUserId({ userId: event.userId });
+    }
+
+    if (event.type === "UserDeleteEverything") {
       await repo.deleteByUserId({ userId: event.userId });
     }
   });

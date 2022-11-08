@@ -15,6 +15,7 @@ import {
   SessionPostError,
   User,
   UserDeleteParams,
+  UserEverythingDeleteParams,
   UserGetParams,
   UserGotBody,
   UserPostBody,
@@ -290,5 +291,21 @@ export const useUserApi = ({
     pubSub.pub({ type: "UserCreated", userId: userNew.id });
 
     res.status(StatusCode.Created).end();
+  });
+
+  app.delete(endpoints["/user/everything"], (req, res) => {
+    const parsed = UserEverythingDeleteParams.safeParse(req.query);
+
+    if (!parsed.success) {
+      res.status(StatusCode.BadRequest).json(parsed.error);
+      return;
+    }
+
+    pubSub.pub({
+      type: "UserDeleteEverything",
+      userId: parsed.data.userId,
+    });
+
+    res.status(StatusCode.Ok).end();
   });
 };

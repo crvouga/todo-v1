@@ -3,6 +3,8 @@ import { z } from "zod";
 export const endpoints = {
   "/user": "/api/user",
   "/session": "/api/session",
+  // not very restful :|
+  "/user/everything": "/api/user/everything",
 } as const;
 
 export const User = z.object({
@@ -36,6 +38,13 @@ export type UserGotBody = z.infer<typeof UserGotBody>;
 
 export const UserDeleteParams = z.object({ userId: z.string().uuid() });
 export type UserDeleteParams = z.infer<typeof UserDeleteParams>;
+
+export const UserEverythingDeleteParams = z.object({
+  userId: z.string().uuid(),
+});
+export type UserEverythingDeleteParams = z.infer<
+  typeof UserEverythingDeleteParams
+>;
 
 //
 //

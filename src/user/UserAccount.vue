@@ -8,6 +8,7 @@ import { formatError } from "@/utils";
 import { defineComponent } from "vue";
 import userSessionApi from "./user-session-api";
 import {
+  UserEverythingDeleteParams,
   UserDeleteParams,
   UserGotBody,
   UserGetParams,
@@ -113,7 +114,29 @@ export default defineComponent({
       // @ts-ignore
       element.checked = false;
     },
-    async deleteEverything() {},
+    async deleteEverything() {
+      if (this.statusDeleteEverything.type === "Loading") {
+        return;
+      }
+      this.statusDeleteEverything = { type: "Loading" };
+      const currentUserId = getCurrentUserId();
+      if (!currentUserId) {
+        this.statusDeleteAccount = { type: "Err", error: "Must be logged in" };
+        return;
+      }
+      const dirty: UserEverythingDeleteParams = { userId: currentUserId };
+      const deleted = await api.delete({
+        endpoint: endpoints["/user/everything"],
+        params: dirty,
+      });
+      if (deleted.type === "Err") {
+        this.statusDeleteEverything = { type: "Err", error: deleted.error };
+        return;
+      }
+      this.statusDeleteEverything = { type: "Ok" };
+      showToast({ type: "Info", title: "Everything was deleted forever" });
+      this.closeDeleteEverything();
+    },
 
     async closeDeleteAccount() {
       // todo change this method because its feels like a hack
@@ -146,6 +169,7 @@ export default defineComponent({
         return;
       }
       this.statusDeleteAccount = { type: "Ok" };
+      this.closeDeleteAccount();
       showToast({ type: "Info", title: "Your account was deleted forever" });
       this.$router.push({ name: "login" });
     },
