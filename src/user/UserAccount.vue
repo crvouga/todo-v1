@@ -100,7 +100,7 @@ export default defineComponent({
         return;
       }
       this.statusLogout = { type: "Ok" };
-
+      showToast({ type: "Info", title: "You're now logged out" });
       this.$router.push({ name: "login" });
     },
 
@@ -126,7 +126,7 @@ export default defineComponent({
       }
 
       this.statusPatch = { type: "Ok" };
-
+      showToast({ type: "Success", title: "Account successfully updated" });
       patchCurrentUser(body);
     },
 
