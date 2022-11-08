@@ -34,6 +34,12 @@ export type UserGetParams = z.infer<typeof UserGetParams>;
 export const UserGotBody = User;
 export type UserGotBody = z.infer<typeof UserGotBody>;
 
+export const UserDeleteParams = z.object({ userId: z.string().uuid() });
+export type UserDeleteParams = z.infer<typeof UserDeleteParams>;
+
+//
+//
+//
 //
 //
 //

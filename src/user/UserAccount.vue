@@ -3,10 +3,12 @@ import api from "@/api";
 import BackButton from "@/components/BackButton.vue";
 import Spinner from "@/components/Spinner.vue";
 import { getCurrentUserId } from "@/store-session";
+import { showToast } from "@/store-toast";
 import { formatError } from "@/utils";
 import { defineComponent } from "vue";
 import userSessionApi from "./user-session-api";
 import {
+  UserDeleteParams,
   UserGotBody,
   UserGetParams,
   endpoints,
@@ -18,7 +20,20 @@ type Data = {
     | { type: "Loading" }
     | { type: "Error"; error: string }
     | { type: "Ok"; data: User };
+
   statusLogout:
+    | { type: "NotAsked" }
+    | { type: "Loading" }
+    | { type: "Err"; error: string }
+    | { type: "Ok" };
+
+  statusDeleteAccount:
+    | { type: "NotAsked" }
+    | { type: "Loading" }
+    | { type: "Err"; error: string }
+    | { type: "Ok" };
+
+  statusDeleteEverything:
     | { type: "NotAsked" }
     | { type: "Loading" }
     | { type: "Err"; error: string }
@@ -34,6 +49,8 @@ export default defineComponent({
     return {
       statusLogout: { type: "NotAsked" },
       statusGet: { type: "Loading" },
+      statusDeleteAccount: { type: "NotAsked" },
+      statusDeleteEverything: { type: "NotAsked" },
     };
   },
   mounted() {
@@ -84,6 +101,54 @@ export default defineComponent({
 
       this.$router.push({ name: "login" });
     },
+
+    async closeDeleteEverything() {
+      // todo change this method because its feels like a hack
+      const element = document.getElementById("delete-everything");
+
+      if (!element) {
+        return;
+      }
+
+      // @ts-ignore
+      element.checked = false;
+    },
+    async deleteEverything() {},
+
+    async closeDeleteAccount() {
+      // todo change this method because its feels like a hack
+      const element = document.getElementById("delete-account");
+
+      if (!element) {
+        return;
+      }
+
+      // @ts-ignore
+      element.checked = false;
+    },
+    async deleteAccount() {
+      if (this.statusDeleteAccount.type === "Loading") {
+        return;
+      }
+      this.statusDeleteAccount = { type: "Loading" };
+      const currentUserId = getCurrentUserId();
+      if (!currentUserId) {
+        this.statusDeleteAccount = { type: "Err", error: "Must be logged in" };
+        return;
+      }
+      const dirty: UserDeleteParams = { userId: currentUserId };
+      const deleted = await api.delete({
+        endpoint: endpoints["/user"],
+        params: dirty,
+      });
+      if (deleted.type === "Err") {
+        this.statusDeleteAccount = { type: "Err", error: deleted.error };
+        return;
+      }
+      this.statusDeleteAccount = { type: "Ok" };
+      showToast({ type: "Info", title: "Your account was deleted forever" });
+      this.$router.push({ name: "login" });
+    },
   },
 });
 </script>
@@ -122,7 +187,7 @@ export default defineComponent({
   </div>
 
   <div class="mt-8 w-full px-4">
-    <button class="btn btn-error btn-outline w-full" @click="logout">
+    <button class="btn btn-error btn-outline w-full font-bold" @click="logout">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
@@ -140,5 +205,116 @@ export default defineComponent({
 
       Logout
     </button>
+
+    <p class="font-bold text-2xl text-red-500 mt-6">Danger Zone</p>
+
+    <!-- 
+
+
+      Delete Account
+
+     -->
+
+    <label
+      for="delete-account"
+      class="mt-4 btn modal-button btn-error w-full font-bold"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="w-6 h-6 mr-1"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25 2.25M12 13.875l2.25-2.25M12 13.875l-2.25 2.25M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
+        />
+      </svg>
+
+      Delete Account Forever
+    </label>
+
+    <input type="checkbox" id="delete-account" class="modal-toggle" />
+    <label for="delete-account" class="modal cursor-pointer">
+      <label class="modal-box relative" for="">
+        <h3 class="text-3xl font-bold">Delete your account forever?</h3>
+        <div
+          v-if="statusDeleteAccount.type === 'Err'"
+          class="alert alert-error mt-2"
+        >
+          {{ statusDeleteAccount.error }}
+        </div>
+        <div class="modal-action">
+          <button class="btn" @click="closeDeleteAccount">Cancel</button>
+          <button
+            class="btn btn-error"
+            @click="deleteAccount()"
+            :class="{
+              'loading btn-disabled': statusDeleteAccount.type === 'Loading',
+            }"
+          >
+            Delete Forever
+          </button>
+        </div>
+      </label>
+    </label>
+
+    <!-- 
+
+
+      Delete Everything
+
+
+     -->
+
+    <label
+      for="delete-everything"
+      class="mt-4 btn modal-button btn-error w-full font-bold"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="w-6 h-6 mr-1"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25 2.25M12 13.875l2.25-2.25M12 13.875l-2.25 2.25M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
+        />
+      </svg>
+
+      Delete Everything Forever
+    </label>
+
+    <input type="checkbox" id="delete-everything" class="modal-toggle" />
+    <label for="delete-everything" class="modal cursor-pointer">
+      <label class="modal-box relative" for="">
+        <h3 class="text-3xl font-bold">Delete everything forever?</h3>
+        <div
+          v-if="statusDeleteEverything.type === 'Err'"
+          class="alert alert-error"
+        >
+          {{ statusDeleteEverything.error }}
+        </div>
+        <div class="modal-action">
+          <button class="btn" @click="closeDeleteEverything">Cancel</button>
+          <button
+            class="btn btn-error"
+            @click="deleteEverything()"
+            :class="{
+              'loading btn-disabled': statusDeleteEverything.type === 'Loading',
+            }"
+          >
+            Delete Forever
+          </button>
+        </div>
+      </label>
+    </label>
   </div>
 </template>

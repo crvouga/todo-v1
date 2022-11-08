@@ -24,12 +24,6 @@ import {
 
 const duration = 500;
 
-const timeout = (ms: number) => {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-};
-
 export const useTodoListApi = ({
   repo,
   app,
@@ -149,8 +143,6 @@ export const useTodoListApi = ({
     const json: TodoItemGot = {
       items: found.data,
     };
-
-    await timeout(duration);
 
     res.json(json);
   });

@@ -64,7 +64,7 @@ export default defineComponent({
         return;
       }
       this.status = { type: "Ok" };
-      showToast({ type: "Success", title: "Created a new account." });
+      showToast({ type: "Success", title: "New account created" });
       this.$router.push({ name: "login" });
     },
   },

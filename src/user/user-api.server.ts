@@ -2,7 +2,7 @@ import type { Application } from "express";
 import { v4 } from "uuid";
 import { StatusCode } from "../utils";
 import Hash from "./hash";
-import type { Repo } from "./user-repo/user-repo-interface";
+import type { Repo } from "./user-repo/user-repo";
 import {
   endpoints,
   PasswordCred,
@@ -13,10 +13,11 @@ import {
   SessionPostedBody,
   SessionPostError,
   User,
-  UserPostBody,
-  UserPostError,
+  UserDeleteParams,
   UserGetParams,
   UserGotBody,
+  UserPostBody,
+  UserPostError,
 } from "./user-shared";
 
 export const useUserApi = ({ app, repo }: { repo: Repo; app: Application }) => {
@@ -152,7 +153,7 @@ export const useUserApi = ({ app, repo }: { repo: Repo; app: Application }) => {
       res.status(StatusCode.BadRequest).json(parsed.error);
       return;
     }
-    const deleted = await repo.session.deleteWhere({
+    const deleted = await repo.session.deleteById({
       sessionId: parsed.data.sessionId,
     });
     if (deleted.type === "Err") {
@@ -189,10 +190,26 @@ export const useUserApi = ({ app, repo }: { repo: Repo; app: Application }) => {
     res.json(body);
   });
 
+  app.delete(endpoints["/user"], async (req, res) => {
+    const parsed = UserDeleteParams.safeParse(req.query);
+    if (!parsed.success) {
+      res.status(StatusCode.BadRequest).json(parsed.error);
+      return;
+    }
+    const deleted = await repo.deleteByUserId({
+      userId: parsed.data.userId,
+    });
+
+    if (deleted.type === "Err") {
+      res.status(StatusCode.ServerError).json({ message: deleted.error });
+      return;
+    }
+
+    res.status(StatusCode.Ok).end();
+  });
+
   app.post(endpoints["/user"], async (req, res) => {
     const parsed = UserPostBody.safeParse(req.body);
-
-    await new Promise((resolve) => setTimeout(resolve, 300));
 
     if (!parsed.success) {
       const emailAddressErr = parsed.error.formErrors.fieldErrors.emailAddress;

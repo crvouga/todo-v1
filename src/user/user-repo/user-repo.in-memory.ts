@@ -2,21 +2,33 @@ import { v4 } from "uuid";
 import { Ok } from "../../utils";
 import hash from "../hash";
 import type { Session, PasswordCred, User } from "../user-shared";
-import type { Repo } from "./user-repo-interface";
+import type { Repo } from "./user-repo";
 
-const userMap = new Map<string, User>();
-const passwordMap = new Map<string, PasswordCred>();
-const sessionMap = new Map<string, Session>();
+const userById = new Map<string, User>();
+const passwordByUserId = new Map<string, PasswordCred>();
+const sessionById = new Map<string, Session>();
 
 const repo: Repo = {
+  deleteByUserId: async (params) => {
+    userById.delete(params.userId);
+    passwordByUserId.delete(params.userId);
+    const foundSession = Array.from(sessionById.values()).filter(
+      (session) => session.userId === params.userId
+    )[0];
+    if (foundSession) {
+      sessionById.delete(foundSession.id);
+    }
+    return Ok(null);
+  },
+
   user: {
     insertOne: async (params) => {
-      userMap.set(params.user.id, params.user);
+      userById.set(params.user.id, params.user);
       return Ok(null);
     },
 
     findOneByEmailAddress: async (params) => {
-      const found = Array.from(userMap.values()).filter(
+      const found = Array.from(userById.values()).filter(
         (user) => user.emailAddress === params.emailAddress
       )[0];
 
@@ -28,7 +40,7 @@ const repo: Repo = {
     },
 
     findOneById: async (params) => {
-      const found = userMap.get(params.id);
+      const found = userById.get(params.id);
 
       if (!found) {
         return Ok(null);
@@ -39,13 +51,12 @@ const repo: Repo = {
   },
   password: {
     insertOne: async (params) => {
-      passwordMap.set(params.passwordCred.userId, params.passwordCred);
+      passwordByUserId.set(params.passwordCred.userId, params.passwordCred);
       return Ok(null);
     },
     findByUserId: async (params) => {
-      const found = Array.from(passwordMap.values()).filter(
-        (cred) => cred.userId === params.userId
-      )[0];
+      const found = passwordByUserId.get(params.userId);
+
       if (!found) {
         return Ok(null);
       }
@@ -56,7 +67,7 @@ const repo: Repo = {
 
   session: {
     findOneById: async (params) => {
-      const found = sessionMap.get(params.id);
+      const found = sessionById.get(params.id);
 
       if (!found) {
         return Ok(null);
@@ -70,12 +81,12 @@ const repo: Repo = {
         id: v4(),
         userId: params.userId,
       };
-      sessionMap.set(sessionNew.id, sessionNew);
+      sessionById.set(sessionNew.id, sessionNew);
       return Ok(sessionNew);
     },
 
-    deleteWhere: async (params) => {
-      sessionMap.delete(params.sessionId);
+    deleteById: async (params) => {
+      sessionById.delete(params.sessionId);
       return Ok(null);
     },
   },

@@ -182,7 +182,7 @@ export default defineComponent({
       </button>
     </div>
 
-    <p class="font-bold text-2xl text-red-400 pb-1">Danger Zone</p>
+    <p class="font-bold text-2xl text-red-500 pb-1">Danger Zone</p>
 
     <!-- The button to open modal -->
     <label for="delete-modal" class="btn modal-button btn-error">
