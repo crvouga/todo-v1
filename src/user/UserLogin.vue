@@ -1,5 +1,6 @@
 <script lang="ts">
 import api from "@/api";
+import PasswordVisibilityButton from "../components/PasswordVisibilityButton.vue";
 import { showToast } from "@/store-toast";
 import { formatError } from "@/utils";
 import { defineComponent } from "vue";
@@ -33,6 +34,10 @@ export default defineComponent({
       passwordVisibility: "Hidden",
       status: { type: "NotAsked" },
     };
+  },
+
+  components: {
+    PasswordVisibilityButton,
   },
 
   watch: {
@@ -175,14 +180,12 @@ export default defineComponent({
       >
         Wrong password
       </p>
-      <button
-        class="btn btn-primary ml-auto btn-xs btn-outline mt-2"
+
+      <PasswordVisibilityButton
+        :is-showing="passwordVisibility === 'Showing'"
         @click="togglePasswordVisibility"
-      >
-        {{
-          passwordVisibility === "Showing" ? "Hide Password" : "Show Password"
-        }}
-      </button>
+        class="mt-2"
+      />
 
       <div
         v-if="

@@ -1,6 +1,7 @@
 <script lang="ts">
 import api from "@/api";
 import BackButton from "@/components/BackButton.vue";
+import PasswordVisibilityButton from "../components/PasswordVisibilityButton.vue";
 import { showToast } from "@/store-toast";
 import { defineComponent } from "vue";
 import { endpoints, UserPostBody, UserPostError } from "./user-shared";
@@ -27,6 +28,10 @@ export default defineComponent({
       passwordVisibility: "Hidden",
       status: { type: "NotAsked" },
     };
+  },
+  components: {
+    BackButton,
+    PasswordVisibilityButton,
   },
   methods: {
     togglePasswordVisibility() {
@@ -63,7 +68,6 @@ export default defineComponent({
       this.$router.push({ name: "login" });
     },
   },
-  components: { BackButton },
 });
 </script>
 <template>
@@ -136,14 +140,12 @@ export default defineComponent({
       >
         {{ status.error.message }}
       </p>
-      <button
-        class="btn btn-primary ml-auto btn-xs btn-outline mt-2"
+
+      <PasswordVisibilityButton
+        :is-showing="passwordVisibility === 'Showing'"
         @click="togglePasswordVisibility"
-      >
-        {{
-          passwordVisibility === "Showing" ? "Hide Password" : "Show Password"
-        }}
-      </button>
+        class="mt-2"
+      />
 
       <div
         v-if="status.type === 'Err' && status.error.type === 'UnknownError'"
