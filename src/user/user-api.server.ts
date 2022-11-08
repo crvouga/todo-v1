@@ -1,3 +1,4 @@
+import type { PubSub } from "../pubsub/pubsub";
 import type { Application } from "express";
 import { v4 } from "uuid";
 import { StatusCode } from "../utils";
@@ -20,7 +21,15 @@ import {
   UserPostError,
 } from "./user-shared";
 
-export const useUserApi = ({ app, repo }: { repo: Repo; app: Application }) => {
+export const useUserApi = ({
+  app,
+  repo,
+  pubSub,
+}: {
+  pubSub: PubSub;
+  repo: Repo;
+  app: Application;
+}) => {
   //
   //
   //
@@ -205,6 +214,7 @@ export const useUserApi = ({ app, repo }: { repo: Repo; app: Application }) => {
       return;
     }
 
+    pubSub.pub({ type: "UserDeleted", userId: parsed.data.userId });
     res.status(StatusCode.Ok).end();
   });
 
@@ -276,6 +286,8 @@ export const useUserApi = ({ app, repo }: { repo: Repo; app: Application }) => {
 
     await repo.password.insertOne({ passwordCred: passwordCredNew });
     await repo.user.insertOne({ user: userNew });
+
+    pubSub.pub({ type: "UserCreated", userId: userNew.id });
 
     res.status(StatusCode.Created).end();
   });

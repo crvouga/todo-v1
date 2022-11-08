@@ -105,44 +105,26 @@ const repo: Repo = {
       return Ok(null);
     },
   },
-};
 
-//
-// initialize data
-//
-const titles = ["List A", "List B", "List C", "List D", "List E"];
-const texts = [
-  "Learn Vue.js",
-  "Learn Vue.js composition API",
-  "Go to the gym",
-  "Hook up dynamodb",
-  "Go to the store",
-  "Add user auth",
-];
+  deleteByUserId: async (params) => {
+    const lists = Array.from(listMap.values()).filter(
+      (list) => list.userId === params.userId
+    );
 
-export const seed = ({ userId }: { userId: string }) => {
-  titles.forEach((title) => {
-    const list: TodoList = {
-      userId,
-      createdAt: new Date(),
-      id: v4(),
-      title,
-    };
+    for (const list of lists) {
+      listMap.delete(list.id);
+    }
 
-    listMap.set(list.id, list);
+    const items = Array.from(itemMap.values()).filter((item) =>
+      lists.some((list) => item.listId === list.id)
+    );
 
-    texts.forEach((text, i) => {
-      const offset = i * 1000 * 60;
-      const item: TodoItem = {
-        listId: list.id,
-        createdAt: new Date(Date.now() - offset),
-        id: v4(),
-        isCompleted: false,
-        text: text,
-      };
-      itemMap.set(item.id, item);
-    });
-  });
+    for (const item of items) {
+      itemMap.delete(item.id);
+    }
+
+    return Ok(null);
+  },
 };
 
 export default repo;

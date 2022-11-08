@@ -32,4 +32,5 @@ export type Repo = {
       filter: TodoItemFilter;
     }) => Promise<Result<string, TodoItem[]>>;
   };
+  deleteByUserId: (params: { userId: string }) => Promise<Result<string, null>>;
 };

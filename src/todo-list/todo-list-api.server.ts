@@ -1,3 +1,4 @@
+import type { PubSub } from "../pubsub/pubsub";
 import type { Application } from "express";
 import { StatusCode } from "../utils";
 import { getSeedData } from "./todo-list-repo/seed";
@@ -22,15 +23,28 @@ import {
   TodoSeedPostBody,
 } from "./todo-list-shared";
 
-const duration = 500;
-
 export const useTodoListApi = ({
   repo,
   app,
+  pubSub,
 }: {
+  pubSub: PubSub;
   repo: Repo;
   app: Application;
 }) => {
+  //
+  //
+  //
+  //
+  //
+  //
+
+  pubSub.sub(async (event) => {
+    if (event.type === "UserDeleted") {
+      await repo.deleteByUserId({ userId: event.userId });
+    }
+  });
+
   //
   //
   // Todo Items
