@@ -163,13 +163,13 @@ export const TodoListGetOneParams = z.object({
   listId: z.string().uuid(),
 });
 
-export const TodoListGotItem = z.intersection(
-  TodoList,
-  z.object({
-    activeCount: z.number(),
-    completedCount: z.number(),
-  })
-);
+export const TodoListStats = z.object({
+  activeCount: z.number(),
+  completedCount: z.number(),
+});
+export type TodoListStats = z.infer<typeof TodoListStats>;
+
+export const TodoListGotItem = z.intersection(TodoList, TodoListStats);
 export type TodoListGotItem = z.infer<typeof TodoListGotItem>;
 
 export const TodoListGot = z.object({
@@ -183,7 +183,7 @@ export const TodoListDeleteParams = z.object({
 export type TodoListDeleteParams = z.infer<typeof TodoListDeleteParams>;
 
 export const TodoListPatchParams = z.object({
-  itemId: z.string(),
+  listId: z.string(),
 });
 export type TodoListPatchParams = z.infer<typeof TodoListPatchParams>;
 export const TodoListPatchBody = TodoList.partial();

@@ -1,4 +1,5 @@
 export const StatusCode = {
+  NoContent: 204,
   Ok: 200,
   Created: 201,
   BadRequest: 400,

@@ -1,9 +1,10 @@
 import type { Application } from "express";
 import { v4 } from "uuid";
 import { StatusCode } from "../utils";
-import type { PasswordCred, Repo } from "./user-repo/user-repo-interface";
+import type { Repo } from "./user-repo/user-repo-interface";
 import {
   endpoints,
+  PasswordCred,
   SessionGetBody,
   SessionPostBody,
   User,
@@ -27,7 +28,8 @@ export const useUserApi = ({ app, repo }: { repo: Repo; app: Application }) => {
       return;
     }
 
-    const found = await repo;
+    // todo implement
+    res.status(StatusCode.ServerError).end();
   });
 
   app.get(endpoints["/session"], async (req, res) => {

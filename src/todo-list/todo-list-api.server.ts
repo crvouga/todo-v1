@@ -1,12 +1,10 @@
-import { StatusCode } from "../utils";
 import type { Application } from "express";
-import { v4 } from "uuid";
+import { StatusCode } from "../utils";
+import type { Repo } from "./todo-list-repo/todo-list-repo";
 import {
   applyPatch,
   applyPatchTodoList,
   endpoints,
-  filterer,
-  sorter,
   TodoItem,
   TodoItemDeleteParams,
   TodoItemGetParams,
@@ -21,51 +19,6 @@ import {
   TodoListPatchParams,
 } from "./todo-list-shared";
 
-//
-// Data
-//
-
-// todo use a database
-
-const todoItemMap = new Map<string, TodoItem>();
-const todoListMap = new Map<string, TodoList>();
-
-//
-// initialize data
-//
-
-const titles = ["List A", "List B", "List C", "List D", "List E"];
-const texts = [
-  "Learn Vue.js",
-  "Learn Vue.js composition API",
-  "Go to the gym",
-  "Hook up dynamodb",
-  "Go to the store",
-  "Add user auth",
-];
-
-titles.forEach((title) => {
-  const list: TodoList = {
-    createdAt: new Date(),
-    id: v4(),
-    title,
-  };
-
-  todoListMap.set(list.id, list);
-
-  texts.forEach((text, i) => {
-    const offset = i * 1000 * 60;
-    const item: TodoItem = {
-      listId: list.id,
-      createdAt: new Date(Date.now() - offset),
-      id: v4(),
-      isCompleted: false,
-      text: text,
-    };
-    todoItemMap.set(item.id, item);
-  });
-});
-
 const duration = 500;
 
 const timeout = (ms: number) => {
@@ -74,7 +27,13 @@ const timeout = (ms: number) => {
   });
 };
 
-export const useTodoListApi = (app: Application) => {
+export const useTodoListApi = ({
+  repo,
+  app,
+}: {
+  repo: Repo;
+  app: Application;
+}) => {
   //
   //
   // Todo Items
@@ -82,18 +41,24 @@ export const useTodoListApi = (app: Application) => {
   //
 
   app.post(endpoints["/todo-item"], async (req, res) => {
-    const result = TodoItem.safeParse(req.body);
+    const parsed = TodoItem.safeParse(req.body);
 
-    if (!result.success) {
-      res.status(StatusCode.BadRequest).json(result.error).end();
+    if (!parsed.success) {
+      res.status(StatusCode.BadRequest).json(parsed.error).end();
       return;
     }
 
-    const todoItemNew = result.data;
+    const todoItemNew = parsed.data;
 
-    todoItemMap.set(todoItemNew.id, todoItemNew);
+    const inserted = await repo.item.insertOne({ item: todoItemNew });
 
-    await timeout(duration);
+    if (inserted.type === "Err") {
+      res
+        .status(StatusCode.ServerError)
+        .json({ message: inserted.error })
+        .end();
+      return;
+    }
 
     res.status(StatusCode.Created).end();
   });
@@ -108,11 +73,14 @@ export const useTodoListApi = (app: Application) => {
 
     const itemId = result.data.itemId;
 
-    todoItemMap.delete(itemId);
+    const deleted = await repo.item.deleteById({ id: itemId });
 
-    await timeout(duration);
+    if (deleted.type === "Err") {
+      res.status(StatusCode.ServerError).json({ message: deleted.error }).end();
+      return;
+    }
 
-    res.status(StatusCode.Created).end();
+    res.status(StatusCode.Ok).end();
   });
 
   app.patch(endpoints["/todo-item"], async (req, res) => {
@@ -129,20 +97,29 @@ export const useTodoListApi = (app: Application) => {
       return;
     }
 
-    const item = todoItemMap.get(params.data.itemId);
+    const found = await repo.item.findOneById({ id: params.data.itemId });
 
-    if (!item) {
+    if (found.type === "Err") {
+      res.status(StatusCode.ServerError).json({ message: found.error }).end();
+      return;
+    }
+
+    if (!found.data) {
       res.status(StatusCode.NotFound).end();
       return;
     }
 
-    const patched = applyPatch(item, patch.data);
+    const patched = applyPatch(found.data, patch.data);
 
-    todoItemMap.set(patched.id, patched);
+    const updated = await repo.item.updateOne({
+      updated: patched,
+    });
 
-    await timeout(1000 / 3);
-
-    res.status(204).end();
+    if (updated.type === "Err") {
+      res.status(StatusCode.ServerError).json({ message: updated.error }).end();
+      return;
+    }
+    res.status(StatusCode.NoContent).end();
   });
 
   app.get(endpoints["/todo-item"], async (req, res) => {
@@ -155,13 +132,19 @@ export const useTodoListApi = (app: Application) => {
 
     const params = parsed.data;
 
-    const items = Array.from(todoItemMap.values())
-      .filter(filterer({ filter: params.filter }))
-      .filter((item) => item.listId === parsed.data.listId)
-      .sort(sorter({ sort: params.sort }));
+    const found = await repo.item.findManyWhere({
+      listId: parsed.data.listId,
+      filter: params.filter,
+      sort: params.sort,
+    });
+
+    if (found.type === "Err") {
+      res.status(StatusCode.ServerError).json({ message: found.error }).end();
+      return;
+    }
 
     const json: TodoItemGot = {
-      items,
+      items: found.data,
     };
 
     await timeout(duration);
@@ -178,89 +161,112 @@ export const useTodoListApi = (app: Application) => {
   //
 
   app.get(endpoints["/todo-list-one"], async (req, res) => {
-    const params = TodoListGetOneParams.safeParse(req.query);
+    const parsed = TodoListGetOneParams.safeParse(req.query);
 
-    if (!params.success) {
-      res.status(StatusCode.BadRequest).json(params.error).end();
+    if (!parsed.success) {
+      res.status(StatusCode.BadRequest).json(parsed.error).end();
       return;
     }
-    const lists = Array.from(todoListMap.values()).filter(
-      (list) => list.id === params.data.listId
-    );
 
-    const list = lists[0];
+    const found = await repo.list.findOneById({ id: parsed.data.listId });
 
-    if (!list) {
+    if (found.type === "Err") {
+      res.status(StatusCode.ServerError).json({ message: found.error }).end();
+      return;
+    }
+
+    if (!found.data) {
       res.status(StatusCode.NotFound).end();
       return;
     }
 
-    await timeout(duration);
-
-    res.json(list);
+    res.json(found.data);
   });
 
-  app.get(endpoints["/todo-list"], async (req, res) => {
-    const lists = Array.from(todoListMap.values());
+  app.get(endpoints["/todo-list"], async (_req, res) => {
+    const found = await repo.list.findManyWithStats();
+
+    if (found.type === "Err") {
+      res.status(StatusCode.ServerError).json({ message: found.error });
+      return;
+    }
+
     const json: TodoListGot = {
-      items: lists.map((list) => {
-        const items = Array.from(todoItemMap.values()).filter(
-          (item) => item.listId === list.id
-        );
-        const activeCount = items.filter((item) => !item.isCompleted).length;
-        const completedCount = items.filter((item) => item.isCompleted).length;
-        return {
-          ...list,
-          activeCount,
-          completedCount,
-        };
-      }),
+      items: found.data,
     };
-    await timeout(duration);
+
     res.json(json);
   });
 
   app.delete(endpoints["/todo-list"], async (req, res) => {
     const parsed = TodoListDeleteParams.safeParse(req.query);
+
     if (!parsed.success) {
       res.status(StatusCode.BadRequest).json(parsed.error).end();
       return;
     }
-    todoListMap.delete(parsed.data.listId);
-    await timeout(duration);
+
+    const deleted = await repo.list.deleteById({ id: parsed.data.listId });
+
+    if (deleted.type === "Err") {
+      res.status(StatusCode.ServerError).json({ message: deleted.error });
+      return;
+    }
+
     res.status(StatusCode.Ok).end();
   });
 
   app.post(endpoints["/todo-list"], async (req, res) => {
     const parsed = TodoList.safeParse(req.body);
+
     if (!parsed.success) {
       res.status(StatusCode.BadRequest).json(parsed.error).end();
       return;
     }
-    todoListMap.set(parsed.data.id, parsed.data);
-    await timeout(duration);
+
+    const inserted = await repo.list.insertOne({ list: parsed.data });
+
+    if (inserted.type === "Err") {
+      res.status(StatusCode.ServerError).json({ message: inserted.error });
+      return;
+    }
+
     res.status(StatusCode.Created).end();
   });
 
   app.patch(endpoints["/todo-list"], async (req, res) => {
     const parsedParams = TodoListPatchParams.safeParse(req.query);
+
     if (!parsedParams.success) {
       res.status(StatusCode.BadRequest).json(parsedParams.error).end();
       return;
     }
+
     const parsedBody = TodoListPatchBody.safeParse(req.body);
+
     if (!parsedBody.success) {
       res.status(StatusCode.BadRequest).json(parsedBody.error).end();
       return;
     }
-    const existing = todoListMap.get(parsedParams.data.itemId);
-    if (!existing) {
+
+    const existing = await repo.list.findOneById({
+      id: parsedParams.data.listId,
+    });
+
+    if (existing.type === "Err") {
       res.status(StatusCode.NotFound).end();
       return;
     }
-    const patched = applyPatchTodoList(existing, parsedBody.data);
-    todoListMap.set(patched.id, patched);
-    await timeout(duration);
+
+    if (!existing.data) {
+      res.status(StatusCode.NotFound).end();
+      return;
+    }
+
+    const patched = applyPatchTodoList(existing.data, parsedBody.data);
+
+    repo.list.updateOne({ updated: patched });
+
     res.status(StatusCode.Ok).end();
   });
 };

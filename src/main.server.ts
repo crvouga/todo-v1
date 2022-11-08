@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import { useTodoListApi } from "./todo-list/todo-list-api.server";
 import { useUserApi } from "./user/user-api.server";
 import userRepoInMemory from "./user/user-repo/user-repo.in-memory";
+import todoListRepoInMemory from "./todo-list/todo-list-repo/todo-list-repo.in-memory";
 
 const app = express();
 
@@ -17,7 +18,7 @@ app.get("/", (req, res) => {
   res.json({ message: "Hello from server" });
 });
 
-useTodoListApi(app);
+useTodoListApi({ repo: todoListRepoInMemory, app });
 useUserApi({ repo: userRepoInMemory, app });
 
 const port = Number(process.env.PORT) || Number(process.env.port) || 5000;

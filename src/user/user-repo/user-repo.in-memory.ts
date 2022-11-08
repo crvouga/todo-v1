@@ -1,6 +1,6 @@
 import { Ok } from "../../utils";
-import type { User } from "../user-shared";
-import type { Session, PasswordCred, Repo } from "./user-repo-interface";
+import type { Session, PasswordCred, User } from "../user-shared";
+import type { Repo } from "./user-repo-interface";
 
 const userMap = new Map<string, User>();
 const passwordMap = new Map<string, PasswordCred>();
