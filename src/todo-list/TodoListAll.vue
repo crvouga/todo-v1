@@ -189,13 +189,14 @@ export default defineComponent({
 
 
    -->
-  <div class="w-full flex overflow-hidden gap-2 px-4 py-1">
+  <div class="w-full input-group px-4 py-1">
     <input
       ref="titleInput"
       v-model="title"
       class="input input-primary flex-1"
       :class="{ 'input-error': statusPost.type === 'Err' }"
       placeholder="Name of list"
+      @keyup.enter="post({ title })"
     />
     <button
       class="btn btn-primary"

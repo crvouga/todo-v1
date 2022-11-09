@@ -339,7 +339,7 @@ export default defineComponent({
 
    -->
       <div class="w-full bg-inherit top-0 px-4">
-        <div class="flex items-center justify-center gap-2 w-full">
+        <div class="input-group w-full">
           <input
             ref="text"
             v-model="text"
@@ -356,7 +356,7 @@ export default defineComponent({
 
           <button
             @click="post({ text, listId })"
-            class="btn btn-primary w-32"
+            class="btn btn-primary"
             :class="{ loading: statusPost.type === 'Loading' }"
           >
             <!-- plus icon -->

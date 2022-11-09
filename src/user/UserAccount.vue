@@ -259,11 +259,11 @@ export default defineComponent({
     >
       Avatar Seed
     </label>
-    <div class="w-full flex items-center gap-2">
+    <div class="w-full input-group mt-1">
       <input
         v-model="avatarSeed"
         id="avatarSeedInput"
-        class="input input-primary w-full mt-1"
+        class="input input-primary w-full"
       />
       <button class="btn btn-outline btn-primary" @click="randomAvatarSeed">
         Random
