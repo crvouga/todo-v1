@@ -1,7 +1,10 @@
+const styles = {
+  "pixel-art": "pixel-art",
+  "big-ears-neutral": "big-ears-neutral",
+};
 // docs: https://avatars.dicebear.com
 export const toAvatarUrl = ({ avatarSeed }: { avatarSeed: string }): string => {
-  const avatarStyle = "pixel-art";
-  return `https://avatars.dicebear.com/api/${avatarStyle}/${avatarSeed}.svg`;
+  return `https://avatars.dicebear.com/api/${styles["big-ears-neutral"]}/${avatarSeed}.svg`;
 };
 
 export const getRandomAvatarSeed = () => {

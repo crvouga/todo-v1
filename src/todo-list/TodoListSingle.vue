@@ -343,7 +343,7 @@ export default defineComponent({
           <input
             ref="text"
             v-model="text"
-            class="input input-md input-bordered flex-1 input-primary"
+            class="input input-bordered flex-1 input-primary"
             :class="{
               'input-error': statusPost.type === 'Err',
             }"
