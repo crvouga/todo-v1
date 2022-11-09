@@ -1,13 +1,14 @@
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
-import path from "path";
 import morgan from "morgan";
-import cookieParser from "cookie-parser";
-import { useTodoListApi } from "./todo-list/todo-list-api.server";
-import { useUserApi } from "./user/user-api.server";
-import userRepoInMemory from "./user/user-repo/user-repo.in-memory";
-import todoListRepoInMemory from "./todo-list/todo-list-repo/todo-list-repo.in-memory";
+import path from "path";
+import { productionDb } from "./mongodb-client";
 import pubSubInMemory from "./pubsub/pubsub.in-memory";
+import { useTodoListApi } from "./todo-list/todo-list-api.server";
+import todoListRepoInMemory from "./todo-list/todo-list-repo/todo-list-repo.in-memory";
+import { useUserApi } from "./user/user-api.server";
+import makeUserRepoMongodb from "./user/user-repo/user-repo.mongodb";
 
 const app = express();
 
@@ -26,6 +27,8 @@ pubSubInMemory.sub((event) => {
 //
 //
 
+const userRepoMongoDb = makeUserRepoMongodb({ db: productionDb });
+
 useTodoListApi({
   pubSub: pubSubInMemory,
   repo: todoListRepoInMemory,
@@ -33,7 +36,8 @@ useTodoListApi({
 });
 useUserApi({
   pubSub: pubSubInMemory,
-  repo: userRepoInMemory,
+  // repo: userRepoInMemory,
+  repo: userRepoMongoDb,
   app,
 });
 
