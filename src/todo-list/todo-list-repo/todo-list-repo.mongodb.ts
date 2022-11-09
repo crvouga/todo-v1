@@ -1,6 +1,6 @@
 import type { Db } from "mongodb";
 import { Err, Ok } from "../../utils";
-import { TodoItem, TodoList, TodoListStats } from "../todo-list-shared";
+import type { TodoItem, TodoList, TodoListStats } from "../todo-list-shared";
 import type { Repo } from "./todo-list-repo";
 
 export const makeRepo = ({ db }: { db: Db }): Repo => {
