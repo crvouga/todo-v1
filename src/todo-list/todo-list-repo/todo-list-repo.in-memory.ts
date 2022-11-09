@@ -48,6 +48,12 @@ const repo: Repo = {
   },
   list: {
     deleteById: async (params) => {
+      const items = Array.from(itemMap.values()).filter(
+        (item) => item.listId === params.id
+      );
+      for (const item of items) {
+        itemMap.delete(item.id);
+      }
       listMap.delete(params.id);
       return Ok(null);
     },
