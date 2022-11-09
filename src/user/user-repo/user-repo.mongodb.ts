@@ -1,7 +1,6 @@
 import type { Db } from "mongodb";
-import { v4 } from "uuid";
-import { Err, Ok } from "../../utils";
-import type { PasswordCred, Session, User } from "../user-shared";
+import { Err, formatError, Ok } from "../../utils";
+import { PasswordCred, Session, User } from "../user-shared";
 import type { Repo } from "./user-repo";
 
 const makeRepo = ({ db }: { db: Db }): Repo => {
@@ -10,9 +9,9 @@ const makeRepo = ({ db }: { db: Db }): Repo => {
   const sessionCol = db.collection<Session>("sessions");
   return {
     deleteByUserId: async (params) => {
-      await userCol.deleteOne({ id: params.userId });
-      await passwordCol.deleteOne({ userId: params.userId });
-      await sessionCol.deleteOne({ userId: params.userId });
+      await userCol.deleteMany({ id: params.userId });
+      await passwordCol.deleteMany({ userId: params.userId });
+      await sessionCol.deleteMany({ userId: params.userId });
       return Ok(null);
     },
 
@@ -50,13 +49,25 @@ const makeRepo = ({ db }: { db: Db }): Repo => {
           emailAddress: params.emailAddress,
         });
 
-        return Ok(found);
+        const parsed = User.safeParse(found);
+
+        if (!parsed.success) {
+          return Err(formatError(parsed));
+        }
+
+        return Ok(parsed.data);
       },
 
       findOneById: async (params) => {
         const found = await userCol.findOne({
           id: params.id,
         });
+
+        const parsed = User.safeParse(found);
+
+        if (!parsed.success) {
+          return Err(formatError(parsed));
+        }
 
         return Ok(found);
       },
@@ -73,6 +84,13 @@ const makeRepo = ({ db }: { db: Db }): Repo => {
         const found = await passwordCol.findOne({
           userId: params.userId,
         });
+
+        const parsed = PasswordCred.safeParse(found);
+
+        if (!parsed.success) {
+          return Err(formatError(parsed));
+        }
+
         return Ok(found);
       },
     },
@@ -82,6 +100,10 @@ const makeRepo = ({ db }: { db: Db }): Repo => {
         const found = await sessionCol.findOne({
           id: params.id,
         });
+        const parsed = Session.safeParse(found);
+        if (!parsed.success) {
+          return Err(formatError(parsed));
+        }
         return Ok(found);
       },
 
