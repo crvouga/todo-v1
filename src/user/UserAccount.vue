@@ -232,7 +232,7 @@ export default defineComponent({
       {{ currentUser.user.emailAddress }}
     </p>
     <p class="text-md font-bold opacity-75 mt-4">ID</p>
-    <p class="text-sm font-bold">
+    <p class="text-xl font-bold overflow-hidden text-ellipsis">
       {{ currentUser.user.id }}
     </p>
 

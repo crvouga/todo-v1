@@ -316,10 +316,8 @@ export default defineComponent({
         <p class="text-4xl text-left w-full font-black">...</p>
       </div>
 
-      <div v-if="statusGetList.type === 'Err'">
-        <div class="alert alert-error">
-          {{ statusGetList.error }}
-        </div>
+      <div v-if="statusGetList.type === 'Err'" class="alert alert-error w-full">
+        {{ statusGetList.error }}
       </div>
 
       <div class="w-full flex items-center" v-if="statusGetList.type === 'Ok'">
@@ -329,60 +327,61 @@ export default defineComponent({
       </div>
     </div>
 
-    <!-- 
+    <div v-if="statusGetList.type === 'Ok'" class="w-full">
+      <!-- 
 
 
     Text Input
 
 
    -->
-    <div class="w-full bg-inherit top-0 px-4">
-      <div class="flex items-center justify-center gap-2 w-full">
-        <input
-          ref="text"
-          v-model="text"
-          class="input input-md input-bordered flex-1 input-primary"
-          :class="{
-            'input-error': statusPost.type === 'Err',
-          }"
-          placeholder="What todo?"
-        />
-        <!-- <p class="pt-1 flex">
+      <div class="w-full bg-inherit top-0 px-4">
+        <div class="flex items-center justify-center gap-2 w-full">
+          <input
+            ref="text"
+            v-model="text"
+            class="input input-md input-bordered flex-1 input-primary"
+            :class="{
+              'input-error': statusPost.type === 'Err',
+            }"
+            placeholder="What todo?"
+          />
+          <!-- <p class="pt-1 flex">
           <kbd class="kbd kbd-sm mr-1">⌘</kbd>
           <kbd class="kbd kbd-sm">K</kbd>
         </p> -->
 
-        <button
-          @click="post({ text, listId })"
-          class="btn btn-primary w-32"
-          :class="{ loading: statusPost.type === 'Loading' }"
-        >
-          <!-- plus icon -->
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            class="w-6 h-6 mr-1"
+          <button
+            @click="post({ text, listId })"
+            class="btn btn-primary w-32"
+            :class="{ loading: statusPost.type === 'Loading' }"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M12 4.5v15m7.5-7.5h-15"
-            />
-          </svg>
+            <!-- plus icon -->
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-6 h-6 mr-1"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 4.5v15m7.5-7.5h-15"
+              />
+            </svg>
 
-          Add
-        </button>
-      </div>
+            Add
+          </button>
+        </div>
 
-      <p class="py-2 text-sm text-red-500">
-        {{ statusPost.type === "Err" ? statusPost.error : "" }}
-      </p>
+        <p class="py-2 text-sm text-red-500">
+          {{ statusPost.type === "Err" ? statusPost.error : "" }}
+        </p>
 
-      <div class="flex gap-4 overflow-x-scroll w-full scroll-px-4">
-        <!-- 
+        <div class="flex gap-4 overflow-x-scroll w-full scroll-px-4">
+          <!-- 
 
 
         Filter Input
@@ -390,19 +389,19 @@ export default defineComponent({
 
        -->
 
-        <div class="btn-group mb-4">
-          <button
-            v-for="filterItem in allFilters"
-            v-bind:key="filterItem"
-            :class="{ 'btn-active': filterItem === filter }"
-            class="btn btn-sm"
-            @click="inputFilter(filterItem)"
-          >
-            {{ filterItem }}
-          </button>
-        </div>
+          <div class="btn-group mb-4">
+            <button
+              v-for="filterItem in allFilters"
+              v-bind:key="filterItem"
+              :class="{ 'btn-active': filterItem === filter }"
+              class="btn btn-sm"
+              @click="inputFilter(filterItem)"
+            >
+              {{ filterItem }}
+            </button>
+          </div>
 
-        <!-- 
+          <!-- 
 
 
         Sort Input
@@ -410,20 +409,20 @@ export default defineComponent({
 
        -->
 
-        <div class="btn-group">
-          <button
-            v-for="sortItem in allSortsFormatted"
-            v-bind:key="sortItem[0]"
-            :class="{ 'btn-active': sortItem[0] === sort }"
-            class="btn btn-sm"
-            @click="inputSort(sortItem[0])"
-          >
-            {{ sortItem[1] }}
-          </button>
+          <div class="btn-group">
+            <button
+              v-for="sortItem in allSortsFormatted"
+              v-bind:key="sortItem[0]"
+              :class="{ 'btn-active': sortItem[0] === sort }"
+              class="btn btn-sm"
+              @click="inputSort(sortItem[0])"
+            >
+              {{ sortItem[1] }}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-    <!-- 
+      <!-- 
 
 
     List
@@ -431,106 +430,107 @@ export default defineComponent({
 
    -->
 
-    <div class="flex flex-col items-center justify-center flex-1 w-full">
-      <div class="px-4 w-full">
-        <div
-          v-if="statusGet.type === 'Err'"
-          class="alert alert-error shadow-lg"
-        >
-          {{ statusGet.type === "Err" ? statusGet.error : "" }}
+      <div class="flex flex-col items-center justify-center flex-1 w-full">
+        <div class="px-4 w-full">
+          <div
+            v-if="statusGet.type === 'Err'"
+            class="alert alert-error shadow-lg w-full"
+          >
+            {{ statusGet.type === "Err" ? statusGet.error : "" }}
+          </div>
         </div>
-      </div>
 
-      <p
-        v-if="statusGet.type === 'Ok' && items.length === 0"
-        class="opacity-75 h-64 text-xl font-bold flex items-center justify-center"
-      >
-        {{
-          items.length === 0
-            ? "There is nothing todo"
-            : filter === "Active"
-            ? "All items are completed"
-            : filter === "Completed"
-            ? "No items are completed"
-            : "There is nothing todo."
-        }}
-      </p>
+        <p
+          v-if="statusGet.type === 'Ok' && items.length === 0"
+          class="opacity-75 h-64 text-xl font-bold flex items-center justify-center"
+        >
+          {{
+            items.length === 0
+              ? "There is nothing todo"
+              : filter === "Active"
+              ? "All items are completed"
+              : filter === "Completed"
+              ? "No items are completed"
+              : "There is nothing todo."
+          }}
+        </p>
 
-      <!-- <TransitionGroup
+        <!-- <TransitionGroup
         name="list"
         tag="ol"
         class="flex flex-col items-center justify-center w-full relative"
       > -->
-      <ol class="flex flex-col items-center justify-center w-full relative">
-        <li
-          v-for="item in items"
-          v-bind:key="item.id"
-          class="inner w-full flex items-center pr-6"
-        >
-          <div
-            class="flex-1 flex items-center p-4 pl-6"
-            :class="{
-              'cursor-wait': statusPatch.type === 'Loading',
-              'cursor-pointer active:bg-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 dark:active:bg-gray-700':
-                statusPatch.type !== 'Loading',
-              'opacity-50':
-                statusPatch.type === 'Loading' &&
-                statusPatch.params.itemId === item.id,
-            }"
-            @click="
-              patch({ itemId: item.id }, { isCompleted: !item.isCompleted })
-            "
+        <ol class="flex flex-col items-center justify-center w-full relative">
+          <li
+            v-for="item in items"
+            v-bind:key="item.id"
+            class="inner w-full flex items-center pr-6"
           >
-            <input
-              type="checkbox"
-              :checked="item.isCompleted"
-              class="checkbox checkbox-sm checkbox-primary mr-2"
-              @click.prevent=""
-            />
+            <div
+              class="flex-1 flex items-center p-4 pl-6"
+              :class="{
+                'cursor-wait': statusPatch.type === 'Loading',
+                'cursor-pointer active:bg-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 dark:active:bg-gray-700':
+                  statusPatch.type !== 'Loading',
+                'opacity-50':
+                  statusPatch.type === 'Loading' &&
+                  statusPatch.params.itemId === item.id,
+              }"
+              @click="
+                patch({ itemId: item.id }, { isCompleted: !item.isCompleted })
+              "
+            >
+              <input
+                type="checkbox"
+                :checked="item.isCompleted"
+                class="checkbox checkbox-sm checkbox-primary mr-2"
+                @click.prevent=""
+              />
 
-            <div class="flex-1">
-              <p
-                class="text-lg font-semibold"
-                :class="{
-                  'line-through opacity-50': item.isCompleted,
-                }"
-              >
-                {{ item.text }}
-              </p>
-              <p
-                class="opacity-75 text-xs font-bold"
-                :class="{
-                  'line-through opacity-50': item.isCompleted,
-                }"
-              >
-                {{ formatFromNow(item.createdAt) }}
-              </p>
+              <div class="flex-1">
+                <p
+                  class="text-lg font-semibold"
+                  :class="{
+                    'line-through opacity-50': item.isCompleted,
+                  }"
+                >
+                  {{ item.text }}
+                </p>
+                <p
+                  class="opacity-75 text-xs font-bold"
+                  :class="{
+                    'line-through opacity-50': item.isCompleted,
+                  }"
+                >
+                  {{ formatFromNow(item.createdAt) }}
+                </p>
+              </div>
             </div>
-          </div>
-          <button
-            class="btn btn-outline btn-error btn-xs"
-            :class="{
-              'loading cursor-wait':
-                statusDelete.type === 'Loading' &&
-                statusDelete.params.itemId === item.id,
-            }"
-            @click="delete_({ itemId: item.id })"
-          >
-            Delete
-          </button>
-        </li>
-      </ol>
-      <!-- </TransitionGroup> -->
+            <button
+              class="btn btn-outline btn-error btn-xs"
+              :class="{
+                'loading cursor-wait':
+                  statusDelete.type === 'Loading' &&
+                  statusDelete.params.itemId === item.id,
+              }"
+              @click="delete_({ itemId: item.id })"
+            >
+              Delete
+            </button>
+          </li>
+        </ol>
+        <!-- </TransitionGroup> -->
 
-      <Spinner class="p-4" v-if="statusGet.type === 'Loading'" />
-    </div>
+        <Spinner class="p-4" v-if="statusGet.type === 'Loading'" />
+      </div>
 
-    <!-- 
+      <!-- 
 
 
 
 
      -->
+    </div>
   </div>
 </template>
 

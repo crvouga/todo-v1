@@ -119,11 +119,13 @@ export default defineComponent({
   <div v-if="status.type === 'Loading'">
     <Spinner />
   </div>
-  <div v-if="status.type === 'Err'">
-    <div class="alert alert-error">
+
+  <d v-if="status.type === 'Err'" class="px-4 w-full">
+    <div class="alert alert-error w-full">
       {{ status.error }}
     </div>
-  </div>
+  </d>
+
   <div class="w-full px-4" v-if="status.type === 'Ok'">
     <p class="font-bold pb-1">Title</p>
     <div class="w-full flex gap-2">
