@@ -4,6 +4,7 @@ import type {
   TodoItemFilter,
   TodoItemSort,
   TodoList,
+  TodoListSort,
   TodoListStats,
 } from "../todo-list-shared";
 
@@ -16,6 +17,7 @@ export type Repo = {
     insertOne: (params: { list: TodoList }) => Promise<Result<string, null>>;
     deleteById: (params: { id: string }) => Promise<Result<string, null>>;
     findManyWithStats: (params: {
+      sort: TodoListSort;
       userId: string;
     }) => Promise<Result<string, (TodoList & TodoListStats)[]>>;
   };

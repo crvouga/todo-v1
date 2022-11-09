@@ -15,10 +15,12 @@ export const getSeedData = ({ userId }: { userId: string }) => {
   const lists: TodoList[] = [];
   const items: TodoItem[] = [];
 
-  titles.forEach((title) => {
+  titles.forEach((title, listIndex) => {
+    const offset = listIndex * 1000 * 60;
+
     const list: TodoList = {
       userId,
-      createdAt: new Date(),
+      createdAt: new Date(Date.now() - offset),
       id: v4(),
       title,
     };

@@ -107,10 +107,13 @@ export default defineComponent({
 
   computed: {
     items(): TodoItem[] {
-      return toValues(this.itemById)
-        .filter(filterer({ filter: this.filter }))
-        .sort(sorter({ sort: this.sort }))
-        .filter((item) => item.listId === this.listId);
+      return (
+        toValues(this.itemById)
+          .filter(filterer({ filter: this.filter }))
+          .sort(sorter({ sort: this.sort }))
+          // this should be done server side
+          .filter((item) => item.listId === this.listId)
+      );
     },
 
     allSortsFormatted() {

@@ -1,6 +1,7 @@
 import { Err, Ok } from "../../utils";
 import {
   filterer,
+  listSorter,
   sorter,
   TodoListStats,
   type TodoItem,
@@ -69,6 +70,7 @@ const repo: Repo = {
     findManyWithStats: async (params) => {
       const lists = Array.from(listMap.values())
         .filter((list) => list.userId === params.userId)
+        .sort(listSorter({ sort: params.sort }))
         .map((list) => {
           const stats = Array.from(itemMap.values()).reduce<TodoListStats>(
             (stats, item) => {

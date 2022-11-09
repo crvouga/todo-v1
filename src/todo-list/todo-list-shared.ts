@@ -176,8 +176,43 @@ export type TodoListStats = z.infer<typeof TodoListStats>;
 export const TodoListGotItem = z.intersection(TodoList, TodoListStats);
 export type TodoListGotItem = z.infer<typeof TodoListGotItem>;
 
+export const TodoListSort = z.union([
+  z.literal("OldestFirst"),
+  z.literal("NewestFirst"),
+]);
+export type TodoListSort = z.infer<typeof TodoListSort>;
+
+export const listSorter =
+  ({ sort }: { sort: TodoListSort }) =>
+  (a: TodoList, b: TodoList) => {
+    switch (sort) {
+      case "NewestFirst": {
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      }
+
+      case "OldestFirst": {
+        return a.createdAt.getTime() - b.createdAt.getTime();
+      }
+    }
+  };
+
+export const allListsSorts: TodoItemSort[] = ["NewestFirst", "OldestFirst"];
+
+export const formatListSort = (sort: TodoItemSort): string => {
+  switch (sort) {
+    case "NewestFirst": {
+      return "Newest First";
+    }
+
+    case "OldestFirst": {
+      return "Oldest First";
+    }
+  }
+};
+
 export const TodoListGetParams = z.object({
   userId: z.string().uuid(),
+  sort: TodoListSort,
 });
 export type TodoListGetParams = z.infer<typeof TodoListGetParams>;
 

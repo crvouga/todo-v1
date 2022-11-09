@@ -1,7 +1,13 @@
 <script lang="ts">
 import NavBar from "@/components/NavBar.vue";
 import Spinner from "@/components/Spinner.vue";
-import type { TodoListGotItem } from "./todo-list-shared";
+import {
+  allListsSorts,
+  TodoListGotItem,
+  TodoListSort,
+  formatListSort,
+  listSorter,
+} from "./todo-list-shared";
 import { formatFromNow, toValues } from "../utils";
 import { defineComponent } from "vue";
 import TodoListApi from "./todo-list-api";
@@ -17,7 +23,10 @@ export const notAsked: { type: "NotAsked" } = { type: "NotAsked" };
 
 type Data = {
   title: string;
-  lists: { [listId: string]: TodoListGotItem };
+  sort: TodoListSort;
+  //
+  listById: { [listId: string]: TodoListGotItem };
+  //
   statusGet: Status<{}, string, {}>;
   statusPost: Status<{}, string, {}>;
   statusPostSeed: Status<{}, string, {}>;
@@ -34,20 +43,23 @@ export default defineComponent({
   setup() {
     return {
       formatFromNow,
+      allListsSorts,
+      formatListSort,
     };
   },
   data(): Data {
     return {
       title: "",
-      lists: {},
+      sort: "NewestFirst",
+      listById: {},
       statusGet: notAsked,
       statusPost: notAsked,
       statusPostSeed: notAsked,
     };
   },
   computed: {
-    visibleLists() {
-      return toValues(this.lists);
+    lists() {
+      return toValues(this.listById).sort(listSorter({ sort: this.sort }));
     },
   },
   mounted() {
@@ -59,8 +71,14 @@ export default defineComponent({
         this.statusPost = { type: "NotAsked" };
       }
     },
+    sort() {
+      this.get();
+    },
   },
   methods: {
+    inputSort(sortNew: TodoListSort) {
+      this.sort = sortNew;
+    },
     async get() {
       this.statusGet = { type: "Loading", params: {} };
 
@@ -74,20 +92,23 @@ export default defineComponent({
         };
         return;
       }
-      const result = await TodoListApi.getAll({ userId: currentUserId });
+      const result = await TodoListApi.getAll({
+        sort: this.sort,
+        userId: currentUserId,
+      });
       if (result.type === "Err") {
         this.statusGet = { type: "Err", params: {}, error: result.error };
         return;
       }
       this.statusGet = { type: "Ok", data: {}, params: {} };
-      const byId = result.data.items.reduce<Data["lists"]>(
+      const byId = result.data.items.reduce<Data["listById"]>(
         (byId, item) => ({
           ...byId,
           [item.id]: item,
         }),
         {}
       );
-      this.lists = { ...this.lists, ...byId };
+      this.listById = { ...this.listById, ...byId };
     },
     focusTitleInput() {
       // todo make typescript happy
@@ -141,8 +162,8 @@ export default defineComponent({
         return;
       }
       this.statusPost = { type: "Ok", params: {}, data: {} };
-      this.lists = {
-        ...this.lists,
+      this.listById = {
+        ...this.listById,
         [result.data.id]: {
           ...result.data,
           activeCount: 0,
@@ -201,6 +222,27 @@ export default defineComponent({
     </button>
   </div>
 
+  <!-- 
+
+
+    Sort Input
+
+
+   -->
+
+  <div class="w-full px-4">
+    <div class="btn-group mt-2">
+      <button
+        v-for="sortItem in allListsSorts"
+        v-bind:key="sortItem"
+        :class="{ 'btn-active': sortItem === sort }"
+        class="btn btn-sm"
+        @click="inputSort(sortItem)"
+      >
+        {{ formatListSort(sortItem) }}
+      </button>
+    </div>
+  </div>
   <p
     class="px-4 text-red-500 mt-2 text-left w-full"
     v-if="statusPost.type === 'Err'"
@@ -217,7 +259,7 @@ export default defineComponent({
    -->
 
   <div
-    v-if="Object.keys(lists).length === 0 && statusGet.type !== 'Loading'"
+    v-if="Object.keys(listById).length === 0 && statusGet.type !== 'Loading'"
     class="w-full flex items-center justify-center p-12 flex-col"
   >
     <p class="mb-2 opacity-75 text-2xl font-bold">You don't have any list.</p>
