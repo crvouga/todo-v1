@@ -120,11 +120,11 @@ export default defineComponent({
     <Spinner />
   </div>
 
-  <d v-if="status.type === 'Err'" class="px-4 w-full">
+  <div v-if="status.type === 'Err'" class="px-4 w-full">
     <div class="alert alert-error w-full">
       {{ status.error }}
     </div>
-  </d>
+  </div>
 
   <div class="w-full px-4" v-if="status.type === 'Ok'">
     <p class="font-bold pb-1">Title</p>

@@ -28,10 +28,10 @@ export function formatFromNow(date: Date): string {
   // @ts-ignore
   const diff = new Date() - date;
 
-  const seconds = Math.floor(diff / 1000);
-  const years = Math.floor(seconds / 31536000);
-  const months = Math.floor(seconds / 2592000);
-  const days = Math.floor(seconds / 86400);
+  const sec = Math.floor(diff / 1000);
+  const years = Math.floor(sec / 31536000);
+  const months = Math.floor(sec / 2592000);
+  const days = Math.floor(sec / 86400);
 
   if (days > 548) {
     return years + " years ago";
@@ -46,7 +46,7 @@ export function formatFromNow(date: Date): string {
     return "a month ago";
   }
 
-  const hours = Math.floor(seconds / 3600);
+  const hours = Math.floor(sec / 3600);
 
   if (hours >= 36 && days <= 25) {
     return days + " days ago";
@@ -55,23 +55,23 @@ export function formatFromNow(date: Date): string {
     return "a day ago";
   }
 
-  const minutes = Math.floor(seconds / 60);
+  const min = Math.floor(sec / 60);
 
-  if (minutes >= 90 && hours <= 21) {
+  if (min >= 90 && hours <= 21) {
     return hours + " hours ago";
   }
-  if (minutes >= 45 && minutes <= 89) {
+  if (min >= 45 && min <= 89) {
     return "an hour ago";
   }
-  if (seconds >= 90 && minutes <= 44) {
-    return minutes + " minutes ago";
+  if (sec >= 90 && min <= 44) {
+    return min + " min ago";
   }
-  if (seconds >= 45 && seconds <= 89) {
-    return "a minute ago";
+  if (sec >= 45 && sec <= 89) {
+    return "a min ago";
   }
-  if (seconds >= 0 && seconds <= 45) {
-    return "a few seconds ago";
+  if (sec >= 0 && sec <= 45) {
+    return "a few sec ago";
   }
 
-  return "a few seconds ago";
+  return "a few sec ago";
 }

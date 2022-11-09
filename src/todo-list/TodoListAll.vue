@@ -315,14 +315,14 @@ export default defineComponent({
         </p>
         <div class="flex items-center gap-2 flex-wrap">
           <span
-            class="badge badge-outline"
+            class="badge font-bold"
             :class="{
               'badge-primary': list.activeCount > 0,
               'badge-ghost': list.activeCount === 0,
             }"
             >{{ `${list.activeCount} Active` }}</span
           >
-          <span class="badge badge-secondary badge-outline">{{
+          <span class="badge badge-secondary font-bold">{{
             `${list.completedCount} Completed`
           }}</span>
           <p class="opacity-75 text-xs font-bold">

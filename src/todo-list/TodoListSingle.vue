@@ -278,7 +278,7 @@ export default defineComponent({
 <template>
   <NavBar />
 
-  <nav class="pt-4 px-4 flex w-full items-left">
+  <nav class="px-4 flex w-full items-left">
     <BackButton :to="{ name: 'todo-list-all' }" />
     <div class="flex-1" />
     <RouterLink
