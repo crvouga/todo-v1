@@ -324,8 +324,11 @@ export default defineComponent({
       </div>
 
       <div class="w-full flex items-center" v-if="statusGetList.type === 'Ok'">
-        <p class="text-4xl text-left w-full font-black">
+        <p class="text-4xl text-left flex-1 font-black">
           {{ statusGetList.data.title }}
+        </p>
+        <p class="text-md opacity-75 font-bold">
+          {{ formatFromNow(statusGetList.data.createdAt) }}
         </p>
       </div>
     </div>
