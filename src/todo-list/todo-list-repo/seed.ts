@@ -1,7 +1,17 @@
 import { v4 } from "uuid";
 import type { TodoItem, TodoList } from "../todo-list-shared";
 
-const titles = ["List A", "List B", "List C", "List D", "List E"];
+const titles = [
+  "List A",
+  "List B",
+  "List C",
+  "List D",
+  "List E",
+  "List F",
+  "List G",
+  "List H",
+  "List I",
+];
 const texts = [
   "Learn Vue.js",
   "Learn Vue.js composition API",
@@ -9,6 +19,11 @@ const texts = [
   "Hook up dynamodb",
   "Go to the store",
   "Add user auth",
+  "Send some emails",
+  "Finish some stuff",
+  "Go for a walk",
+  "Learn AWS",
+  "Learn Vue.js",
 ];
 
 export const getSeedData = ({ userId }: { userId: string }) => {

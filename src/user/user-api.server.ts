@@ -43,6 +43,10 @@ export const useUserApi = ({
   //
   //
 
+  //
+  // Login
+  //
+
   app.post(endpoints["/session"], async (req, res) => {
     const parsed = SessionPostBody.safeParse(req.body);
 
@@ -134,7 +138,7 @@ export const useUserApi = ({
   });
 
   //
-  //
+  // Get Current User
   //
 
   app.get(endpoints["/session"], async (req, res) => {
