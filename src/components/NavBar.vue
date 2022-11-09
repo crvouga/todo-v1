@@ -32,14 +32,14 @@ export default defineComponent({
       </RouterLink>
     </div>
 
-    <Spinner v-if="currentUser.type === 'Loading'" />
+    <Spinner child-class="w-12" v-if="currentUser.type === 'Loading'" />
 
     <p class="font-bold text-red-500" v-if="currentUser.type === 'Err'">
       Error
     </p>
 
     <RouterLink v-if="currentUser.type === 'Ok'" :to="{ name: 'user-account' }">
-      <div class="avatar mr-2">
+      <div class="avatar">
         <div class="rounded w-12">
           <img
             :src="toAvatarUrl({ avatarSeed: currentUser.user.avatarSeed })"

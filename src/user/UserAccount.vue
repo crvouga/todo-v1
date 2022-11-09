@@ -235,153 +235,155 @@ export default defineComponent({
     <p class="text-sm font-bold">
       {{ currentUser.user.id }}
     </p>
-  </div>
 
-  <!-- 
+    <!-- 
 
         Avatar Seed Input
 
        -->
-  <div class="avatar mx-auto mt-8">
-    <div class="w-24 rounded">
-      <img :src="toAvatarUrl({ avatarSeed })" />
+    <div class="avatar mx-auto mt-8">
+      <div class="w-24 rounded">
+        <img :src="toAvatarUrl({ avatarSeed })" />
+      </div>
     </div>
-  </div>
-  <label class="font-bold mt-1 w-full text-left px-4" for="avatarSeedInput">
-    Avatar Seed
-  </label>
-  <div class="w-full flex items-center gap-2 px-4">
-    <input
-      v-model="avatarSeed"
-      id="avatarSeedInput"
-      class="input input-primary w-full mt-1"
-    />
-    <button class="btn btn-outline btn-primary" @click="randomAvatarSeed">
-      Random
-    </button>
-    <button class="btn btn-outline btn-primary" @click="clearAvatarSeed">
-      Clear
-    </button>
-  </div>
+    <label class="font-bold mt-1 w-full text-left" for="avatarSeedInput">
+      Avatar Seed
+    </label>
+    <div class="w-full flex items-center gap-2">
+      <input
+        v-model="avatarSeed"
+        id="avatarSeedInput"
+        class="input input-primary w-full mt-1"
+      />
+      <button class="btn btn-outline btn-primary" @click="randomAvatarSeed">
+        Random
+      </button>
+      <button class="btn btn-outline btn-primary" @click="clearAvatarSeed">
+        Clear
+      </button>
+    </div>
 
-  <div class="px-4 w-full mt-2">
-    <button
-      class="btn btn-primary w-full btn-md"
-      @click="patch({ avatarSeed })"
-      :class="{
-        'btn-disabled':
-          currentUser.type === 'Ok' &&
-          currentUser.user.avatarSeed === avatarSeed,
-        loading: statusPatch.type === 'Loading',
-      }"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="1.5"
-        stroke="currentColor"
-        class="w-6 h-6 mr-2"
+    <div class="w-full mt-2">
+      <button
+        class="btn btn-primary w-full btn-md"
+        @click="patch({ avatarSeed })"
+        :class="{
+          'btn-disabled':
+            currentUser.type === 'Ok' &&
+            currentUser.user.avatarSeed === avatarSeed,
+          loading: statusPatch.type === 'Loading',
+        }"
       >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"
-        />
-      </svg>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-6 h-6 mr-2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"
+          />
+        </svg>
 
-      Update
-    </button>
-  </div>
-
-  <div v-if="statusPatch.type === 'Err'" class="px-4 mt-2 w-full">
-    <div class="alert alert-error w-full">
-      {{ statusPatch.error }}
+        Update
+      </button>
     </div>
-  </div>
 
-  <!-- 
+    <div v-if="statusPatch.type === 'Err'" class="mt-2 w-full">
+      <div class="alert alert-error w-full">
+        {{ statusPatch.error }}
+      </div>
+    </div>
+
+    <!-- 
 
 
    -->
 
-  <div class="mt-12 w-full px-4">
-    <button class="btn btn-error btn-outline w-full font-bold" @click="logout">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="1.5"
-        stroke="currentColor"
-        class="w-6 h-6 mr-2"
+    <div class="mt-12 w-full">
+      <button
+        class="btn btn-error btn-outline w-full font-bold"
+        @click="logout"
       >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
-        />
-      </svg>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-6 h-6 mr-2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
+          />
+        </svg>
 
-      Logout
-    </button>
+        Logout
+      </button>
 
-    <p class="font-bold text-2xl text-red-500 mt-6">Danger Zone</p>
+      <p class="font-bold text-2xl text-red-500 mt-6">Danger Zone</p>
 
-    <!-- 
+      <!-- 
 
 
       Delete Account
 
      -->
 
-    <label
-      for="delete-account"
-      class="mt-4 btn modal-button btn-error w-full font-bold"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="1.5"
-        stroke="currentColor"
-        class="w-6 h-6 mr-1"
+      <label
+        for="delete-account"
+        class="mt-4 btn modal-button btn-error w-full font-bold"
       >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25 2.25M12 13.875l2.25-2.25M12 13.875l-2.25 2.25M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
-        />
-      </svg>
-
-      Delete Account Forever
-    </label>
-
-    <input type="checkbox" id="delete-account" class="modal-toggle" />
-    <label for="delete-account" class="modal cursor-pointer">
-      <label class="modal-box relative" for="">
-        <h3 class="text-3xl font-bold">Delete your account forever?</h3>
-        <div
-          v-if="statusDeleteAccount.type === 'Err'"
-          class="alert alert-error mt-2"
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-6 h-6 mr-1"
         >
-          {{ statusDeleteAccount.error }}
-        </div>
-        <div class="modal-action">
-          <button class="btn" @click="closeDeleteAccount">Cancel</button>
-          <button
-            class="btn btn-error"
-            @click="deleteAccount()"
-            :class="{
-              'loading btn-disabled': statusDeleteAccount.type === 'Loading',
-            }"
-          >
-            Delete Forever
-          </button>
-        </div>
-      </label>
-    </label>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25 2.25M12 13.875l2.25-2.25M12 13.875l-2.25 2.25M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
+          />
+        </svg>
 
-    <!-- 
+        Delete Account Forever
+      </label>
+
+      <input type="checkbox" id="delete-account" class="modal-toggle" />
+      <label for="delete-account" class="modal cursor-pointer">
+        <label class="modal-box relative" for="">
+          <h3 class="text-3xl font-bold">Delete your account forever?</h3>
+          <div
+            v-if="statusDeleteAccount.type === 'Err'"
+            class="alert alert-error mt-2"
+          >
+            {{ statusDeleteAccount.error }}
+          </div>
+          <div class="modal-action">
+            <button class="btn" @click="closeDeleteAccount">Cancel</button>
+            <button
+              class="btn btn-error"
+              @click="deleteAccount()"
+              :class="{
+                'loading btn-disabled': statusDeleteAccount.type === 'Loading',
+              }"
+            >
+              Delete Forever
+            </button>
+          </div>
+        </label>
+      </label>
+
+      <!-- 
 
 
       Delete Everything
@@ -389,51 +391,53 @@ export default defineComponent({
 
      -->
 
-    <label
-      for="delete-everything"
-      class="mt-4 btn modal-button btn-error w-full font-bold"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="1.5"
-        stroke="currentColor"
-        class="w-6 h-6 mr-1"
+      <label
+        for="delete-everything"
+        class="mt-4 btn modal-button btn-error w-full font-bold"
       >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25 2.25M12 13.875l2.25-2.25M12 13.875l-2.25 2.25M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
-        />
-      </svg>
-
-      Delete Everything Forever
-    </label>
-
-    <input type="checkbox" id="delete-everything" class="modal-toggle" />
-    <label for="delete-everything" class="modal cursor-pointer">
-      <label class="modal-box relative" for="">
-        <h3 class="text-3xl font-bold">Delete everything forever?</h3>
-        <div
-          v-if="statusDeleteEverything.type === 'Err'"
-          class="alert alert-error"
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-6 h-6 mr-1"
         >
-          {{ statusDeleteEverything.error }}
-        </div>
-        <div class="modal-action">
-          <button class="btn" @click="closeDeleteEverything">Cancel</button>
-          <button
-            class="btn btn-error"
-            @click="deleteEverything()"
-            :class="{
-              'loading btn-disabled': statusDeleteEverything.type === 'Loading',
-            }"
-          >
-            Delete Forever
-          </button>
-        </div>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25 2.25M12 13.875l2.25-2.25M12 13.875l-2.25 2.25M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
+          />
+        </svg>
+
+        Delete Everything Forever
       </label>
-    </label>
+
+      <input type="checkbox" id="delete-everything" class="modal-toggle" />
+      <label for="delete-everything" class="modal cursor-pointer">
+        <label class="modal-box relative" for="">
+          <h3 class="text-3xl font-bold">Delete everything forever?</h3>
+          <div
+            v-if="statusDeleteEverything.type === 'Err'"
+            class="alert alert-error"
+          >
+            {{ statusDeleteEverything.error }}
+          </div>
+          <div class="modal-action">
+            <button class="btn" @click="closeDeleteEverything">Cancel</button>
+            <button
+              class="btn btn-error"
+              @click="deleteEverything()"
+              :class="{
+                'loading btn-disabled':
+                  statusDeleteEverything.type === 'Loading',
+              }"
+            >
+              Delete Forever
+            </button>
+          </div>
+        </label>
+      </label>
+    </div>
   </div>
 </template>
