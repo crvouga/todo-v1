@@ -6,9 +6,9 @@ import path from "path";
 import { productionDb } from "./mongodb-client";
 import pubSubInMemory from "./pubsub/pubsub.in-memory";
 import { useTodoListApi } from "./todo-list/todo-list-api.server";
-import todoListRepoInMemory from "./todo-list/todo-list-repo/todo-list-repo.in-memory";
+import makeTodoListRepoMongoDb from "./todo-list/todo-list-repo/todo-list-repo.mongodb";
 import { useUserApi } from "./user/user-api.server";
-import makeUserRepoMongodb from "./user/user-repo/user-repo.mongodb";
+import makeUserRepoMongoDb from "./user/user-repo/user-repo.mongodb";
 
 const app = express();
 
@@ -27,16 +27,16 @@ pubSubInMemory.sub((event) => {
 //
 //
 
-const userRepoMongoDb = makeUserRepoMongodb({ db: productionDb });
+const userRepoMongoDb = makeUserRepoMongoDb({ db: productionDb });
+const todoListRepoMongoDb = makeTodoListRepoMongoDb({ db: productionDb });
 
 useTodoListApi({
   pubSub: pubSubInMemory,
-  repo: todoListRepoInMemory,
+  repo: todoListRepoMongoDb,
   app,
 });
 useUserApi({
   pubSub: pubSubInMemory,
-  // repo: userRepoInMemory,
   repo: userRepoMongoDb,
   app,
 });

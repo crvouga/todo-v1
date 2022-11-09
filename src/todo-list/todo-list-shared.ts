@@ -20,7 +20,7 @@ export type Endpoints = typeof endpoints;
 //
 //
 
-const DateSchema = z.preprocess((arg) => {
+export const DateSchema = z.preprocess((arg) => {
   if (typeof arg == "string" || arg instanceof Date) return new Date(arg);
 }, z.date());
 
