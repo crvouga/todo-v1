@@ -27,6 +27,8 @@ type Data = {
   //
   listById: { [listId: string]: TodoListGotItem };
   //
+  modalCreate: "Opened" | "Closed";
+  //
   statusGet: Status<{}, string, {}>;
   statusPost: Status<{}, string, {}>;
   statusPostSeed: Status<{}, string, {}>;
@@ -50,6 +52,7 @@ export default defineComponent({
   data(): Data {
     return {
       title: "",
+      modalCreate: "Closed",
       sort: "NewestFirst",
       listById: {},
       statusGet: notAsked,
@@ -73,6 +76,11 @@ export default defineComponent({
     },
     sort() {
       this.get();
+    },
+    async modalCreate() {
+      // wait for modal to be mounted
+      await new Promise((r) => setTimeout(r, 200));
+      this.focusTitleInput();
     },
   },
   methods: {
@@ -182,27 +190,10 @@ export default defineComponent({
 
 <template>
   <NavBar />
-  <!-- 
 
-
-    Input
-
-
-   -->
-  <div class="w-full input-group px-4 py-1">
-    <input
-      ref="titleInput"
-      v-model="title"
-      class="input input-primary flex-1"
-      :class="{ 'input-error': statusPost.type === 'Err' }"
-      placeholder="Name of list"
-      @keyup.enter="post({ title })"
-    />
-    <button
-      class="btn btn-primary"
-      :class="{ loading: statusPost.type === 'Loading' }"
-      @click="post({ title })"
-    >
+  <div class="flex items-center justify-start w-full px-4">
+    <h1 class="text-5xl font-black flex-1">Lists</h1>
+    <button class="btn btn-primary" @click="modalCreate = 'Opened'">
       <!-- plus icon -->
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -218,17 +209,69 @@ export default defineComponent({
           d="M12 4.5v15m7.5-7.5h-15"
         />
       </svg>
-
-      Add
+      Create New
     </button>
   </div>
 
-  <p
-    class="px-4 text-red-500 mt-2 text-left w-full"
-    v-if="statusPost.type === 'Err'"
+  <!-- 
+
+
+  Input Modal
+
+
+ -->
+  <div
+    class="modal"
+    :class="{ 'modal-open': modalCreate === 'Opened' }"
+    @click="modalCreate = 'Closed'"
   >
-    {{ statusPost.error }}
-  </p>
+    <div class="modal-box" @click.stop="">
+      <h2 class="text-3xl font-bold">Create new list</h2>
+
+      <p class="font-bold text-xl mt-4">Title</p>
+
+      <input
+        ref="titleInput"
+        v-model="title"
+        class="input input-primary w-full mt-1"
+        :class="{ 'input-error': statusPost.type === 'Err' }"
+        @keyup.enter="post({ title })"
+      />
+
+      <p
+        class="px-4 text-red-500 mt-2 text-left w-full"
+        v-if="statusPost.type === 'Err'"
+      >
+        {{ statusPost.error }}
+      </p>
+
+      <div class="modal-action">
+        <button
+          class="btn btn-primary"
+          :class="{ loading: statusPost.type === 'Loading' }"
+          @click="post({ title })"
+        >
+          <!-- plus icon -->
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-6 h-6 mr-1"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 4.5v15m7.5-7.5h-15"
+            />
+          </svg>
+
+          Create
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- 
 
@@ -239,7 +282,7 @@ export default defineComponent({
    -->
 
   <div class="w-full px-4">
-    <div class="btn-group mt-2">
+    <div class="btn-group mt-4">
       <button
         v-for="sortItem in allListsSorts"
         v-bind:key="sortItem"

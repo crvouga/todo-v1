@@ -209,7 +209,6 @@ export default defineComponent({
       Delete List Forever
     </label>
 
-    <!-- Put this part before </body> tag -->
     <input type="checkbox" id="delete-modal" class="modal-toggle" />
     <label for="delete-modal" class="modal cursor-pointer">
       <label class="modal-box relative" for="">
