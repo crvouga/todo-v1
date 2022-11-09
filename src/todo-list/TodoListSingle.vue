@@ -107,13 +107,13 @@ export default defineComponent({
 
   computed: {
     items(): TodoItem[] {
-      return (
-        toValues(this.itemById)
-          .filter(filterer({ filter: this.filter }))
-          .sort(sorter({ sort: this.sort }))
-          // this should be done server side
-          .filter((item) => item.listId === this.listId)
-      );
+      return toValues(this.itemById)
+        .filter(filterer({ filter: this.filter }))
+        .sort(sorter({ sort: this.sort }));
+    },
+
+    allItems(): TodoItem[] {
+      return toValues(this.itemById);
     },
 
     allSortsFormatted() {
@@ -447,20 +447,87 @@ export default defineComponent({
           </div>
         </div>
 
-        <p
+        <!-- 
+
+
+          Empty State
+
+
+         -->
+
+        <div
           v-if="statusGet.type === 'Ok' && items.length === 0"
           class="opacity-75 h-64 text-xl font-bold flex items-center justify-center"
         >
-          {{
-            items.length === 0
-              ? "There is nothing todo"
-              : filter === "Active"
-              ? "All items are completed"
-              : filter === "Completed"
-              ? "No items are completed"
-              : "There is nothing todo."
-          }}
-        </p>
+          <div
+            v-if="allItems.length === 0"
+            class="flex flex-col justify-center items-center"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-24 h-24 mb-2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+              />
+            </svg>
+
+            No todo items
+          </div>
+
+          <div
+            v-else-if="filter === 'Active'"
+            class="flex flex-col justify-center items-center"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-24 h-24 mb-2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 019 9v.375M10.125 2.25A3.375 3.375 0 0113.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 013.375 3.375M9 15l2.25 2.25L15 12"
+              />
+            </svg>
+
+            Everything is completed
+          </div>
+
+          <div
+            v-else-if="filter === 'Completed'"
+            class="flex flex-col justify-center items-center"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-24 h-24 mb-2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+              />
+            </svg>
+            Nothing is completed
+          </div>
+
+          <div v-else class="flex flex-col justify-center items-center">
+            There is nothing todo
+          </div>
+        </div>
 
         <!-- <TransitionGroup
         name="list"
@@ -522,6 +589,21 @@ export default defineComponent({
               }"
               @click="delete_({ itemId: item.id })"
             >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-4 h-4 mr-1"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+
               Delete
             </button>
           </li>
