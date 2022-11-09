@@ -336,7 +336,7 @@ export default defineComponent({
           <span
             class="badge font-bold"
             :class="{
-              'badge-primary': list.activeCount > 0,
+              'badge-secondary': list.activeCount > 0,
               'badge-ghost': list.activeCount === 0,
             }"
             >{{ `${list.activeCount} Active` }}</span
@@ -344,7 +344,7 @@ export default defineComponent({
           <span
             class="badge font-bold"
             :class="{
-              'badge-secondary': list.completedCount > 0,
+              'badge-primary': list.completedCount > 0,
               'badge-ghost': list.completedCount === 0,
             }"
             >{{ `${list.completedCount} Completed` }}</span
