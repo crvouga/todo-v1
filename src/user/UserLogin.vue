@@ -131,7 +131,7 @@ export default defineComponent({
     <div class="flex flex-col justify-center items-start w-full px-4">
       <label class="font-bold mb-1 flex items-center" for="emailAddressInput">
         Email Address
-        <span class="font-thin ml-2 text-xs">(e.g. example@email.com)</span>
+        <span class="font-light ml-2 text-xs">(e.g. example@email.com)</span>
       </label>
       <input
         v-model="emailAddress"
@@ -162,7 +162,7 @@ export default defineComponent({
 
       <label class="font-bold mt-4 mb-1" for="passwordInput">
         Password
-        <span class="font-thin ml-2 text-xs">(e.g. 123)</span>
+        <span class="font-light ml-2 text-xs">(e.g. 123)</span>
       </label>
       <input
         v-model="password"
