@@ -1,6 +1,7 @@
 import type { Db } from "mongodb";
-import { Err, Ok } from "../../utils";
-import type { TodoItem, TodoList, TodoListStats } from "../todo-list-shared";
+import { Err, formatError, Ok } from "../../utils";
+import { TodoList, type TodoListStats } from "../todo-list-shared";
+import { TodoItem } from "../todo-list-shared";
 import type { Repo } from "./todo-list-repo";
 
 export const makeRepo = ({ db }: { db: Db }): Repo => {
@@ -26,6 +27,10 @@ export const makeRepo = ({ db }: { db: Db }): Repo => {
       },
       findOneById: async (params) => {
         const found = await itemCol.findOne({ id: params.id });
+        const parsed = TodoItem.safeParse(found);
+        if (!parsed.success) {
+          return Err(formatError(parsed));
+        }
         return Ok(found);
       },
       updateOne: async (params) => {
@@ -55,7 +60,16 @@ export const makeRepo = ({ db }: { db: Db }): Repo => {
 
         const foundArray = await found.toArray();
 
-        return Ok(foundArray);
+        const ret: TodoItem[] = [];
+        for (const item of foundArray) {
+          const parsed = TodoItem.safeParse(item);
+          if (!parsed.success) {
+            return Err(formatError(parsed));
+          }
+          ret.push(parsed.data);
+        }
+
+        return Ok(ret);
       },
     },
     list: {
@@ -72,7 +86,13 @@ export const makeRepo = ({ db }: { db: Db }): Repo => {
       },
       findOneById: async (params) => {
         const found = await listCol.findOne({ id: params.id });
-        return Ok(found);
+        const parsed = TodoList.safeParse(found);
+
+        if (!parsed.success) {
+          return Err(formatError(parsed));
+        }
+
+        return Ok(parsed.data);
       },
 
       findManyWithStats: async (params) => {
@@ -83,7 +103,15 @@ export const makeRepo = ({ db }: { db: Db }): Repo => {
 
         const ret: (TodoList & TodoListStats)[] = [];
 
-        for (const list of foundArray) {
+        for (const diry of foundArray) {
+          const parsed = TodoList.safeParse(diry);
+
+          if (!parsed.success) {
+            return Err(formatError(parsed));
+          }
+
+          const list = parsed.data;
+
           const itemCursor = itemCol.find({ listId: list.id });
           const foundItemArray = await itemCursor.toArray();
           const stats = foundItemArray.reduce<TodoListStats>(
