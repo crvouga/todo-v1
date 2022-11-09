@@ -96,12 +96,12 @@ export const useUserApi = ({
       return;
     }
 
-    if (
-      !Hash.isEqual({
-        password: parsed.data.password,
-        passwordHash: foundPassword.data.passwordHash,
-      })
-    ) {
+    const doesMatch = await Hash.isEqual({
+      password: parsed.data.password,
+      passwordHash: foundPassword.data.passwordHash,
+    });
+
+    if (!doesMatch) {
       const err: SessionPostError = {
         type: "WrongPassword",
       };
@@ -286,13 +286,18 @@ export const useUserApi = ({
       id: v4(),
     };
 
-    const { passwordHash } = Hash.hash({
+    const hashResult = await Hash.hash({
       password: parsed.data.password,
     });
 
+    if (hashResult.type === "Err") {
+      res.status(StatusCode.ServerError).json({ message: hashResult.error });
+      return;
+    }
+
     const passwordCredNew: PasswordCred = {
       userId: userNew.id,
-      passwordHash,
+      passwordHash: hashResult.data.passwordHash,
     };
 
     await repo.password.insertOne({ passwordCred: passwordCredNew });
