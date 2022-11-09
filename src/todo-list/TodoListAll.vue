@@ -263,7 +263,7 @@ export default defineComponent({
     v-if="Object.keys(listById).length === 0 && statusGet.type !== 'Loading'"
     class="w-full flex items-center justify-center p-12 flex-col"
   >
-    <p class="mb-2 opacity-75 text-2xl font-bold">You don't have any list.</p>
+    <p class="mb-2 opacity-75 text-2xl font-bold">You don't have any lists.</p>
     <button
       class="btn btn-primary"
       :class="{ loading: statusPostSeed.type === 'Loading' }"
