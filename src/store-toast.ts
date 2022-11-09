@@ -17,14 +17,20 @@ export const store = reactive<Store>({
 
 const defaultDuration = 3_000;
 
-export const showToast = (toast: Omit<Toast, "id">) => {
+export const showToast = async (toast: Omit<Toast, "id">) => {
+  if (store.toast.type !== "None") {
+    store.toast = { type: "None" };
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+
   const toastNew: Toast = { ...toast, id: v4() };
   store.toast = toastNew;
-  setTimeout(() => {
-    if (store.toast.type !== "None" && store.toast.id === toastNew.id) {
-      store.toast = { type: "None" };
-    }
-  }, defaultDuration);
+
+  await new Promise((resolve) => setTimeout(resolve, defaultDuration));
+
+  if (store.toast.id === toastNew.id) {
+    store.toast = { type: "None" };
+  }
 };
 
 export const getToast = (): Store["toast"] => {

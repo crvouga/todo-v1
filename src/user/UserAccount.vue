@@ -126,7 +126,7 @@ export default defineComponent({
       }
 
       this.statusPatch = { type: "Ok" };
-      showToast({ type: "Success", title: "Account successfully updated" });
+      showToast({ type: "Success", title: "Account updated" });
       patchCurrentUser(body);
     },
 
@@ -226,13 +226,18 @@ export default defineComponent({
     </div>
   </div>
 
-  <div v-if="currentUser.type === 'Ok'" class="w-full mt-4 px-4">
+  <div
+    v-if="currentUser.type === 'Ok'"
+    class="w-full mt-4 px-4 overflow-hidden"
+  >
     <p class="text-md font-bold opacity-75">Email Address</p>
     <p class="text-xl font-bold">
       {{ currentUser.user.emailAddress }}
     </p>
     <p class="text-md font-bold opacity-75 mt-4">ID</p>
-    <p class="text-xl font-bold overflow-hidden text-ellipsis">
+    <p
+      class="text-xl font-bold whitespace-nowrap text-ellipsis overflow-hidden"
+    >
       {{ currentUser.user.id }}
     </p>
 
@@ -248,7 +253,10 @@ export default defineComponent({
         <img :src="toAvatarUrl({ avatarSeed })" />
       </div>
     </div>
-    <label class="font-bold mt-1 w-full text-left" for="avatarSeedInput">
+    <label
+      class="opacity-75 text-md font-bold mt-1 w-full text-left"
+      for="avatarSeedInput"
+    >
       Avatar Seed
     </label>
     <div class="w-full flex items-center gap-2">
