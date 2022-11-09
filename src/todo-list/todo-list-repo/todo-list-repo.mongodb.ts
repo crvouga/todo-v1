@@ -27,6 +27,9 @@ export const makeRepo = ({ db }: { db: Db }): Repo => {
       },
       findOneById: async (params) => {
         const found = await itemCol.findOne({ id: params.id });
+        if (!found) {
+          return Ok(null);
+        }
         const parsed = TodoItem.safeParse(found);
         if (!parsed.success) {
           return Err(formatError(parsed));
@@ -86,6 +89,11 @@ export const makeRepo = ({ db }: { db: Db }): Repo => {
       },
       findOneById: async (params) => {
         const found = await listCol.findOne({ id: params.id });
+
+        if (!found) {
+          return Ok(null);
+        }
+
         const parsed = TodoList.safeParse(found);
 
         if (!parsed.success) {

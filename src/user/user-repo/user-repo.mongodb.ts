@@ -49,6 +49,10 @@ const makeRepo = ({ db }: { db: Db }): Repo => {
           emailAddress: params.emailAddress,
         });
 
+        if (!found) {
+          return Ok(null);
+        }
+
         const parsed = User.safeParse(found);
 
         if (!parsed.success) {
@@ -62,6 +66,10 @@ const makeRepo = ({ db }: { db: Db }): Repo => {
         const found = await userCol.findOne({
           id: params.id,
         });
+
+        if (!found) {
+          return Ok(null);
+        }
 
         const parsed = User.safeParse(found);
 
@@ -85,6 +93,10 @@ const makeRepo = ({ db }: { db: Db }): Repo => {
           userId: params.userId,
         });
 
+        if (!found) {
+          return Ok(null);
+        }
+
         const parsed = PasswordCred.safeParse(found);
 
         if (!parsed.success) {
@@ -100,6 +112,11 @@ const makeRepo = ({ db }: { db: Db }): Repo => {
         const found = await sessionCol.findOne({
           id: params.id,
         });
+
+        if (!found) {
+          return Ok(null);
+        }
+
         const parsed = Session.safeParse(found);
         if (!parsed.success) {
           return Err(formatError(parsed));
