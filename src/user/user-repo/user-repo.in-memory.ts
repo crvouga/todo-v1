@@ -97,21 +97,4 @@ const repo: Repo = {
   },
 };
 
-//
-// init
-//
-
-const emailAddress = "example@email.com";
-const password = "123";
-const userId = v4();
-repo.user.insertOne({
-  user: { id: userId, emailAddress, avatarSeed: getRandomAvatarSeed() },
-});
-repo.password.insertOne({
-  passwordCred: {
-    passwordHash: hash.hash({ password }).passwordHash,
-    userId: userId,
-  },
-});
-
 export default repo;
