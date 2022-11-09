@@ -113,9 +113,11 @@ export default defineComponent({
 </script>
 <template>
   <NavBar />
-  <nav class="p-4 w-full flex align-start">
+  <nav class="px-4 pt-0 w-full flex align-start">
     <BackButton :to="{ name: 'todo-list-single', params: { listId } }" />
   </nav>
+  <h1 class="font-bold text-4xl w-full text-left p-4">Settings</h1>
+
   <div v-if="status.type === 'Loading'">
     <Spinner />
   </div>
