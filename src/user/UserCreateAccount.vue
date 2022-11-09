@@ -1,8 +1,8 @@
 <script lang="ts">
-import api from "@/api";
-import BackButton from "@/components/BackButton.vue";
+import api from "../api";
+import BackButton from "../components/BackButton.vue";
 import PasswordVisibilityButton from "../components/PasswordVisibilityButton.vue";
-import { showToast } from "@/store-toast";
+import { showToast } from "../store-toast";
 import { defineComponent } from "vue";
 import { endpoints, UserPostBody, UserPostError } from "./user-shared";
 import { getRandomAvatarSeed, toAvatarUrl } from "./avatar";

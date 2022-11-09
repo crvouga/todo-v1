@@ -1,8 +1,8 @@
 <script lang="ts">
-import api from "@/api";
+import api from "../api";
 import PasswordVisibilityButton from "../components/PasswordVisibilityButton.vue";
-import { showToast } from "@/store-toast";
-import { formatError } from "@/utils";
+import { showToast } from "../store-toast";
+import { formatError } from "../utils";
 import { defineComponent } from "vue";
 import {
   SessionPostedBody,

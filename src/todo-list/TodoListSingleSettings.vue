@@ -1,9 +1,9 @@
 <script lang="ts">
-import BackButton from "@/components/BackButton.vue";
-import Spinner from "@/components/Spinner.vue";
-import NavBar from "@/components/NavBar.vue";
-import { showToast } from "@/store-toast";
-import type { TodoList } from "@/todo-list/todo-list-shared";
+import BackButton from "../components/BackButton.vue";
+import Spinner from "../components/Spinner.vue";
+import NavBar from "../components/NavBar.vue";
+import { showToast } from "../store-toast";
+import type { TodoList } from "../todo-list/todo-list-shared";
 import { defineComponent } from "vue";
 import TodoListApi from "./todo-list-api";
 

@@ -1,7 +1,7 @@
 <script lang="ts">
-import BackButton from "@/components/BackButton.vue";
-import NavBar from "@/components/NavBar.vue";
-import Spinner from "@/components/Spinner.vue";
+import BackButton from "../components/BackButton.vue";
+import NavBar from "../components/NavBar.vue";
+import Spinner from "../components/Spinner.vue";
 import {
   applyPatch,
   filterer,
@@ -15,8 +15,8 @@ import {
   TodoItemPatchParams,
   TodoItemSort,
   TodoList,
-} from "@/todo-list/todo-list-shared";
-import { formatError, formatFromNow, toValues, type Status } from "@/utils";
+} from "../todo-list/todo-list-shared";
+import { formatError, formatFromNow, toValues, type Status } from "../utils";
 import { defineComponent } from "vue";
 import TodoListApi from "./todo-list-api";
 import Api from "./todo-list-item-api";

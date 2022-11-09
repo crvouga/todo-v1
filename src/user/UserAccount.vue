@@ -1,8 +1,8 @@
 <script lang="ts">
-import api from "@/api";
-import BackButton from "@/components/BackButton.vue";
-import Spinner from "@/components/Spinner.vue";
-import { showToast } from "@/store-toast";
+import api from "../api";
+import BackButton from "../components/BackButton.vue";
+import Spinner from "../components/Spinner.vue";
+import { showToast } from "../store-toast";
 import { defineComponent } from "vue";
 import userApi from "./user-api";
 import { toAvatarUrl, getRandomAvatarSeed } from "./avatar";

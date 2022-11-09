@@ -8,6 +8,7 @@ import { fetchCurrentUser } from "./user/user-store";
 import UserAccount from "./user/UserAccount.vue";
 
 const router = createRouter({
+  // @ts-ignore
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {

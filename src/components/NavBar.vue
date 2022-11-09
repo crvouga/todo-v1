@@ -1,8 +1,7 @@
 <script lang="ts">
-import { store } from "@/store-toast";
-import { toAvatarUrl } from "@/user/avatar";
-import { userStore } from "@/user/user-store";
 import { defineComponent } from "vue";
+import { toAvatarUrl } from "../user/avatar";
+import { userStore } from "../user/user-store";
 import Spinner from "./Spinner.vue";
 
 export default defineComponent({

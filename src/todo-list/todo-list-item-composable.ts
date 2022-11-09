@@ -5,7 +5,7 @@ import {
   TodoItemPatch,
   TodoItemPatchParams,
   type TodoItemGetParams,
-} from "@/todo-list/todo-list-shared";
+} from "./todo-list-shared";
 import { ref } from "vue";
 import TodoItemApi from "./todo-list-item-api";
 

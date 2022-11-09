@@ -2,7 +2,9 @@ import { StatusCode } from "./utils";
 
 const devBackendUrl = "http://localhost:5000";
 
-const backendUrl = import.meta.env.DEV ? devBackendUrl : "";
+const backendUrl =
+  // @ts-ignore
+  import.meta.env.DEV ? devBackendUrl : "";
 
 type Params = string | URLSearchParams | Record<string, string> | string[][];
 

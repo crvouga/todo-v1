@@ -6,9 +6,9 @@ import {
   TodoItemGot,
   type TodoItemPatch,
   type TodoItemPatchParams,
-} from "@/todo-list/todo-list-shared";
-import Api from "@/api";
-import { formatError, Err, Ok, type Result } from "@/utils";
+} from "../todo-list/todo-list-shared";
+import Api from "../api";
+import { formatError, Err, Ok, type Result } from "../utils";
 import { v4 } from "uuid";
 
 export const patch = async ({

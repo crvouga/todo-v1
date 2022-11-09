@@ -1,4 +1,4 @@
-import Api from "@/api";
+import Api from "../api";
 import {
   endpoints,
   TodoList,
@@ -8,8 +8,8 @@ import {
   TodoListPatchBody,
   TodoListPatchParams,
   TodoSeedPostBody,
-} from "@/todo-list/todo-list-shared";
-import { Err, formatError, Ok, type Result } from "@/utils";
+} from "./todo-list-shared";
+import { Err, formatError, Ok, type Result } from "../utils";
 import { v4 } from "uuid";
 
 export const post = async ({
