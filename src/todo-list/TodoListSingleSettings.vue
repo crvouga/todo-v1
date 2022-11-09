@@ -106,6 +106,7 @@ export default defineComponent({
       }
 
       this.statusPatch = { type: "Ok" };
+      showToast({ type: "Success", title: "List updated" });
       this.get();
     },
   },
@@ -160,7 +161,7 @@ export default defineComponent({
     </div>
     <div class="mb-4">
       <button
-        class="btn btn-primary w-32"
+        class="btn btn-primary w-full"
         :class="{
           'btn-disabled': status.list.title === status.title,
           loading: statusPatch.type === 'Loading',
@@ -186,10 +187,10 @@ export default defineComponent({
       </button>
     </div>
 
-    <p class="font-bold text-2xl text-red-500 pb-1">Danger Zone</p>
+    <p class="font-bold text-2xl text-red-500 pb-2">Danger Zone</p>
 
     <!-- The button to open modal -->
-    <label for="delete-modal" class="btn modal-button btn-error">
+    <label for="delete-modal" class="btn modal-button btn-error w-full">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"

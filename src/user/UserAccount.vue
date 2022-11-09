@@ -315,12 +315,10 @@ export default defineComponent({
 
 
    -->
+    <p class="font-bold text-2xl mt-6">Logout</p>
 
-    <div class="mt-12 w-full">
-      <button
-        class="btn btn-error btn-outline w-full font-bold"
-        @click="logout"
-      >
+    <div class="mt-2 w-full">
+      <button class="btn w-full font-bold" @click="logout">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
