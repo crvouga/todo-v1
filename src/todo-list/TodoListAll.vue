@@ -168,16 +168,16 @@ export default defineComponent({
 
 
    -->
-  <div class="w-full flex gap-2 px-4 pt-4">
+  <div class="w-full flex overflow-hidden gap-2 px-4 py-1">
     <input
       ref="titleInput"
       v-model="title"
-      class="block input input-md input-bordered input-primary flex-1"
+      class="input input-primary flex-1"
       :class="{ 'input-error': statusPost.type === 'Err' }"
       placeholder="Name of list"
     />
     <button
-      class="btn btn-primary w-32"
+      class="btn btn-primary"
       :class="{ loading: statusPost.type === 'Loading' }"
       @click="post({ title })"
     >

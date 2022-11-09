@@ -22,25 +22,27 @@ export default defineComponent({
 });
 </script>
 <template>
-  <nav class="w-full flex items-center px-4 py-2">
+  <nav class="w-full flex items-center px-4 h-24">
     <div class="flex-1">
       <RouterLink
         :to="{ name: 'home' }"
-        class="font-black text-transparent text-4xl bg-clip-text bg-gradient-to-b from-purple-500 to-purple-800 cursor-pointer hover:opacity-75 active:opacity-50"
+        class="font-black text-transparent text-5xl bg-clip-text bg-gradient-to-b from-purple-500 to-purple-800 cursor-pointer hover:opacity-75 active:opacity-50"
       >
         todo
       </RouterLink>
     </div>
 
-    <Spinner child-class="w-12" v-if="currentUser.type === 'Loading'" />
+    <div class="avatar">
+      <Spinner child-class="w-12 h-12" v-if="currentUser.type === 'Loading'" />
+    </div>
 
-    <p class="font-bold text-red-500" v-if="currentUser.type === 'Err'">
+    <p class="h-12 font-bold text-red-500" v-if="currentUser.type === 'Err'">
       Error
     </p>
 
     <RouterLink v-if="currentUser.type === 'Ok'" :to="{ name: 'user-account' }">
       <div class="avatar">
-        <div class="rounded w-12">
+        <div class="rounded w-12 h-12">
           <img
             :src="toAvatarUrl({ avatarSeed: currentUser.user.avatarSeed })"
           />

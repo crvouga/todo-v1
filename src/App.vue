@@ -22,7 +22,7 @@ import { store } from "./store-toast";
   </Transition>
 
   <div
-    class="flex flex-col items-center justify-center max-w-md w-full h-full mx-auto"
+    class="flex flex-col items-center justify-center max-w-md w-full h-full mx-auto pb-12"
   >
     <RouterView />
   </div>

@@ -310,10 +310,10 @@ export default defineComponent({
   <div class="flex flex-col items-center justify-center w-full h-full pt-4">
     <div class="px-4 pb-4 w-full">
       <div
-        class="w-full flex justify-center"
+        class="w-full flex items-center"
         v-if="statusGetList.type === 'Loading'"
       >
-        <Spinner />
+        <p class="text-4xl text-left w-full font-black">...</p>
       </div>
 
       <div v-if="statusGetList.type === 'Err'">
@@ -381,7 +381,8 @@ export default defineComponent({
         {{ statusPost.type === "Err" ? statusPost.error : "" }}
       </p>
 
-      <!-- 
+      <div class="flex gap-4 overflow-x-scroll w-full scroll-px-4">
+        <!-- 
 
 
         Filter Input
@@ -389,19 +390,19 @@ export default defineComponent({
 
        -->
 
-      <div class="btn-group mb-4">
-        <button
-          v-for="filterItem in allFilters"
-          v-bind:key="filterItem"
-          :class="{ 'btn-active': filterItem === filter }"
-          class="btn btn-sm"
-          @click="inputFilter(filterItem)"
-        >
-          {{ filterItem }}
-        </button>
-      </div>
+        <div class="btn-group mb-4">
+          <button
+            v-for="filterItem in allFilters"
+            v-bind:key="filterItem"
+            :class="{ 'btn-active': filterItem === filter }"
+            class="btn btn-sm"
+            @click="inputFilter(filterItem)"
+          >
+            {{ filterItem }}
+          </button>
+        </div>
 
-      <!-- 
+        <!-- 
 
 
         Sort Input
@@ -409,19 +410,19 @@ export default defineComponent({
 
        -->
 
-      <div class="btn-group">
-        <button
-          v-for="sortItem in allSortsFormatted"
-          v-bind:key="sortItem[0]"
-          :class="{ 'btn-active': sortItem[0] === sort }"
-          class="btn btn-sm"
-          @click="inputSort(sortItem[0])"
-        >
-          {{ sortItem[1] }}
-        </button>
+        <div class="btn-group">
+          <button
+            v-for="sortItem in allSortsFormatted"
+            v-bind:key="sortItem[0]"
+            :class="{ 'btn-active': sortItem[0] === sort }"
+            class="btn btn-sm"
+            @click="inputSort(sortItem[0])"
+          >
+            {{ sortItem[1] }}
+          </button>
+        </div>
       </div>
     </div>
-
     <!-- 
 
 
@@ -430,7 +431,7 @@ export default defineComponent({
 
    -->
 
-    <div class="flex flex-col items-center justify-center flex-1 w-full pb-16">
+    <div class="flex flex-col items-center justify-center flex-1 w-full">
       <div class="px-4 w-full">
         <div
           v-if="statusGet.type === 'Err'"

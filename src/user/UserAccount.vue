@@ -238,10 +238,12 @@ export default defineComponent({
 
     <!-- 
 
-        Avatar Seed Input
+        
+      Avatar Seed Input
+
 
        -->
-    <div class="avatar mx-auto mt-8">
+    <div class="w-full avatar flex items-center justify-center mt-8">
       <div class="w-24 rounded">
         <img :src="toAvatarUrl({ avatarSeed })" />
       </div>
@@ -300,6 +302,8 @@ export default defineComponent({
     </div>
 
     <!-- 
+
+      Logout
 
 
    -->
