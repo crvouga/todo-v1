@@ -86,16 +86,12 @@ const repo: Repo = {
     },
 
     insertOne: async (params) => {
-      const sessionNew: Session = {
-        id: v4(),
-        userId: params.userId,
-      };
-      sessionById.set(sessionNew.id, sessionNew);
-      return Ok(sessionNew);
+      sessionById.set(params.session.id, params.session);
+      return Ok(null);
     },
 
     deleteById: async (params) => {
-      sessionById.delete(params.sessionId);
+      sessionById.delete(params.id);
       return Ok(null);
     },
   },

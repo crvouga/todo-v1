@@ -8,6 +8,7 @@ import {
   applyUserPatch,
   endpoints,
   PasswordCred,
+  Session,
   SessionDeleteParams,
   SessionGetBody,
   SessionGetParams,
@@ -107,8 +108,13 @@ export const useUserApi = ({
       res.status(StatusCode.Unauthorized).json(err);
       return;
     }
-    const inserted = await repo.session.insertOne({
+
+    const sessionNew: Session = {
+      id: v4(),
       userId: found.data.id,
+    };
+    const inserted = await repo.session.insertOne({
+      session: sessionNew,
     });
 
     if (inserted.type === "Err") {
@@ -121,7 +127,7 @@ export const useUserApi = ({
     }
 
     const posted: SessionPostedBody = {
-      sessionId: inserted.data.id,
+      sessionId: sessionNew.id,
     };
 
     res.status(StatusCode.Created).json(posted).end();
@@ -167,7 +173,7 @@ export const useUserApi = ({
       return;
     }
     const deleted = await repo.session.deleteById({
-      sessionId: parsed.data.sessionId,
+      id: parsed.data.sessionId,
     });
     if (deleted.type === "Err") {
       res.status(StatusCode.ServerError).json({ message: deleted.error });

@@ -24,10 +24,8 @@ export type Repo = {
     findOneById: (params: {
       id: string;
     }) => Promise<Result<string, Session | null>>;
-    insertOne: (params: { userId: string }) => Promise<Result<string, Session>>;
-    deleteById: (params: {
-      sessionId: string;
-    }) => Promise<Result<string, null>>;
+    insertOne: (params: { session: Session }) => Promise<Result<string, null>>;
+    deleteById: (params: { id: string }) => Promise<Result<string, null>>;
   };
 
   deleteByUserId: (params: { userId: string }) => Promise<Result<string, null>>;

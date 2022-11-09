@@ -86,20 +86,16 @@ const makeRepo = ({ db }: { db: Db }): Repo => {
       },
 
       insertOne: async (params) => {
-        const sessionNew: Session = {
-          id: v4(),
-          userId: params.userId,
-        };
         await sessionCol.insertOne({
-          id: sessionNew.id,
-          userId: sessionNew.userId,
+          id: params.session.id,
+          userId: params.session.userId,
         });
-        return Ok(sessionNew);
+        return Ok(null);
       },
 
       deleteById: async (params) => {
         await sessionCol.deleteOne({
-          id: params.sessionId,
+          id: params.id,
         });
         return Ok(null);
       },
