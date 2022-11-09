@@ -5,7 +5,7 @@ import { store } from "@/store-toast";
 
 <template>
   <Transition name="slide">
-    <div v-if="store.toast.type !== 'None'" class="toast">
+    <div v-if="store.toast.type !== 'None'" class="toast z-40">
       <div
         class="alert"
         :class="{
