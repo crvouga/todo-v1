@@ -348,6 +348,7 @@ export default defineComponent({
               'input-error': statusPost.type === 'Err',
             }"
             placeholder="What todo?"
+            @keyup.enter="post({ text, listId })"
           />
           <!-- <p class="pt-1 flex">
           <kbd class="kbd kbd-sm mr-1">⌘</kbd>

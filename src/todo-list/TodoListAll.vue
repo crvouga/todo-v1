@@ -322,9 +322,14 @@ export default defineComponent({
             }"
             >{{ `${list.activeCount} Active` }}</span
           >
-          <span class="badge badge-secondary font-bold">{{
-            `${list.completedCount} Completed`
-          }}</span>
+          <span
+            class="badge font-bold"
+            :class="{
+              'badge-secondary': list.completedCount > 0,
+              'badge-ghost': list.completedCount === 0,
+            }"
+            >{{ `${list.completedCount} Completed` }}</span
+          >
           <p class="opacity-75 text-xs font-bold">
             {{ formatFromNow(list.createdAt) }}
           </p>
