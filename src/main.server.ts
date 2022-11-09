@@ -3,7 +3,7 @@ import cors from "cors";
 import express from "express";
 import morgan from "morgan";
 import path from "path";
-import { productionDb } from "./mongodb-client";
+import { productionDb } from "./db/mongodb-client";
 import pubSubInMemory from "./pubsub/pubsub.in-memory";
 import { useTodoListApi } from "./todo-list/todo-list-api.server";
 import makeTodoListRepoMongoDb from "./todo-list/todo-list-repo/todo-list-repo.mongodb";
@@ -61,6 +61,5 @@ app.get("*", (req, res) => {
 const port = Number(process.env.PORT) || Number(process.env.port) || 5000;
 
 app.listen(port, () => {
-  console.clear();
   console.log(`Server started. http://localhost:${port}`);
 });
