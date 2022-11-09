@@ -200,7 +200,11 @@ export default defineComponent({
         </div>
       </div>
 
-      <button class="mt-6 btn btn-primary w-full" @click="login">
+      <button
+        class="mt-6 btn btn-primary w-full"
+        :class="{ loading: status.type === 'Loading' }"
+        @click="login"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"

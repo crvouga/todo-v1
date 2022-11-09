@@ -313,10 +313,10 @@ export default defineComponent({
   <div class="flex flex-col items-center justify-center w-full h-full pt-4">
     <div class="px-4 pb-4 w-full">
       <div
-        class="w-full flex items-center"
+        class="w-full justify-center flex items-center py-12"
         v-if="statusGetList.type === 'Loading'"
       >
-        <p class="text-4xl text-left w-full font-black">...</p>
+        <Spinner />
       </div>
 
       <div v-if="statusGetList.type === 'Err'" class="alert alert-error w-full">
