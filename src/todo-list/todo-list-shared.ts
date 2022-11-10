@@ -210,15 +210,30 @@ export const formatListSort = (sort: TodoItemSort): string => {
   }
 };
 
-export const TodoListGetParams = z.object({
-  userId: z.string().uuid(),
-  sort: TodoListSort,
+export const Pagination = z.object({
+  //we're doing zero based pagination
+  pageIndex: z.number().int(),
+  pageSize: z.number().int(),
 });
+export type Pagination = z.infer<typeof Pagination>;
+
+export const TodoListGetParams = z.intersection(
+  z.object({
+    userId: z.string().uuid(),
+    sort: TodoListSort,
+  }),
+  Pagination
+);
+
 export type TodoListGetParams = z.infer<typeof TodoListGetParams>;
 
-export const TodoListGot = z.object({
-  items: z.array(TodoListGotItem),
-});
+export const TodoListGot = z.intersection(
+  z.object({
+    items: z.array(TodoListGotItem),
+    totalCount: z.number(),
+  }),
+  Pagination
+);
 export type TodoListGot = z.infer<typeof TodoListGot>;
 
 export const TodoListDeleteParams = z.object({

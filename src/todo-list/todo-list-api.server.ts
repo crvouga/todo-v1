@@ -213,7 +213,10 @@ export const useTodoListApi = ({
     }
 
     const json: TodoListGot = {
-      items: found.data,
+      items: found.data.items,
+      pageIndex: parsed.data.pageIndex,
+      pageSize: parsed.data.pageSize,
+      totalCount: found.data.totalCount,
     };
 
     res.json(json);

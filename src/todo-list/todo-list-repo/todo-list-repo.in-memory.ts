@@ -68,8 +68,10 @@ const repo: Repo = {
     },
 
     findManyWithStats: async (params) => {
-      const lists = Array.from(listMap.values())
-        .filter((list) => list.userId === params.userId)
+      const filtered = Array.from(listMap.values()).filter(
+        (list) => list.userId === params.userId
+      );
+      const lists = filtered
         .sort(listSorter({ sort: params.sort }))
         .map((list) => {
           const stats = Array.from(itemMap.values()).reduce<TodoListStats>(
@@ -93,7 +95,7 @@ const repo: Repo = {
           return { ...list, ...stats };
         });
 
-      return Ok(lists);
+      return Ok({ items: lists, totalCount: filtered.length });
     },
 
     insertOne: async (params) => {

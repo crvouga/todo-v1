@@ -26,6 +26,9 @@ type Data = {
   sort: TodoListSort;
   //
   listById: { [listId: string]: TodoListGotItem };
+  pageIndex: number;
+  pageSize: number;
+  totalCount: number;
   //
   modalCreate: "Opened" | "Closed";
   //
@@ -55,6 +58,9 @@ export default defineComponent({
       modalCreate: "Closed",
       sort: "NewestFirst",
       listById: {},
+      totalCount: 0,
+      pageIndex: 0,
+      pageSize: 5,
       statusGet: notAsked,
       statusPost: notAsked,
       statusPostSeed: notAsked,
@@ -62,7 +68,16 @@ export default defineComponent({
   },
   computed: {
     lists() {
-      return toValues(this.listById).sort(listSorter({ sort: this.sort }));
+      const startIndex = this.pageIndex * this.pageSize;
+      const endIndex = startIndex + this.pageSize;
+      return toValues(this.listById)
+        .sort(listSorter({ sort: this.sort }))
+        .slice(startIndex, endIndex);
+    },
+    isNextPage() {
+      const currentCount = (this.pageIndex + 1) * this.pageSize;
+
+      return currentCount < this.totalCount;
     },
   },
   mounted() {
@@ -87,6 +102,14 @@ export default defineComponent({
     inputSort(sortNew: TodoListSort) {
       this.sort = sortNew;
     },
+    nextPage() {
+      this.pageIndex = this.pageIndex + 1;
+      this.get();
+    },
+    prevPage() {
+      this.pageIndex = Math.max(0, this.pageIndex - 1);
+      this.get();
+    },
     async get() {
       this.statusGet = { type: "Loading", params: {} };
 
@@ -103,6 +126,8 @@ export default defineComponent({
       const result = await TodoListApi.getAll({
         sort: this.sort,
         userId: currentUserId,
+        pageIndex: this.pageIndex,
+        pageSize: this.pageSize,
       });
       if (result.type === "Err") {
         this.statusGet = { type: "Err", params: {}, error: result.error };
@@ -117,6 +142,7 @@ export default defineComponent({
         {}
       );
       this.listById = { ...this.listById, ...byId };
+      this.totalCount = result.data.totalCount;
     },
     focusTitleInput() {
       // todo make typescript happy
@@ -273,24 +299,77 @@ export default defineComponent({
     </div>
   </div>
 
-  <!-- 
+  <div class="w-full px-4 flex flex-wrap items-center mt-4 justify-between">
+    <!-- 
 
 
     Sort Input
 
 
    -->
-
-  <div class="w-full px-4">
-    <div class="btn-group mt-4">
+    <div class="btn-group">
       <button
         v-for="sortItem in allListsSorts"
         v-bind:key="sortItem"
         :class="{ 'btn-active': sortItem === sort }"
-        class="btn btn-sm"
+        class="btn btn-xs"
         @click="inputSort(sortItem)"
       >
         {{ formatListSort(sortItem) }}
+      </button>
+    </div>
+
+    <!-- 
+
+
+    Pagination
+
+
+   -->
+
+    <div class="flex items-center flex-wrap">
+      <button
+        class="btn btn-sm btn-primary flex-1"
+        :class="{ 'btn-disabled': pageIndex === 0 }"
+        @click="prevPage"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-6 h-6 mr-1"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M15.75 19.5L8.25 12l7.5-7.5"
+          />
+        </svg>
+      </button>
+      <p class="text-4xl font-bold px-4 w-12 text-center">
+        {{ pageIndex + 1 }}
+      </p>
+      <button
+        class="btn btn-sm btn-primary flex-1"
+        :class="{ 'btn-disabled': !isNextPage }"
+        @click="nextPage"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-6 h-6 ml-1 inline"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M8.25 4.5l7.5 7.5-7.5 7.5"
+          />
+        </svg>
       </button>
     </div>
   </div>
@@ -415,7 +494,7 @@ export default defineComponent({
     </router-link>
   </ol>
 
-  <div v-if="statusGet.type === 'Loading'" class="py-8">
+  <div v-if="statusGet.type === 'Loading'" class="mt-8">
     <Spinner />
   </div>
 </template>

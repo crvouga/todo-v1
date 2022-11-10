@@ -1,4 +1,4 @@
-import { StatusCode } from "./utils";
+import { Err, Ok, StatusCode, type Result } from "./utils";
 
 const devBackendUrl = "http://localhost:5000";
 
@@ -6,21 +6,37 @@ const backendUrl =
   // @ts-ignore
   import.meta.env.DEV ? devBackendUrl : "";
 
-type Params = string | URLSearchParams | Record<string, string> | string[][];
+type Params =
+  | string
+  | URLSearchParams
+  | Record<string, string>
+  | Record<string, number>
+  | string[][];
+
+const stringifyParams = (params: unknown): Result<string, string> => {
+  try {
+    // @ts-ignore
+    const searchParams = new URLSearchParams(params);
+    return Ok(searchParams.toString());
+  } catch (error) {
+    return Err("Failed to serialize params");
+  }
+};
 
 const get = async ({
   endpoint,
   params,
 }: {
   endpoint: string;
-  params: Params;
+  params: unknown;
 }) => {
   try {
-    const searchParams = new URLSearchParams(params);
+    const stringed = stringifyParams(params);
+    if (stringed.type === "Err") {
+      return stringed;
+    }
 
-    const response = await fetch(
-      `${backendUrl}${endpoint}?${searchParams.toString()}`
-    );
+    const response = await fetch(`${backendUrl}${endpoint}?${stringed.data}`);
 
     if (!response.ok) {
       if (response.status === StatusCode.NotFound) {
@@ -91,17 +107,18 @@ const patch = async ({
   body: unknown;
 }) => {
   try {
-    const searchParams = new URLSearchParams(params);
-    const response = await fetch(
-      `${backendUrl}${endpoint}?${searchParams.toString()}`,
-      {
-        method: "PATCH",
-        body: JSON.stringify(body),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const stringed = stringifyParams(params);
+    if (stringed.type === "Err") {
+      return stringed;
+    }
+
+    const response = await fetch(`${backendUrl}${endpoint}?${stringed.data}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
     if (!response.ok) {
       return { type: "Err", error: "Response was not ok" } as const;
@@ -121,16 +138,16 @@ const delete_ = async ({
   params: Params;
 }) => {
   try {
-    const searchParams = new URLSearchParams(params);
-    const response = await fetch(
-      `${backendUrl}${endpoint}?${searchParams.toString()}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const stringed = stringifyParams(params);
+    if (stringed.type === "Err") {
+      return stringed;
+    }
+    const response = await fetch(`${backendUrl}${endpoint}?${stringed.data}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
     if (!response.ok) {
       return { type: "Err", error: "Response was not ok" } as const;

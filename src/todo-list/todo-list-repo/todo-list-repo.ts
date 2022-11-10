@@ -1,5 +1,6 @@
 import type { Result } from "../../utils";
 import type {
+  Pagination,
   TodoItem,
   TodoItemFilter,
   TodoItemSort,
@@ -16,10 +17,17 @@ export type Repo = {
     updateOne: (params: { updated: TodoList }) => Promise<Result<string, null>>;
     insertOne: (params: { list: TodoList }) => Promise<Result<string, null>>;
     deleteById: (params: { id: string }) => Promise<Result<string, null>>;
-    findManyWithStats: (params: {
-      sort: TodoListSort;
-      userId: string;
-    }) => Promise<Result<string, (TodoList & TodoListStats)[]>>;
+    findManyWithStats: (
+      params: {
+        sort: TodoListSort;
+        userId: string;
+      } & Pagination
+    ) => Promise<
+      Result<
+        string,
+        { totalCount: number; items: (TodoList & TodoListStats)[] }
+      >
+    >;
   };
   item: {
     insertOne: (params: { item: TodoItem }) => Promise<Result<string, null>>;

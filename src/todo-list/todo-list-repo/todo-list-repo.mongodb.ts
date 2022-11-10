@@ -103,15 +103,19 @@ export const makeRepo = ({ db }: { db: Db }): Repo => {
       },
 
       findManyWithStats: async (params) => {
-        // todo add sorting and make one trip to db
+        // todo move all the logic into the db layer
         const listCursor = listCol.find({ userId: params.userId });
 
-        const foundArray = await listCursor.toArray();
+        const filtered = await listCursor.toArray();
+
+        const startIndex = params.pageIndex * params.pageSize;
+        const endIndex = startIndex + params.pageSize;
+        const sliced = filtered.slice(startIndex, endIndex);
 
         const ret: (TodoList & TodoListStats)[] = [];
 
-        for (const diry of foundArray) {
-          const parsed = TodoList.safeParse(diry);
+        for (const dirty of sliced) {
+          const parsed = TodoList.safeParse(dirty);
 
           if (!parsed.success) {
             return Err(formatError(parsed));
@@ -142,7 +146,7 @@ export const makeRepo = ({ db }: { db: Db }): Repo => {
           ret.push({ ...list, ...stats });
         }
 
-        return Ok(ret);
+        return Ok({ items: ret, totalCount: filtered.length });
       },
 
       insertOne: async (params) => {

@@ -9,6 +9,7 @@ import { useTodoListApi } from "./todo-list/todo-list-api.server";
 import makeTodoListRepoMongoDb from "./todo-list/todo-list-repo/todo-list-repo.mongodb";
 import { useUserApi } from "./user/user-api.server";
 import makeUserRepoMongoDb from "./user/user-repo/user-repo.mongodb";
+import { queryParser } from "express-query-parser";
 
 const app = express();
 
@@ -16,7 +17,14 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan("tiny"));
 app.use(cookieParser());
-
+app.use(
+  queryParser({
+    parseNull: true,
+    parseUndefined: true,
+    parseBoolean: true,
+    parseNumber: true,
+  })
+);
 pubSubInMemory.sub((event) => {
   console.log("App Event", event);
 });
