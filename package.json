@@ -16,6 +16,8 @@
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.201.0",
+    "@headlessui/vue": "^1.7.17",
+    "@heroicons/vue": "^2.1.1",
     "bcrypt": "^5.1.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",

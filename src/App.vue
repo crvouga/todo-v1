@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterView } from "vue-router";
 import { store } from "./store-toast";
+import AutocompleteTest from "./AutocompleteTest.vue";
 </script>
 
 <template>
@@ -24,7 +25,9 @@ import { store } from "./store-toast";
   <div
     class="flex flex-col items-center justify-center max-w-xl w-full h-full mx-auto pb-12"
   >
-    <RouterView />
+    <AutocompleteTest v-if="false" />
+ 
+    <RouterView v-if="true" />
   </div>
 </template>
 
