@@ -38,15 +38,25 @@ export const getCurrentUser = (): User | null => {
 };
 
 export const fetchCurrentUser = async () => {
+  console.log("fetchCurrentUser: Starting to fetch current user");
   userStore.currentUser = { type: "Loading" };
 
+  console.log("fetchCurrentUser: Getting session");
   const gotSession = await userApi.session.get();
 
   if (gotSession.type === "Err") {
+    console.log(
+      "fetchCurrentUser: Session error, user is logged out",
+      gotSession.error
+    );
     userStore.currentUser = { type: "LoggedOut" };
     return gotSession;
   }
 
+  console.log(
+    "fetchCurrentUser: Session found, user ID:",
+    gotSession.data.userId
+  );
   const currentUserLoading: UserStore["currentUser"] = {
     type: "LoggedIn",
     userId: gotSession.data.userId,
@@ -55,9 +65,11 @@ export const fetchCurrentUser = async () => {
 
   userStore.currentUser = currentUserLoading;
 
+  console.log("fetchCurrentUser: Getting user details");
   const gotUser = await userApi.user.get({ userId: gotSession.data.userId });
 
   if (gotUser.type === "Err") {
+    console.log("fetchCurrentUser: Error getting user details", gotUser.error);
     const currentUserErr: UserStore["currentUser"] = {
       type: "LoggedIn",
       userId: currentUserLoading.userId,
@@ -67,6 +79,10 @@ export const fetchCurrentUser = async () => {
     return gotUser;
   }
 
+  console.log(
+    "fetchCurrentUser: Successfully retrieved user details",
+    gotUser.data
+  );
   const currentUserOk: UserStore["currentUser"] = {
     type: "LoggedIn",
     userId: currentUserLoading.userId,

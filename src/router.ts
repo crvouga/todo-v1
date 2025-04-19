@@ -54,20 +54,27 @@ const router = createRouter({
 //
 
 router.beforeEach(async (to) => {
+  console.log(`Navigation to: ${to}`, to);
+
   const got = await fetchCurrentUser();
+  console.log("Current user status:", got.type);
 
   if (got.type === "Ok") {
+    console.log("User is authenticated, allowing navigation");
     return true;
   }
 
   if (to.name === "create-account") {
+    console.log("Allowing navigation to create-account page");
     return true;
   }
 
   if (to.name !== "login") {
+    console.log("User not authenticated, redirecting to login page");
     return { name: "login" };
   }
 
+  console.log("Allowing navigation to login page");
   return true;
 });
 

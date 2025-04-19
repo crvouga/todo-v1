@@ -111,7 +111,8 @@ export default defineComponent({
       }
       this.status = { type: "Ok", data: parsedBody.data };
       localStorage.setItem(sessionIdKey, parsedBody.data.sessionId);
-      this.$router.push({ name: "todo-list-all" });
+      const pushed = await this.$router.push({ name: "todo-list-all" });
+      console.log(pushed);
       showToast({
         type: "Info",
         title: `Logged in with ${emailAddress}`,

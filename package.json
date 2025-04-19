@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "build": "run-p type-check build-only",
+    "build": "run-p type-check build-only && npm run server:build",
     "preview": "vite preview",
     "test:unit": "vitest --environment jsdom --root src/",
     "build-only": "vite build",
@@ -12,7 +12,8 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "server:dev": "npx ts-node-dev --project ./tsconfig.server.json src/main.server.ts",
     "server:build": "npx tsc --build tsconfig.server.json",
-    "server:start": "node build/src/main.server.js"
+    "server:start": "node build/src/main.server.js",
+    "start": "npm run server:start"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.201.0",

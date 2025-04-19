@@ -1,6 +1,6 @@
 import { Err, Ok, StatusCode, type Result } from "./utils";
 
-const devBackendUrl = "http://localhost:5000";
+const devBackendUrl = "http://localhost:5555";
 
 const backendUrl =
   // @ts-ignore
