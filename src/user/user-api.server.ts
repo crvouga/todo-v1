@@ -26,27 +26,17 @@ import {
   UserPostError,
 } from "./user-shared";
 
-export const useUserApi = ({
-  app,
-  repo,
-  pubSub,
-}: {
+export const useUserApi = (config: {
   pubSub: PubSub;
   repo: Repo;
   app: Application;
 }) => {
-  //
-  //
-  //
-  // Session
-  //
-  //
-  //
+  useSessionApi(config);
+  useCurrentUserApi(config);
+  useUserCrudApi(config);
+};
 
-  //
-  // Login
-  //
-
+const useSessionApi = ({ app, repo }: { app: Application; repo: Repo }) => {
   app.post(endpoints["/session"], async (req, res) => {
     const parsed = SessionPostBody.safeParse(req.body);
 
@@ -136,11 +126,9 @@ export const useUserApi = ({
 
     res.status(StatusCode.Created).json(posted).end();
   });
+};
 
-  //
-  // Get Current User
-  //
-
+const useCurrentUserApi = ({ app, repo }: { app: Application; repo: Repo }) => {
   app.get(endpoints["/session"], async (req, res) => {
     const params = SessionGetParams.safeParse(req.query);
 
@@ -185,15 +173,17 @@ export const useUserApi = ({
     }
     res.status(StatusCode.Ok).end();
   });
+};
 
-  //
-  //
-  //
-  // User
-  //
-  //
-  //
-
+const useUserCrudApi = ({
+  app,
+  repo,
+  pubSub,
+}: {
+  app: Application;
+  repo: Repo;
+  pubSub: PubSub;
+}) => {
   app.get(endpoints["/user"], async (req, res) => {
     const parsed = UserGetParams.safeParse(req.query);
     if (!parsed.success) {

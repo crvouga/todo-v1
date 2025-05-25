@@ -1,10 +1,16 @@
+import { bigEarsNeutral } from "@dicebear/collection";
+import { createAvatar } from "@dicebear/core";
+
 const styles = {
   "pixel-art": "pixel-art",
   "big-ears-neutral": "big-ears-neutral",
 };
-// docs: https://avatars.dicebear.com
+
 export const toAvatarUrl = ({ avatarSeed }: { avatarSeed: string }): string => {
-  return `https://avatars.dicebear.com/api/${styles["big-ears-neutral"]}/${avatarSeed}.svg`;
+  const avatar = createAvatar(bigEarsNeutral, {
+    seed: avatarSeed,
+  });
+  return avatar.toDataUri();
 };
 
 export const getRandomAvatarSeed = () => {
