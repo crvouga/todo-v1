@@ -1,18 +1,17 @@
-export const createToAvatarUrl = async (): Promise<
-  (avatarSeed: string) => string
-> => {
+type ToAvatarUrl = (input: { avatarSeed: string }) => string;
+export const createToAvatarUrl = async (): Promise<ToAvatarUrl> => {
   const { createAvatar } = await import("@dicebear/core");
   const { bigEarsNeutral } = await import("@dicebear/collection");
-  return (avatarSeed: string) =>
+  return (input: { avatarSeed: string }) =>
     createAvatar(bigEarsNeutral, {
-      seed: avatarSeed,
+      seed: input.avatarSeed,
     }).toDataUri();
 };
 
-let toAvatarUrlFn: (seed: string) => string;
-export const toAvatarUrl = (seed: string): string => {
+let toAvatarUrlFn: ToAvatarUrl;
+export const toAvatarUrl: ToAvatarUrl = (input) => {
   if (typeof toAvatarUrlFn === "function") {
-    return toAvatarUrlFn(seed);
+    return toAvatarUrlFn(input);
   }
   createToAvatarUrl().then((fn) => {
     toAvatarUrlFn = fn;
@@ -20,7 +19,7 @@ export const toAvatarUrl = (seed: string): string => {
   return " ";
 };
 
-toAvatarUrl("123");
+toAvatarUrl({ avatarSeed: "123" });
 
 export const getRandomAvatarSeed = () => {
   const characters = "abcdefghijklmnopqrstuvwxyz1234567890";
