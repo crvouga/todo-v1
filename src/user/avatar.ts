@@ -1,17 +1,26 @@
-import { bigEarsNeutral } from "@dicebear/collection";
-import { createAvatar } from "@dicebear/core";
-
-const styles = {
-  "pixel-art": "pixel-art",
-  "big-ears-neutral": "big-ears-neutral",
+export const createToAvatarUrl = async (): Promise<
+  (avatarSeed: string) => string
+> => {
+  const { createAvatar } = await import("@dicebear/core");
+  const { bigEarsNeutral } = await import("@dicebear/collection");
+  return (avatarSeed: string) =>
+    createAvatar(bigEarsNeutral, {
+      seed: avatarSeed,
+    }).toDataUri();
 };
 
-export const toAvatarUrl = ({ avatarSeed }: { avatarSeed: string }): string => {
-  const avatar = createAvatar(bigEarsNeutral, {
-    seed: avatarSeed,
+let toAvatarUrlFn: (seed: string) => string;
+export const toAvatarUrl = (seed: string): string => {
+  if (typeof toAvatarUrlFn === "function") {
+    return toAvatarUrlFn(seed);
+  }
+  createToAvatarUrl().then((fn) => {
+    toAvatarUrlFn = fn;
   });
-  return avatar.toDataUri();
+  return " ";
 };
+
+toAvatarUrl("123");
 
 export const getRandomAvatarSeed = () => {
   const characters = "abcdefghijklmnopqrstuvwxyz1234567890";

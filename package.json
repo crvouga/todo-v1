@@ -4,10 +4,11 @@
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check build-only && npm run server:build",
-    "preview": "vite preview",
+    "preview": "bun run build && bun run server:build && bun run server:start",
     "test:unit": "vitest --environment jsdom --root src/",
     "build-only": "vite build",
     "type-check": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
+    
     "tc": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false -w",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "client": "bun x vite",
