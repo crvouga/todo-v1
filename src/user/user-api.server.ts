@@ -294,12 +294,54 @@ const useUserCrudApi = ({
       passwordHash: hashResult.data.passwordHash,
     };
 
-    await repo.password.insertOne({ passwordCred: passwordCredNew });
-    await repo.user.insertOne({ user: userNew });
+    const passwordInsertedResult = await repo.password.insertOne({
+      passwordCred: passwordCredNew,
+    });
+    if (passwordInsertedResult.type === "Err") {
+      res.status(StatusCode.ServerError).json({
+        message: `Failed to save password: ${passwordInsertedResult.error}`,
+      });
+      return;
+    }
+
+    const userInsertedResult = await repo.user.insertOne({ user: userNew });
+    if (userInsertedResult.type === "Err") {
+      res
+        .status(StatusCode.ServerError)
+        .json({ message: `Failed to save user: ${userInsertedResult.error}` });
+      return;
+    }
 
     pubSub.pub({ type: "UserCreated", userId: userNew.id });
 
-    res.status(StatusCode.Created).end();
+    const sessionNew: Session = {
+      id: v4(),
+      userId: userNew.id,
+    };
+
+    const insertedSessionResult = await repo.session.insertOne({
+      session: sessionNew,
+    });
+
+    if (insertedSessionResult.type === "Err") {
+      console.error(
+        `User ${userNew.id} created, but failed to create session: ${insertedSessionResult.error}`
+      );
+      res
+        .status(StatusCode.ServerError)
+        .json({
+          message:
+            "User account created, but failed to automatically sign in. Please try logging in manually.",
+          details: insertedSessionResult.error,
+        })
+        .end();
+      return;
+    }
+
+    const responseBody: SessionPostedBody = {
+      sessionId: sessionNew.id,
+    };
+    res.status(StatusCode.Created).json(responseBody).end();
   });
 
   app.patch(endpoints["/user"], async (req, res) => {
