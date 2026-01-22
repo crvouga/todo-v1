@@ -1,4 +1,31 @@
 {
+  "include": [
+    "src/main.server.ts",
+    "src/**/*.server.ts",
+    "src/db/**/*",
+    "src/pubsub/**/*",
+    "src/todo-list/todo-list-repo/**/*",
+    "src/todo-list/todo-list-shared.ts",
+    "src/user/user-repo/**/*",
+    "src/user/user-shared.ts",
+    "src/user/hash.ts",
+    "src/user/avatar.ts",
+    "src/utils/**/*"
+  ],
+  "exclude": [
+    "src/**/*.vue",
+    "src/main.ts",
+    "src/router.ts",
+    "src/api.ts",
+    "src/user/user-store.ts",
+    "src/user/user-api.ts",
+    "src/todo-list/todo-list-api.ts",
+    "src/todo-list/todo-list-item-api.ts",
+    "src/todo-list/composition/**/*",
+    "src/store-toast.ts",
+    "src/App.vue",
+    "src/AutocompleteTest.vue"
+  ],
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig to read more about this file */
 
@@ -26,7 +53,7 @@
 
     /* Modules */
     "module": "NodeNext" /* Specify what module code is generated. */,
-    // "rootDir": "./",                                  /* Specify the root folder within your source files. */
+    "rootDir": "./",                                  /* Specify the root folder within your source files. */
     // "moduleResolution": "node",                       /* Specify how TypeScript looks up a file from a given module specifier. */
     // "baseUrl": "./",                                  /* Specify the base directory to resolve non-relative module names. */
     // "paths": {},                                      /* Specify a set of entries that re-map imports to additional lookup locations. */
