@@ -16,7 +16,7 @@
     "server:build": "bun x tsc --build tsconfig.server.json",
     "server:start": "node build/src/main.server.js",
     "start": "npm run server:start",
-    "docker:preview": "docker build --no-cache -t todo-app:local . && docker run --rm -p 1234:1234 todo-app:local"
+    "docker:preview": "docker build --no-cache -t todo-app:local . && docker run --rm -p 8007:80 todo-app:local"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.201.0",
