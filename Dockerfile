@@ -33,6 +33,9 @@ RUN npm install --omit=dev
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/build ./build
 
+# Install wget for healthcheck
+RUN apk add --no-cache wget
+
 # Set port environment variable
 ENV PORT=80
 
